@@ -1,0 +1,107 @@
+<resources>
+    <string name="app_name">StreetMovement App</string>
+    <string name="label_main">StreetMovement App</string>
+
+
+    <string name="startScreen">Welcome to the new StreetMovement mobile app!\n\n
+        Get a personalized workout by our professional instructors or create your own.\n
+        Let us help you develop and maintain a routine and find the best outdoor spots to get moving.\n
+       </string>
+    <string name="pleaseLoginToContinue">Please login to continue.</string>
+
+    <string name="loginScreen">Welcome to the new StreetMovement mobile app!\n\n
+        Get a personalized workout by our professional instructors or create your own.\n
+        Let us help you develop and maintain a routine and find the best outdoor spots to get moving.\n
+        </string>
+    <string name="log_out">Log out</string>
+
+    <string name="user_name">User Profile</string>
+
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+
+    <!--MENU-HEADER IMG + TITLE-->
+    <string name="menu_header_image">Logo</string>
+    <string name="menu_header_title">Street Movement</string>
+    <string name="menu_header_subtitle">Training</string>
+
+
+    <!--MENU-1st Category + 1st Category Item names-->
+    <string name="menu_cat1_item1">Home</string>
+    <string name="menu_cat1_item2">Training</string>
+    <string name="menu_cat1_item3">Shop</string>
+    <string name="menu_cat1_item4">Contact</string>
+
+    <!--MENU-2nd Category + 2nd Category Item names-->
+    <string name="menu_category2">Social Media</string>
+    <string name="menu_cat2_item1">Facebook</string>
+    <string name="menu_cat2_item2">Instagram</string>
+    <string name="menu_cat2_item3">YouTube</string>
+
+
+    <string name="label_google_sign_in">Firebase + Google Sign In</string>
+    <string name="desc_google_sign_in">Use a Google Sign In credential to authenticate with Firebase.</string>
+
+    <string name="label_facebook_login">Firebase + Facebook Login</string>
+    <string name="desc_facebook_login">Use a Facebook Login credential to authenticate with Firebase.</string>
+    <string name="login_successful">Login Successful. Access token: %1$s</string>
+    <string name="login_cancelled">Login-Operation cancelled.</string>
+    <string name="login_error">Error: %1$s</string>
+
+
+    <string name="label_emailpassword">Email/Password Authentication</string>
+    <string name="desc_emailpassword">Use an email and password to authenticate with Firebase.</string>
+
+
+    <string name="label_firebase_ui">FirebaseUI Auth</string>
+    <string name="desc_firebase_ui">Use the FirebaseUI-Android library to authenticate with Firebase.</string>
+
+    <string name="hint_user_id">User ID</string>
+    <string name="get_custom_token">Get Token</string>
+    <string name="sign_in">Sign In</string>
+    <string name="create_account">Create Account</string>
+    <string name="sign_out">Sign Out</string>
+    <string name="verify_email">Verify Email</string>
+    <string name="disconnect">Disconnect</string>
+    <string name="loading">Loading…</string>
+    <string name="signed_in">Signed In</string>
+    <string name="signed_out">Signed Out</string>
+    <string name="token_null">Token: null</string>
+    <string name="hint_email">Email</string>
+    <string name="hint_password">Password</string>
+    <string name="desc_firebase_lockup">Firebase logo and name</string>
+    <string name="auth_failed">Authentication failed</string>
+
+    <string name="hint_verification_code">Verification Code</string>
+    <string name="status_code_sent">Code Sent</string>
+    <string name="status_verification_failed">Verification failed</string>
+    <string name="status_verification_succeeded">Verification succeeded</string>
+    <string name="status_sign_in_failed">Sign-in failed</string>
+    <string name="instant_validation">(instant validation)</string>
+
+    <string name="firebase_status_fmt">Firebase User: %s</string>
+    <string name="firebase_user_management">Firebase User Management</string>
+
+    <string name="google_status_fmt">Google User: %s</string>
+    <string name="google_title_text">Google Sign In</string>
+
+    <string name="facebook_status_fmt">Facebook User: %s</string>
+    <string name="facebookAppName">Facebook SignIn</string>
+    <string name="facebook_title_text">Facebook Login</string>
+    <string name="facebook_application_id" translatable="false"> 150098065766237 </string>
+    <string name="fb_login_protocol_scheme"> fb150098065766237 </string>
+
+
+    <string name="emailpassword_status_fmt">Email User: %1$s (verified: %2$b)</string>
+    <string name="emailpassword_title_text">Email and Password</string>
+
+
+    <string name="firebaseui_status_fmt">Firebase User: %s</string>
+    <string name="firebaseui_title_text">FirebaseUI Auth</string>
+
+    <string name="id_fmt">User ID: %s</string>
+    <string name="email_fmt">Email: %s</string>
+</resources>

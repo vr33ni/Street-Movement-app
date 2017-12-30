@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/home"
+            android:icon="@drawable/ic_home_black"
+            android:title="@string/menu_cat1_item1" />
+        <item
+            android:id="@+id/training"
+            android:icon="@drawable/ic_weights"
+            android:title="@string/menu_cat1_item2" />
+        <item
+            android:id="@+id/shop"
+            android:icon="@drawable/ic_shoppingcart"
+            android:title="@string/menu_cat1_item3"/>
+        <item
+            android:id="@+id/contact"
+            android:icon="@drawable/ic_contact"
+            android:title="@string/menu_cat1_item4" />
+    </group>
+
+    <item android:title="@string/menu_category2">
+        <menu>
+            <!--add new item part here and in MainActivity.java to create a new navigation menu item-->
+            <item
+                android:id="@+id/fb"
+                android:icon="@drawable/ic_fb_black"
+                android:title="@string/menu_cat2_item1" />
+            <item
+                android:id="@+id/insta"
+                android:icon="@drawable/ic_insta_black"
+                android:title="@string/menu_cat2_item2" />
+            <item
+                android:id="@+id/youtube"
+                android:icon="@drawable/ic_youtube_black_smaller"
+                android:title="@string/menu_cat2_item3" />
+
+        </menu>
+    </item>
+
+</menu>
