@@ -42,6 +42,7 @@ public class User extends AppCompatActivity { //change this to extends FIREBASEU
     public static final String NATIONALITY = "Nationality";
     public static final String NICKNAME = "Nickname";
     public static final String STATUS = "Status";
+    public static final String WORKOUTS = "Workouts completed";
 
     private String userEmail = FirebaseAuth.getInstance().getCurrentUser().getEmail();
     private String userFullName = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
@@ -77,6 +78,7 @@ public class User extends AppCompatActivity { //change this to extends FIREBASEU
         userEntry.put(AGE, "-");
         userEntry.put(NATIONALITY, "-");
         userEntry.put(STATUS, "Baby monkey");
+        userEntry.put(WORKOUTS, 0);
         db.document(userFullName).set(userEntry, SetOptions.merge()).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {

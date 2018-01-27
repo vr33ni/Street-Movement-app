@@ -3,20 +3,32 @@ package com.example.vreeni.firebaseauthentication;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 
 import org.w3c.dom.Text;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import static com.example.vreeni.firebaseauthentication.User.NICKNAME;
+import static com.example.vreeni.firebaseauthentication.User.TAG;
+import static com.example.vreeni.firebaseauthentication.User.WORKOUTS;
 
 /**
  * Created by vreee on 24/01/2018.
@@ -85,6 +97,7 @@ public class GetCustomizedHomeWorkout_ExerciseFragment extends android.support.v
             public void onFinish() {
                 timer.setText("Warm-up completed!");
                 time = 60;
+                addWorkouttoUserDocument();
 //                //Enable the start button
 //                btn_startWarmup.setEnabled(false);
 ////                //Disable the pause, resume and cancel button
@@ -108,7 +121,21 @@ public class GetCustomizedHomeWorkout_ExerciseFragment extends android.support.v
         DocumentReference userDocRef = db.collection("Users").document(currUser.getDisplayName());
         if (userDocRef != null) {
             //add workout as a reference?
-            
+            Map<String, Object> dataUpdate = new HashMap<String, Object>();
+            int nrOfWorkouts = (int) dataUpdate.get(WORKOUTS);
+            dataUpdate.put(WORKOUTS, nrOfWorkouts+1);
+            userDocRef
+                    .set(dataUpdate, SetOptions.merge()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    Log.d(TAG, "Document has been saved");
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Log.d(TAG, "Document could not be saved");
+                }
+            });
         } else {
             //throw exception Username not Found
         }
