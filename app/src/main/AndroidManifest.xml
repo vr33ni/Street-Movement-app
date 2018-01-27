@@ -16,6 +16,7 @@
             android:label="@string/label_main">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -24,7 +25,7 @@
             android:label="@string/label_main" />
         <!-- label definiing the stuff written in the navigation toolbar on top INCLUDE LOGOUT FUNCTION HERE -->
 
-        <activity android:name=".StartScreenActivity"></activity>
+        <activity android:name=".StartScreenActivity" />
     </application>
 
 </manifest>

@@ -20,7 +20,7 @@ public class TrainingFragment extends Fragment implements View.OnClickListener {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        btnWorkout = (Button) view.findViewById(R.id.fragment_train_now_create_workout);
+        btnWorkout = (Button) view.findViewById(R.id.train_now_create_workout);
         btnWorkout.setOnClickListener(this);
     }
 
@@ -36,13 +36,15 @@ public class TrainingFragment extends Fragment implements View.OnClickListener {
     public void onClick(View v) {
         Fragment fragment = null;
         //if the button representing the "train now or create workout" fragment is clicked, create this fragment
-        if (v.getId() == R.id.fragment_train_now_create_workout) {
+        if (v.getId() == R.id.train_now_create_workout) {
             fragment = new TrainNowCreateWorkoutFragment();
         }
-        getActivity().getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container, fragment)
-                .addToBackStack(null)
-                .commit();
+        if (fragment != null) {
+            getActivity().getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, fragment)
+                    .addToBackStack(null)
+                    .commit();
+        }
     }
 }
 

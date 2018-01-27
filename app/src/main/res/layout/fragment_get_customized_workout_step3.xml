@@ -42,42 +42,39 @@
                 android:layout_marginRight="8dp"
                 android:layout_marginLeft="8dp"
                 android:gravity="center"
-                android:text="Get a customized by our professional instructors"
+                android:text="Choose your focus"
                 android:textSize="24sp"
                 android:textStyle="italic"/>
 
-
             <Button
-                android:id="@+id/btn_get_predef_workout"
+                android:id="@+id/btn_workout_focus_upperbody"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:layout_marginRight="8dp"
                 android:layout_marginLeft="8dp"
                 android:layout_gravity="center"
-                android:text="Get customized workout" />
+                android:text="Upper body" />
 
             <Button
-                android:id="@+id/btn_create_your_own_workout"
+                android:id="@+id/btn_workout_focus_lowerbody"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:layout_marginRight="8dp"
                 android:layout_marginLeft="8dp"
                 android:layout_gravity="center"
-                android:text="Create your own workout *" />
+                android:text="Lower body" />
 
-            <TextView
+            <Button
+                android:id="@+id/btn_workout_focus_mix"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
                 android:layout_marginRight="8dp"
                 android:layout_marginLeft="8dp"
-                android:layout_marginTop="8dp"
-                android:textStyle="italic"
-                android:textSize="12sp"
-                android:layout_gravity="end"
-                android:textAlignment="textEnd"
-                android:text="* Recommended for experienced users"/>
+                android:layout_gravity="center"
+                android:text="Mix" />
 
 
 

@@ -25,8 +25,8 @@
 
     <!--MENU-HEADER IMG + TITLE-->
     <string name="menu_header_image">Logo</string>
-    <string name="menu_header_title">Street Movement</string>
-    <string name="menu_header_subtitle">Training</string>
+
+    <string name="menu_header_subtitle">User Profile</string>
 
 
     <!--MENU-1st Category + 1st Category Item names-->

@@ -15,8 +15,8 @@
 
     <ImageView
         android:id="@+id/imageView"
-        android:layout_width="104dp"
-        android:layout_height="79dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:adjustViewBounds="true"
         android:contentDescription="@string/menu_header_image"
         android:paddingTop="@dimen/nav_header_vertical_spacing"
@@ -28,8 +28,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingTop="@dimen/nav_header_vertical_spacing"
-        android:text="@string/user_name"
+        android:text="User profile"
+        android:clickable="true"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+
 
     <TextView
         android:id="@+id/textView"

@@ -8,4 +8,8 @@
     <color name="grey_300">#E0E0E0</color>
     <color name="primary_material_light_1">#f2f2f2</color>
     <color name="primary_dark_material_light">#e4e4e4</color>
+
+    <color name="transparent">#00000000</color>
+
+
 </resources>

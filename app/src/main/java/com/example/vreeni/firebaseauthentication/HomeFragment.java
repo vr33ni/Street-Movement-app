@@ -2,12 +2,15 @@ package com.example.vreeni.firebaseauthentication; /**
  * Created by vreee on 19/12/2017.
  */
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.google.firebase.auth.FirebaseAuth;
 
 
 public class HomeFragment extends Fragment implements View.OnClickListener {
@@ -36,5 +39,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
                 .addToBackStack(null)
                 .commit();
     }
+
 }
 

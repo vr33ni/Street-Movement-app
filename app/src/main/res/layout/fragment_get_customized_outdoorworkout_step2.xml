@@ -32,8 +32,8 @@
                 android:adjustViewBounds="true"
                 android:contentDescription="chooseWorkout"
                 android:paddingTop="0dp"
-                android:src="@drawable/bg_stride"
-                app:srcCompat="@drawable/bg_stride" />
+                android:src="@drawable/img_railheaven"
+                app:srcCompat="@drawable/img_railheaven" />
 
             <TextView
                 android:layout_width="match_parent"
@@ -42,42 +42,39 @@
                 android:layout_marginRight="8dp"
                 android:layout_marginLeft="8dp"
                 android:gravity="center"
-                android:text="Get a customized by our professional instructors"
+                android:text="Choose your level"
                 android:textSize="24sp"
                 android:textStyle="italic"/>
 
-
             <Button
-                android:id="@+id/btn_get_predef_workout"
+                android:id="@+id/btn_predef_outdoorworkout_beginner"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:layout_marginRight="8dp"
                 android:layout_marginLeft="8dp"
                 android:layout_gravity="center"
-                android:text="Get customized workout" />
+                android:text="Beginner" />
 
             <Button
-                android:id="@+id/btn_create_your_own_workout"
+                android:id="@+id/btn_predef_outdoorworkout_intermediate"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:layout_marginRight="8dp"
                 android:layout_marginLeft="8dp"
                 android:layout_gravity="center"
-                android:text="Create your own workout *" />
+                android:text="Intermediate" />
 
-            <TextView
+            <Button
+                android:id="@+id/btn_predef_outdoorworkout_advanced"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
                 android:layout_marginRight="8dp"
                 android:layout_marginLeft="8dp"
-                android:layout_marginTop="8dp"
-                android:textStyle="italic"
-                android:textSize="12sp"
-                android:layout_gravity="end"
-                android:textAlignment="textEnd"
-                android:text="* Recommended for experienced users"/>
+                android:layout_gravity="center"
+                android:text="Advanced" />
 
 
 

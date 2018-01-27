@@ -38,7 +38,9 @@ public class StartScreenActivity extends AppCompatActivity implements View.OnCli
         //create an extra class called App state handling log in and log out
         if (v.getId() == R.id.pleaseLoginToContinue) {
             Intent intent = new Intent(StartScreenActivity.this, LoginActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
+            finish();
         }
     }
 }

@@ -32,10 +32,12 @@ public class TrainNowFragment extends Fragment implements View.OnClickListener {
     public void onClick(View v) {
         Fragment fragment = null;
         switch (v.getId()) {
-            case R.id.fragment_train_now_create_workout:
+            //IF CASE = HOME =>
+            case R.id.train_now_create_workout:
                 fragment = new TrainNowCreateWorkoutFragment();
 
         }
+        //OR IF CASE = OUTDOORS =>
         getActivity().getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, fragment)
                 .addToBackStack(null)

@@ -23,17 +23,6 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <ImageView
-                android:id="@+id/IMGchooseWorkout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="8dp"
-                android:layout_marginRight="8dp"
-                android:adjustViewBounds="true"
-                android:contentDescription="chooseWorkout"
-                android:paddingTop="0dp"
-                android:src="@drawable/bg_stride"
-                app:srcCompat="@drawable/bg_stride" />
 
             <TextView
                 android:layout_width="match_parent"
@@ -42,42 +31,44 @@
                 android:layout_marginRight="8dp"
                 android:layout_marginLeft="8dp"
                 android:gravity="center"
-                android:text="Get a customized by our professional instructors"
+                android:text="Choose setting"
                 android:textSize="24sp"
                 android:textStyle="italic"/>
 
+            <ImageView
+                android:id="@+id/IMGhome"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:adjustViewBounds="true"
+                android:contentDescription="chooseWorkout"
+                android:paddingTop="0dp"
+                android:src="@drawable/bg_choosechallenge"
+                app:srcCompat="@drawable/bg_choosechallenge" />
 
             <Button
-                android:id="@+id/btn_get_predef_workout"
+                android:id="@+id/btn_predef_workout_home"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:layout_marginRight="8dp"
                 android:layout_marginLeft="8dp"
                 android:layout_gravity="center"
-                android:text="Get customized workout" />
+                android:text="Home" />
+
+
+
 
             <Button
-                android:id="@+id/btn_create_your_own_workout"
+                android:id="@+id/btn_predef_workout_outdoors"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:layout_marginRight="8dp"
                 android:layout_marginLeft="8dp"
                 android:layout_gravity="center"
-                android:text="Create your own workout *" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="8dp"
-                android:layout_marginLeft="8dp"
-                android:layout_marginTop="8dp"
-                android:textStyle="italic"
-                android:textSize="12sp"
-                android:layout_gravity="end"
-                android:textAlignment="textEnd"
-                android:text="* Recommended for experienced users"/>
+                android:text="Outdoors" />
 
 
 

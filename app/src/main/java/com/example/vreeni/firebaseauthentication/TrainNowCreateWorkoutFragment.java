@@ -19,10 +19,10 @@ public class TrainNowCreateWorkoutFragment extends Fragment implements View.OnCl
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        btnTrainNow = (Button) view.findViewById(R.id.fragment_train_now);
+        btnTrainNow = (Button) view.findViewById(R.id.btn_train_now);
         btnTrainNow.setOnClickListener(this);
 
-        btnCreateWorkout = (Button) view.findViewById(R.id.fragment_create_workout);
+        btnCreateWorkout = (Button) view.findViewById(R.id.btn_create_workout);
         btnCreateWorkout.setOnClickListener(this);
 
     }
@@ -38,9 +38,9 @@ public class TrainNowCreateWorkoutFragment extends Fragment implements View.OnCl
     @Override
     public void onClick(View v) {
         Fragment fragment = null;
-        if (v.getId()==R.id.fragment_train_now) {
+        if (v.getId()==R.id.btn_train_now) {
                 fragment = new TrainNowFragment();
-        } else if (v.getId()==R.id.fragment_create_workout){
+        } else if (v.getId()==R.id.btn_create_workout){
             fragment = new CreateWorkoutFragment();
         }
         getActivity().getSupportFragmentManager().beginTransaction()
