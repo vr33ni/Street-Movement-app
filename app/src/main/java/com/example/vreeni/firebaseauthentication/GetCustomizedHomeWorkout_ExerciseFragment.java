@@ -13,11 +13,14 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
 
@@ -25,10 +28,11 @@ import org.w3c.dom.Text;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
+import static com.example.vreeni.firebaseauthentication.User.AGE;
 import static com.example.vreeni.firebaseauthentication.User.NICKNAME;
 import static com.example.vreeni.firebaseauthentication.User.TAG;
-import static com.example.vreeni.firebaseauthentication.User.WORKOUTS;
 
 /**
  * Created by vreee on 24/01/2018.
@@ -37,9 +41,12 @@ import static com.example.vreeni.firebaseauthentication.User.WORKOUTS;
 public class GetCustomizedHomeWorkout_ExerciseFragment extends android.support.v4.app.Fragment implements View.OnClickListener{
     //load view for this segment, load textViews whose text will be set based on which exercise is being displayed
     private Bundle workoutBundle;
+    Map<String, Object> dataUpdate = new HashMap<String, Object>();
+
 
     //all the information in here will be set in the workout object and then uploaded ot the database
     private Workout myWorkout;
+    int nrOfWorkouts =0 ;
 
     private Button btn_startWorkout;
     private TextView timer;
@@ -52,7 +59,7 @@ public class GetCustomizedHomeWorkout_ExerciseFragment extends android.support.v
 
         workoutBundle = getArguments();
 
-        time = 60;
+        time = 10;
         timer = (TextView) view.findViewById(R.id.workoutTimer);
         btn_startWorkout = (Button) view.findViewById(R.id.btn_workout_startWk);
         btn_startWorkout.setOnClickListener(this);
@@ -83,7 +90,7 @@ public class GetCustomizedHomeWorkout_ExerciseFragment extends android.support.v
 
     public void startTimer() {
         //get workout duration from bundle information
-        CountDownTimer countDownTimer = new CountDownTimer(60000, 1000) {
+        CountDownTimer countDownTimer = new CountDownTimer(10000, 1000) {
 
             public void onTick(long millisUntilFinished) {
 //                if (isCancelled) {
@@ -96,7 +103,7 @@ public class GetCustomizedHomeWorkout_ExerciseFragment extends android.support.v
             }
             public void onFinish() {
                 timer.setText("Warm-up completed!");
-                time = 60;
+                time = 10;
                 addWorkouttoUserDocument();
 //                //Enable the start button
 //                btn_startWarmup.setEnabled(false);
@@ -121,21 +128,44 @@ public class GetCustomizedHomeWorkout_ExerciseFragment extends android.support.v
         DocumentReference userDocRef = db.collection("Users").document(currUser.getDisplayName());
         if (userDocRef != null) {
             //add workout as a reference?
-            Map<String, Object> dataUpdate = new HashMap<String, Object>();
-            int nrOfWorkouts = (int) dataUpdate.get(WORKOUTS);
-            dataUpdate.put(WORKOUTS, nrOfWorkouts+1);
-            userDocRef
-                    .set(dataUpdate, SetOptions.merge()).addOnSuccessListener(new OnSuccessListener<Void>() {
+            //access current values saved under this user
+            userDocRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                 @Override
-                public void onSuccess(Void aVoid) {
-                    Log.d(TAG, "Document has been saved");
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                    if (task.isSuccessful()) {
+                        DocumentSnapshot document = task.getResult();
+                        if (document != null) {
+//                            User user = task.getResult().toObject(User.class);
+//                            nrOfWorkouts=user.getWorkoutsCompleted();
+                            //nrOfWorkouts = task.getResult().getLong("workoutsCompleted").intValue();
+                            //nrOfWorkouts=workouts+1;
+                            Log.d(TAG, "DocumentSnapshot data: " + nrOfWorkouts);
+                        } else {
+                            Log.d(TAG, "No such document");
+                        }
+                    } else {
+                        Log.d(TAG, "get failed with ", task.getException());
+                    }
                 }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    Log.d(TAG, "Document could not be saved");
-                }
-            });
+                });
+
+            //submit changes to the user document in the database
+            nrOfWorkouts=nrOfWorkouts+1;
+            dataUpdate.put("workoutsCompleted", nrOfWorkouts);
+            userDocRef.set(dataUpdate, SetOptions.merge());
+//                    .update("workoutsCompleted", nrOfWorkouts)
+//                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+//                        @Override
+//                        public void onSuccess(Void aVoid) {
+//                            Log.d(TAG, "DocumentSnapshot successfully updated!");
+//                        }
+//                    })
+//                    .addOnFailureListener(new OnFailureListener() {
+//                        @Override
+//                        public void onFailure(@NonNull Exception e) {
+//                            Log.w(TAG, "Error updating document", e);
+//                        }
+//                    });
         } else {
             //throw exception Username not Found
         }

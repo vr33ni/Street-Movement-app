@@ -102,6 +102,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                // currUser.updateRealTimeDatabase();
                 currUser.checkFireStoreDatabase();
 
+
+
                 //start main activity including the navigation drawer and fragments
                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                 startActivity(intent);
