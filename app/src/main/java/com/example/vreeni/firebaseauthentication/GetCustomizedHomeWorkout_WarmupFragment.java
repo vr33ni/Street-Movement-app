@@ -1,20 +1,42 @@
 package com.example.vreeni.firebaseauthentication;
 
 import android.os.CountDownTimer;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.SetOptions;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import static com.example.vreeni.firebaseauthentication.User.WARMUPSCOMPLETED;
+import static com.example.vreeni.firebaseauthentication.User.WARMUPSSKIPPED;
+import static com.example.vreeni.firebaseauthentication.User.WORKOUTSCOMPLETED;
+
 /**
  * Created by vreee on 27/01/2018.
  */
 
 public class GetCustomizedHomeWorkout_WarmupFragment extends Fragment implements View.OnClickListener {
+    private String TAG = "Warmup: ";
+
     //silently transfer the bundle via this argument without displaying
     private Bundle bundle;
     private TextView timer;
@@ -26,8 +48,9 @@ public class GetCustomizedHomeWorkout_WarmupFragment extends Fragment implements
     private int time;
 
     //put these to as fields in the workout class later on
-    private int warmups_skipped=0;
-    private int warmups_completed=0;
+    private User currentUser;
+    private long warmups_skipped;
+    private long warmups_completed;
 
 
 
@@ -79,7 +102,7 @@ public class GetCustomizedHomeWorkout_WarmupFragment extends Fragment implements
         //continue to exercises (skipping warm-up or after finishing the timer)
         Fragment exercises = null;
         if (v.getId() == R.id.btn_workout_skipWarmup) {
-            warmups_skipped+=1;
+        updateSkippedWarmups();
             //bundle.putInt("Warm-ups skipped", warmups_skipped);
             exercises = new GetCustomizedHomeWorkout_ExerciseFragment();
             //check which bundle obj exists, beginner, intermed, advanced? use boolean? level1= true?
@@ -147,4 +170,44 @@ public class GetCustomizedHomeWorkout_WarmupFragment extends Fragment implements
         //Notify the user that CountDownTimer is canceled/stopped
         timer.setText("Warm-up stopped.");
     }
+
+    public void updateSkippedWarmups() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        FirebaseUser currUser = FirebaseAuth.getInstance().getCurrentUser();
+        final DocumentReference userDocRef = db.collection("Users").document(currUser.getEmail());
+        //access current values saved under this user
+        userDocRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                User currentUser = documentSnapshot.toObject(User.class);
+                warmups_skipped = currentUser.getWarmupsSkipped()+1;
+                Map<String, Object> update = new HashMap<>();
+                //warmups_skipped=getWarmups_skipped();
+                update.put(WARMUPSSKIPPED, warmups_skipped);
+                userDocRef
+                        .set(update, SetOptions.merge()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d(TAG, "Document has been saved");
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.d(TAG, "Document could not be saved" +e.toString());
+                    }
+                });
+                Log.d(TAG, "DocumentSnapshot successfully retrieved! " + warmups_skipped);
+            }
+        });
+    }
+
+
+    public long getWarmups_skipped() {
+        return warmups_skipped;
+    }
+
+    public long getWarmups_completed() {
+        return warmups_completed;
+    }
 }
+

@@ -34,7 +34,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
-import static com.example.vreeni.firebaseauthentication.User.TAG;
 
 /**
  * Created by vreee on 20/12/2017.
@@ -50,6 +49,9 @@ public class GetCustomizedHomeWorkoutLevelFragment extends Fragment implements V
     boolean advanced;
 
     private  Bundle beginnerBundle; //to pass arguments to the next fragment
+
+    private String TAG = "Choose Level: ";
+
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
@@ -172,15 +174,19 @@ public class GetCustomizedHomeWorkoutLevelFragment extends Fragment implements V
                                         String descriptionE53 = (String) exIII.get("description");
                                         String urlImgEx5 = (String) exIII.get("image");
 
+                                        String workoutID = document.getId();
                                         //here no object is created, but simply the string from the database accessed
                                         //String descriptionEx2 = task.getResult().getString("Exercise II");
 
                                         // yes put this info to the bundle right here, working!
                                         beginnerBundle = new Bundle();
+                                        //passing object as parcelable
+                                        beginnerBundle.putParcelable("Workout", workout);
                                         beginnerBundle.putString("Exercise1", descriptionEx1);
                                         beginnerBundle.putString("Exercise2", descriptionEx2);
                                         beginnerBundle.putString("Image", urlImgEx1);
                                         beginnerBundle.putInt("Time", (int)time);
+                                        beginnerBundle.putString("WorkoutID", workoutID);
                                         //beginnerBundle.putBoolean("ExerciseCompleted", exerciseCompleted);
 
 //                                        GetCustomizedHomeWorkoutSelectionFragment result = new GetCustomizedHomeWorkoutSelectionFragment();

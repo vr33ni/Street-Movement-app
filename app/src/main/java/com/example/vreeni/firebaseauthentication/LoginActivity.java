@@ -17,6 +17,8 @@ import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
@@ -26,22 +28,36 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.SetOptions;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.example.vreeni.firebaseauthentication.User.AGE;
+import static com.example.vreeni.firebaseauthentication.User.EMAIL;
+import static com.example.vreeni.firebaseauthentication.User.FULLNAME;
+import static com.example.vreeni.firebaseauthentication.User.LISTOFHOMEWORKOUTS;
+import static com.example.vreeni.firebaseauthentication.User.LISTOFOUTDOORWORKOUTS;
+import static com.example.vreeni.firebaseauthentication.User.NATIONALITY;
+import static com.example.vreeni.firebaseauthentication.User.NICKNAME;
+import static com.example.vreeni.firebaseauthentication.User.STATUS;
+import static com.example.vreeni.firebaseauthentication.User.WARMUPSCOMPLETED;
+import static com.example.vreeni.firebaseauthentication.User.WARMUPSSKIPPED;
+import static com.example.vreeni.firebaseauthentication.User.WORKOUTSCOMPLETED;
+
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
+    private String TAG = "LoginActivity: ";
+
     private static final int RC_SIGN_IN = 0;
     private FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
-
-    //REALTIME DATABASE
-    private DatabaseReference mDatabase;
-    private DatabaseReference users;
-    private DatabaseReference user;
-    private DatabaseReference userID;
 
     //CLOUD FIRESTORE
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -52,19 +68,13 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        //everything for firebase
-        //dont need: mDatabase = FirebaseDatabase.getInstance().getReference();
-        //
-
         firebaseAuth = FirebaseAuth.getInstance();
         if (firebaseAuth.getCurrentUser() != null) {
             //user already signed in
             Log.d("AUTH", firebaseAuth.getCurrentUser().getEmail());
+
             //if user is authenticated, check if he is also stored in the database
-            //User currUser = new... now, User declared as a class variable
-            User currUser = new User();
-            //currUser.updateRealTimeDatabase();
-            currUser.checkFireStoreDatabase();
+            checkIfExists();
 
             //start main activity with nav. drawer and fragments
             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
@@ -95,20 +105,18 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
         if (requestCode == RC_SIGN_IN) {
             if (resultCode == RESULT_OK) {
-                //login user
+                //registration successful > login user
                 Log.d("AUTH", firebaseAuth.getCurrentUser().getEmail());
 
-                User currUser = new User();
-               // currUser.updateRealTimeDatabase();
-                currUser.checkFireStoreDatabase();
+                //if registration worked, handle the login process
 
-
+                checkIfExists();
 
                 //start main activity including the navigation drawer and fragments
                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                 startActivity(intent);
             } else {
-                //user not authenticated, do not log in
+                //registration failed > user not authenticated, do not log in
                 Log.d("AUTH", "NOT AUTHENTICATED");
             }
         }
@@ -117,23 +125,20 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     @Override
     public void onClick(View v) {
-        //create an extra class called App state handling log in and log out
+        //not automatically login >
         if (v.getId() == R.id.pleaseLoginToContinue) {
             firebaseAuth = FirebaseAuth.getInstance();
             if (firebaseAuth.getCurrentUser() != null) {
                 //user already signed in
                 Log.d("AUTH", firebaseAuth.getCurrentUser().getEmail());
 
-                String name = firebaseAuth.getCurrentUser().getDisplayName();
-                final TextView profile = (TextView) findViewById(R.id.profile_section);
-                    profile.setText(name);
-                    //start main activity with nav. drawer and fragments
-                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                    //to prevent problems with the back button when going from main to login activity
-                    startActivity(intent);
+                //start main activity with nav. drawer and fragments
+                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                //to prevent problems with the back button when going from main to login activity
+                startActivity(intent);
 
             } else {
-                //"register"
+                //"start registration process"
                 startActivityForResult(AuthUI.getInstance()
                                 .createSignInIntentBuilder()
                                 .setTheme(R.style.AppThemeFirebaseAuth) // somehow change color of app bar
@@ -152,5 +157,71 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     }
 
+    public void checkIfExists() {
+        DocumentReference docRef = db.collection("Users").document(FirebaseAuth.getInstance().getCurrentUser().getEmail());
+        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        Log.d(TAG, "User already exists in database");
+                        //perform updates on fields
+                    } else {
+                        Log.d(TAG, "Creating user in database...");
+                        handleLogin();
+                    }
+                } else {
+                    Log.d(TAG, "get failed with ", task.getException());
+                }
+            }
+        });
+    }
+
+
+    public void handleLogin() {
+        final String loginEmail = FirebaseAuth.getInstance().getCurrentUser().getEmail();
+        //Google Mail exception: Name cannot be retrieved from firebaseAuth
+        final String loginName;
+                    if(FirebaseAuth.getInstance().getCurrentUser().getDisplayName()!=null){
+                        //set name to the name retrieved from firebaseAuth
+                        loginName=FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
+                    }
+                    else {
+                        //if name cannot be retrieved from firebaseAuth = Google Accounts => make name changeable?
+                        loginName = "User";
+                    }
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference userDocRef = db.collection("Users").document(FirebaseAuth.getInstance().getCurrentUser().getEmail());
+
+                Map<String, Object> newEntry = new HashMap<String, Object>();
+                newEntry.put(FULLNAME, loginName);
+                newEntry.put(EMAIL, loginEmail);
+                newEntry.put(NICKNAME, "-");
+                newEntry.put(AGE, "-");
+                newEntry.put(NATIONALITY, "-");
+                newEntry.put(STATUS, "Baby monkey");
+                newEntry.put(WORKOUTSCOMPLETED, 0);
+                newEntry.put(WARMUPSSKIPPED, 0);
+                newEntry.put(WARMUPSCOMPLETED, 0);
+                newEntry.put(LISTOFHOMEWORKOUTS, new ArrayList<Object>());
+                newEntry.put(LISTOFOUTDOORWORKOUTS, new ArrayList<Object>());
+                userDocRef
+                        .set(newEntry, SetOptions.merge()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d(TAG, "New User Document has been saved");
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.d(TAG, "New User Document could not be saved");
+                    }
+                });
+
+            }
 }
+
+
+
 

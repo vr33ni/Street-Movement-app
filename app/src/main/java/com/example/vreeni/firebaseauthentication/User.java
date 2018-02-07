@@ -33,62 +33,165 @@ import java.util.Map;
  */
 
 //this class handles the creation of a user in the firebase Database
-public class User extends AppCompatActivity { //change this to extends FIREBASEUser !!!
+public class User { //change this to extends FIREBASEUser !!!
 
     //FIRESTORE
-    public static final String AGE = "Age";
-    public static final String EMAIL = "Email";
-    public static final String FULLNAME = "Full name";
-    public static final String NATIONALITY = "Nationality";
-    public static final String NICKNAME = "Nickname";
-    public static final String STATUS = "Status";
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-    private String userEmail = FirebaseAuth.getInstance().getCurrentUser().getEmail();
-    private String userFullName = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
+    private String name;
+    private String email;
+    private String nationality;
+    private String nickname;
+    private String status;
+    private String age;
 
-    public static final String TAG = User.class.getSimpleName();
+    private long workoutsCompleted;
+    private long warmupsSkipped;
+    private long warmupsCompleted;
 
 
-    public User() {
-        // Default constructor required for calls to DataSnapshot.getValue(User.class)
+    static final String AGE = "age";
+    static final String EMAIL = "email";
+    static final String FULLNAME = "name";
+    static final String NATIONALITY = "nationality";
+    static final String NICKNAME = "nickname";
+    static final String STATUS = "status";
+    static final String WORKOUTSCOMPLETED = "workoutsCompleted";
+    static final String WARMUPSSKIPPED = "warmupsSkipped";
+    static final String WARMUPSCOMPLETED = "warmupsSkipped";
+    static final String LISTOFHOMEWORKOUTS = "listOfHomeWorkouts";
+    static final String LISTOFOUTDOORWORKOUTS = "listOfOutdoorWorkouts";
+
+    private ArrayList<Object> listOfHomeWorkouts = new ArrayList<>();
+    private ArrayList<Object> listOfOutdoorWorkouts = new ArrayList<>();
+
+
+    public User() {}
+
+    public ArrayList<Object> getListOfHomeWorkouts() {
+        return listOfHomeWorkouts;
     }
 
-
-    protected void checkFireStoreDatabase() {
-        // Create a new user with a first and last name
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        DocumentReference usersDocRef = db.collection("Users").document(userFullName);
-
-        if (usersDocRef != null) {
-        } else {
-            createNewEntry();
-        }
+    public void setListOfHomeWorkouts(ArrayList<Object> listOfHomeWorkouts) {
+        this.listOfHomeWorkouts = listOfHomeWorkouts;
     }
 
-    public void createNewEntry() {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        DocumentReference usersDocRef = db.collection("Users").document(userFullName);
-        Map<String, Object> userEntry;
-
-        userEntry = new HashMap<>();
-        userEntry.put(FULLNAME, userFullName);
-        userEntry.put(EMAIL, userEmail);
-        userEntry.put(NICKNAME, "-");
-        userEntry.put(AGE, "-");
-        userEntry.put(NATIONALITY, "-");
-        userEntry.put(STATUS, "Baby monkey");
-        db.document(userFullName).set(userEntry, SetOptions.merge()).addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                Log.d(TAG, "Document has been saved");
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Log.d(TAG, "Document could not be saved");
-            }
-        });
+    public ArrayList<Object> getListOfOutdoorWorkouts() {
+        return listOfOutdoorWorkouts;
     }
+
+    public void setListOfOutdoorWorkouts(ArrayList<Object> listOfOutdoorWorkouts) {
+        this.listOfOutdoorWorkouts = listOfOutdoorWorkouts;
+    }
+
+    //    protected void checkFireStoreDatabase() {
+//        // Create a new user with a first and last name
+//        FirebaseFirestore db = FirebaseFirestore.getInstance();
+//        DocumentReference usersDocRef = db.collection("Users").document(userFullName);
+//
+//        if (usersDocRef != null) {
+//        } else {
+//            createNewEntry();
+//        }
+//    }
+
+
+    public long getWarmupsCompleted() {
+        return warmupsCompleted;
+    }
+
+    public void setWarmupsCompleted(long warmupsCompleted) {
+        this.warmupsCompleted = warmupsCompleted;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getNationality() {
+        return nationality;
+    }
+
+    public void setNationality(String nationality) {
+        this.nationality = nationality;
+    }
+
+    public String getNickname() {
+        return nickname;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getAge() {
+        return age;
+    }
+
+    public void setAge(String age) {
+        this.age = age;
+    }
+
+    public long getWorkoutsCompleted() {
+        return workoutsCompleted;
+    }
+
+    public void setWorkoutsCompleted(long workoutsCompleted) {
+        this.workoutsCompleted = workoutsCompleted;
+    }
+
+    public long getWarmupsSkipped() {
+        return warmupsSkipped;
+    }
+
+    public void setWarmupsSkipped(long warmupsSkipped) {
+        this.warmupsSkipped = warmupsSkipped;
+    }
+
+    //    public void createNewEntry() {
+//        FirebaseFirestore db = FirebaseFirestore.getInstance();
+//        DocumentReference usersDocRef = db.collection("Users").document(userFullName);
+//        Map<String, Object> userEntry;
+//
+//        userEntry = new HashMap<>();
+//        userEntry.put(FULLNAME, userFullName);
+//        userEntry.put(EMAIL, userEmail);
+//        userEntry.put(NICKNAME, "-");
+//        userEntry.put(AGE, "-");
+//        userEntry.put(NATIONALITY, "-");
+//        userEntry.put(STATUS, "Baby monkey");
+//        db.document(userFullName).set(userEntry, SetOptions.merge()).addOnSuccessListener(new OnSuccessListener<Void>() {
+//            @Override
+//            public void onSuccess(Void aVoid) {
+//                Log.d(TAG, "Document has been saved");
+//            }
+//        }).addOnFailureListener(new OnFailureListener() {
+//            @Override
+//            public void onFailure(@NonNull Exception e) {
+//                Log.d(TAG, "Document could not be saved");
+//            }
+//        });
+//    }
 
 }
 

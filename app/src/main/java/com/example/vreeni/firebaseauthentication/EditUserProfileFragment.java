@@ -31,11 +31,11 @@ import java.util.Map;
 import static com.example.vreeni.firebaseauthentication.User.AGE;
 import static com.example.vreeni.firebaseauthentication.User.NATIONALITY;
 import static com.example.vreeni.firebaseauthentication.User.NICKNAME;
-import static com.example.vreeni.firebaseauthentication.User.TAG;
 
 public class EditUserProfileFragment extends Fragment implements View.OnClickListener {
-    private DatabaseReference mDatabase;
+    private String TAG = "Edit User Profile ";
 
+    private DatabaseReference mDatabase;
 
     private Button btnSaveProfile;
 
@@ -108,7 +108,7 @@ public class EditUserProfileFragment extends Fragment implements View.OnClickLis
     public void updateFireStoreData(String nicknameUpdate, String ageUpdate, String nationalityUpdate) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         FirebaseUser currUser = FirebaseAuth.getInstance().getCurrentUser();
-        DocumentReference userDocRef = db.collection("Users").document(currUser.getDisplayName());
+        DocumentReference userDocRef = db.collection("Users").document(FirebaseAuth.getInstance().getCurrentUser().getEmail());
 
         //NOTE: Both .set(.., SetOptions.merge()) and .update perform the same action
         if (!nicknameUpdate.matches("")) {
@@ -173,11 +173,8 @@ REALTIME DATABASE
         String nickname = username;
         String user_age = age;
         String user_nationality = nationality;
-
         mDatabase = FirebaseDatabase.getInstance().getReference();
         FirebaseUser currUser = FirebaseAuth.getInstance().getCurrentUser();
-
-
         //if user has entered a new value, update information
         if (!nickname.matches("")) {
             Map<String, Object> nicknameVal = new HashMap<String, Object>();
@@ -185,7 +182,6 @@ REALTIME DATABASE
             mDatabase.child("Users").child(currUser.getDisplayName())
                     .updateChildren(nicknameVal);
         }
-
         //if user has entered a new value, update information
         if (!user_age.matches("")) {
             Map<String, Object> ageVal = new HashMap<String, Object>();
@@ -201,5 +197,4 @@ REALTIME DATABASE
                     .updateChildren(nationalityVal);
         }
     }
-
 */

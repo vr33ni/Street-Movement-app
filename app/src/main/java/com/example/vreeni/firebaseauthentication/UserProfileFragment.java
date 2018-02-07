@@ -33,7 +33,6 @@ import static com.example.vreeni.firebaseauthentication.User.FULLNAME;
 import static com.example.vreeni.firebaseauthentication.User.NATIONALITY;
 import static com.example.vreeni.firebaseauthentication.User.NICKNAME;
 import static com.example.vreeni.firebaseauthentication.User.STATUS;
-import static com.example.vreeni.firebaseauthentication.User.TAG;
 
 public class UserProfileFragment extends Fragment implements View.OnClickListener {
     private Button btnEditProfile;
@@ -47,8 +46,9 @@ public class UserProfileFragment extends Fragment implements View.OnClickListene
 
     //get firestore database data
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private DocumentReference usersDocRef = db.collection("Users").document(FirebaseAuth.getInstance().getCurrentUser().getDisplayName());
+    private DocumentReference usersDocRef = db.collection("Users").document(FirebaseAuth.getInstance().getCurrentUser().getEmail());
 
+    private String TAG = "User Profile ";
 
 
     @Override
@@ -103,7 +103,7 @@ public class UserProfileFragment extends Fragment implements View.OnClickListene
     public void displayFirestoreData() {
         if (usersDocRef != null) {
         }
-            //this.getActivity makes sure the listener only works when in this FragmentActivity
+        //this.getActivity makes sure the listener only works when in this FragmentActivity
         usersDocRef.addSnapshotListener(this.getActivity(), new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(DocumentSnapshot documentSnapshot, FirebaseFirestoreException e) {
@@ -118,7 +118,7 @@ public class UserProfileFragment extends Fragment implements View.OnClickListene
                     //setting all the text views in the user profile
                     //TextView txtProfileName = (TextView) getView().findViewById(R.id.profile_section_fullname);
                     txtProfileName.setText(name);
-                   // TextView txtProfileEmail = (TextView) getView().findViewById(R.id.profile_section_email);
+                    // TextView txtProfileEmail = (TextView) getView().findViewById(R.id.profile_section_email);
                     txtProfileEmail.setText(email);
                     //TextView txtProfileNickname = (TextView) getView().findViewById(R.id.profile_section_nickname);
                     txtProfileNickname.setText(nickname);
@@ -163,9 +163,9 @@ public class UserProfileFragment extends Fragment implements View.OnClickListene
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         //if the currently logged user exists
-                        if (dataSnapshot.child("Users").child(FirebaseAuth.getInstance().getCurrentUser().getDisplayName()).child(NICKNAME).exists()) {
+                        if (dataSnapshot.child("Users").child(FirebaseAuth.getInstance().getCurrentUser().getEmail()).child(NICKNAME).exists()) {
                             //user has chosen a nick name
-                            String nickname = dataSnapshot.child("Users").child(FirebaseAuth.getInstance().getCurrentUser().getDisplayName()).child("Nickname").getValue(String.class);
+                            String nickname = dataSnapshot.child("Users").child(FirebaseAuth.getInstance().getCurrentUser().getEmail()).child("Nickname").getValue(String.class);
                             TextView txtProfileNickname = (TextView) getView().findViewById(R.id.profile_section_nickname);
                             txtProfileNickname.setText(nickname);
                         } else {
@@ -227,7 +227,6 @@ public class UserProfileFragment extends Fragment implements View.OnClickListene
         String email = getArguments().getString("EMAIL");
         TextView txtProfileEmail = (TextView) getView().findViewById(R.id.profile_section_email);
         txtProfileEmail.setText(email);
-
         String name = getArguments().getString("NAME");
         TextView txtProfileName = (TextView) getView().findViewById(R.id.profile_section_fullname);
         txtProfileName.setText(name);
@@ -235,5 +234,3 @@ public class UserProfileFragment extends Fragment implements View.OnClickListene
         txtProfileUsername.setText(nickname);
     }*/
 }
-
-

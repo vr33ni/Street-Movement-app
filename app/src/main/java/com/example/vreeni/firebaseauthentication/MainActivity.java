@@ -73,8 +73,13 @@ public class MainActivity extends AppCompatActivity
 
         //set username in navigation drawer header and make it clickable, linking to the user profile
         TextView txtProfileName = (TextView) navigationView.getHeaderView(0).findViewById(R.id.profile_section);
-        String username = firebaseAuth.getCurrentUser().getDisplayName();
-        txtProfileName.setText(username);
+        if (firebaseAuth.getCurrentUser().getDisplayName()!=null) {
+            String profileName = firebaseAuth.getCurrentUser().getDisplayName();
+            txtProfileName.setText(profileName);
+        } else {
+            String profileName = "User";
+            txtProfileName.setText(profileName);
+        }
         txtProfileName.setOnClickListener(new View.OnClickListener() {
            @Override
             public void onClick(View v) {

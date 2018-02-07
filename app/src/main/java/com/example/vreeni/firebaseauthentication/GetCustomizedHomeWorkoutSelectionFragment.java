@@ -23,6 +23,7 @@ public class GetCustomizedHomeWorkoutSelectionFragment extends Fragment implemen
     private String imgEx1;
     private int time;
     private ImageView imageEx1;
+    private Workout workout;
 
     private Bundle bundle;
 
@@ -41,6 +42,7 @@ public class GetCustomizedHomeWorkoutSelectionFragment extends Fragment implemen
             exerciseII = bundle.getString("Exercise2");
             imgEx1 = bundle.getString("Image");
             time = bundle.getInt("Time");
+            workout = bundle.getParcelable("Workout");
             //maybe here create exercise objects and set the fields?? (exerciseI = new Exercise(); exerciseI.setDescription, setIsCompleted....)
             //then add them to a list of exercise objects?
 
@@ -78,6 +80,7 @@ public class GetCustomizedHomeWorkoutSelectionFragment extends Fragment implemen
         if (v.getId() == R.id.btn_predef_homeworkout_SelectionContinue) {
             fragment = new GetCustomizedHomeWorkout_WarmupFragment();
             if (bundle != null) {
+                //putting the object again after removing it first, cause of issues with pause function
                 fragment.setArguments(bundle);
                 getActivity().getSupportFragmentManager().beginTransaction()
                         .replace(R.id.fragment_container, fragment)

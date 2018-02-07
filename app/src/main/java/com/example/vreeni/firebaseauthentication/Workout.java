@@ -1,7 +1,11 @@
 package com.example.vreeni.firebaseauthentication;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,7 +14,7 @@ import java.util.Map;
  * Created by vreee on 4/01/2018.
  */
 
-public class Workout {
+public class Workout implements Parcelable {
     FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     private String name;
@@ -108,9 +112,47 @@ public class Workout {
     }
 
 
+    //implementing the parcelable interface
+    protected Workout(Parcel in) {
+        name = in.readString();
+        setting = in.readString();
+        level = in.readString();
+        duration = in.readInt();
+        exerciseI = (HashMap) in.readValue(HashMap.class.getClassLoader());
+        exerciseII = (HashMap) in.readValue(HashMap.class.getClassLoader());
+        exerciseIII = (HashMap) in.readValue(HashMap.class.getClassLoader());
+        exerciseIV = (HashMap) in.readValue(HashMap.class.getClassLoader());
+        exerciseV = (HashMap) in.readValue(HashMap.class.getClassLoader());
+    }
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
 
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(name);
+        dest.writeString(setting);
+        dest.writeString(level);
+        dest.writeInt(duration);
+        dest.writeValue(exerciseI);
+        dest.writeValue(exerciseII);
+        dest.writeValue(exerciseIII);
+        dest.writeValue(exerciseIV);
+        dest.writeValue(exerciseV);
+    }
 
+    @SuppressWarnings("unused")
+    public static final Parcelable.Creator<Workout> CREATOR = new Parcelable.Creator<Workout>() {
+        @Override
+        public Workout createFromParcel(Parcel in) {
+            return new Workout(in);
+        }
 
-
+        @Override
+        public Workout[] newArray(int size) {
+            return new Workout[size];
+        }
+    };
 }

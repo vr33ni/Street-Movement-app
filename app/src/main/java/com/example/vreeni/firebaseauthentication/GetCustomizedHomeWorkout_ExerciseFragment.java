@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -21,34 +22,47 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import org.w3c.dom.Text;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 import static com.example.vreeni.firebaseauthentication.User.AGE;
-import static com.example.vreeni.firebaseauthentication.User.NICKNAME;
-import static com.example.vreeni.firebaseauthentication.User.TAG;
+import static com.example.vreeni.firebaseauthentication.User.LISTOFHOMEWORKOUTS;
+import static com.example.vreeni.firebaseauthentication.User.STATUS;
+import static com.example.vreeni.firebaseauthentication.User.WARMUPSSKIPPED;
+import static com.example.vreeni.firebaseauthentication.User.WORKOUTSCOMPLETED;
+
 
 /**
  * Created by vreee on 24/01/2018.
  */
 
 public class GetCustomizedHomeWorkout_ExerciseFragment extends android.support.v4.app.Fragment implements View.OnClickListener{
-    //load view for this segment, load textViews whose text will be set based on which exercise is being displayed
+    private String TAG = "Workout in process: ";
+
     private Bundle workoutBundle;
-    Map<String, Object> dataUpdate = new HashMap<String, Object>();
+    private String exerciseI;
+    private String exerciseII;
+    private String imgEx1;
+    private ImageView imageEx1;
+    private ArrayList<Object> listOfHomeWks;
 
 
-    //all the information in here will be set in the workout object and then uploaded ot the database
+    //all the information in here will be updated in the user object and then uploaded ot the database
     private Workout myWorkout;
-    int nrOfWorkouts =0 ;
+    private String wkReference;
+    private long nrOfWorkouts;
 
-    private Button btn_startWorkout;
     private TextView timer;
     private int time;
 
@@ -57,20 +71,32 @@ public class GetCustomizedHomeWorkout_ExerciseFragment extends android.support.v
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        workoutBundle = getArguments();
+        Bundle workoutBundle = getArguments();
+        if (null != workoutBundle) {
+            exerciseI = workoutBundle.getString("Exercise1");
+            exerciseII = workoutBundle.getString("Exercise2");
+            imgEx1 = workoutBundle.getString("Image");
+            myWorkout = workoutBundle.getParcelable("Workout");
+            wkReference = workoutBundle.getString("WorkoutID");
+//            time = workoutBundle.getInt("Time");
+            //maybe here create exercise objects and set the fields?? (exerciseI = new Exercise(); exerciseI.setDescription, setIsCompleted....)
+            //then add them to a list of exercise objects?
+
+        }
+        TextView ex1 = (TextView) view.findViewById(R.id.exercise_description);
+        ex1.setText(exerciseI);
 
         time = 10;
+
         timer = (TextView) view.findViewById(R.id.workoutTimer);
-        btn_startWorkout = (Button) view.findViewById(R.id.btn_workout_startWk);
+        Button btn_startWorkout = (Button) view.findViewById(R.id.btn_workout_startWk);
         btn_startWorkout.setOnClickListener(this);
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
         return inflater.inflate(R.layout.fragment_get_customized_homeworkout_exercise, container, false);
-
     }
 
 
@@ -123,52 +149,41 @@ public class GetCustomizedHomeWorkout_ExerciseFragment extends android.support.v
 
 
     public void addWorkouttoUserDocument() {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        //create reference?
+        final FirebaseFirestore db = FirebaseFirestore.getInstance();
         FirebaseUser currUser = FirebaseAuth.getInstance().getCurrentUser();
-        DocumentReference userDocRef = db.collection("Users").document(currUser.getDisplayName());
-        if (userDocRef != null) {
-            //add workout as a reference?
-            //access current values saved under this user
-            userDocRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                @Override
-                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                    if (task.isSuccessful()) {
-                        DocumentSnapshot document = task.getResult();
-                        if (document != null) {
-//                            User user = task.getResult().toObject(User.class);
-//                            nrOfWorkouts=user.getWorkoutsCompleted();
-                            //nrOfWorkouts = task.getResult().getLong("workoutsCompleted").intValue();
-                            //nrOfWorkouts=workouts+1;
-                            Log.d(TAG, "DocumentSnapshot data: " + nrOfWorkouts);
-                        } else {
-                            Log.d(TAG, "No such document");
-                        }
-                    } else {
-                        Log.d(TAG, "get failed with ", task.getException());
+        final DocumentReference userDocRef = db.collection("Users").document(currUser.getEmail());
+        //access current values saved under this user
+        userDocRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                User currentUser = documentSnapshot.toObject(User.class);
+                //initialize the field Nr Of Workouts and the list of Home Workouts
+                nrOfWorkouts = currentUser.getWorkoutsCompleted() + 1;
+                listOfHomeWks = currentUser.getListOfHomeWorkouts();
+                listOfHomeWks.add(db.collection("PredefinedWorkouts").document(wkReference));
+
+                Map<String, Object> update = new HashMap<>();
+                //put the updated nr of workouts in the map that is to be uploaded to the database
+                update.put(WORKOUTSCOMPLETED, nrOfWorkouts);
+                //put a reference to the workout just completed in the map that is to be uploaded to the database
+                update.put(LISTOFHOMEWORKOUTS, listOfHomeWks);
+
+                //update the user document
+                userDocRef
+                        .set(update, SetOptions.merge()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d(TAG, "Document has been saved");
                     }
-                }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.d(TAG, "Document could not be saved" + e.toString());
+                    }
                 });
-
-            //submit changes to the user document in the database
-            nrOfWorkouts=nrOfWorkouts+1;
-            dataUpdate.put("workoutsCompleted", nrOfWorkouts);
-            userDocRef.set(dataUpdate, SetOptions.merge());
-//                    .update("workoutsCompleted", nrOfWorkouts)
-//                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-//                        @Override
-//                        public void onSuccess(Void aVoid) {
-//                            Log.d(TAG, "DocumentSnapshot successfully updated!");
-//                        }
-//                    })
-//                    .addOnFailureListener(new OnFailureListener() {
-//                        @Override
-//                        public void onFailure(@NonNull Exception e) {
-//                            Log.w(TAG, "Error updating document", e);
-//                        }
-//                    });
-        } else {
-            //throw exception Username not Found
-        }
-
+                Log.d(TAG, "DocumentSnapshot successfully retrieved! " + nrOfWorkouts);
+            }
+        });
     }
-}
+ }
