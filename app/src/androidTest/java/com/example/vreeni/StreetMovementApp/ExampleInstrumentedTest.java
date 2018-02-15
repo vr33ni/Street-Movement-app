@@ -1,4 +1,4 @@
-package com.example.vreeni.firebaseauthentication;
+package com.example.vreeni.StreetMovementApp;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

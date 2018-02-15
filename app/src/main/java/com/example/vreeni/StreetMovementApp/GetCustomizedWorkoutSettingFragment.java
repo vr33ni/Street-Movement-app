@@ -1,4 +1,4 @@
-package com.example.vreeni.firebaseauthentication;
+package com.example.vreeni.StreetMovementApp;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -43,7 +43,7 @@ public class GetCustomizedWorkoutSettingFragment extends Fragment implements Vie
             fragment = new GetCustomizedHomeWorkoutLevelFragment();
         } else if (v.getId() == R.id.btn_predef_workout_outdoors) {
             //new fragment for choosing your level of a predefined outdoor workout
-            fragment = new GetCustomizedOutdoorWorkoutStep2Fragment();
+            fragment = new GetCustomizedOutdoorWorkoutMapView();
 
         }
         //OR IF CASE = OUTDOORS =>

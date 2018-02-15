@@ -55,6 +55,7 @@
                 android:layout_marginRight="8dp"
                 android:layout_marginLeft="8dp"
                 android:layout_gravity="center"
+                android:backgroundTint="@color/colorPrimaryDark"
                 android:text="Home" />
 
 
@@ -68,6 +69,7 @@
                 android:layout_marginRight="8dp"
                 android:layout_marginLeft="8dp"
                 android:layout_gravity="center"
+                android:backgroundTint="@color/colorPrimaryDark"
                 android:text="Outdoors" />
 
 

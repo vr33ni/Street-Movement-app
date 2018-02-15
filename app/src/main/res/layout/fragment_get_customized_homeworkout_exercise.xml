@@ -11,7 +11,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp">
+        android:layout_marginRight="16dp"
+        android:id="@+id/linearLayout2">
 
 
     <TextView
@@ -45,6 +46,11 @@
                 android:textSize="16sp"
                 android:textStyle="italic"/>
 
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center">
+
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -62,8 +68,9 @@
                         android:layout_marginRight="8dp"
                         android:layout_marginLeft="8dp"
                         android:layout_gravity="center"
-                        android:text="description"
+                        android:text="5 x 5 Pullups"
                         android:textStyle="bold"/>
+
 
 
                 <ImageView
@@ -96,9 +103,38 @@
                     app:srcCompat="@drawable/img_railheaven" />
 
 
-
-
             </LinearLayout>
+
+                <ImageView
+                    android:id="@+id/workoutCompleted"
+                    android:layout_width="200dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginRight="8dp"
+                    android:adjustViewBounds="true"
+                    android:contentDescription="imgEx1"
+                    android:paddingTop="0dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/completed"
+                    app:srcCompat="@drawable/completed"
+                    android:visibility="invisible"/>
+
+                <TextView
+                    android:id="@+id/workoutCompletedText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="125dp"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:text="You have completed your workout -
+Good job!"
+                    android:textStyle="bold"
+                    android:visibility="invisible"/>
+
+            </FrameLayout>
 
 
             <TextView
@@ -111,6 +147,18 @@
                 android:text="Time to complete this exercise:"
                 android:textStyle="bold"/>
 
+            <Button
+                android:id="@+id/continueToNextEx"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="8dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:layout_gravity="center"
+                android:background="@color/colorPrimaryDark"
+                android:text="Continue with the next exercise" />
+
 
         </LinearLayout>
 
@@ -120,19 +168,20 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:layout_alignParentBottom="true">
+        android:layout_alignParentBottom="true"
+        android:id="@+id/linearLayout">
 
 
         <TextView
             android:id="@+id/workoutTimer"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:layout_marginRight="8dp"
             android:layout_marginLeft="8dp"
-            android:gravity="center"
+            android:layout_gravity="center"
             android:text="Timer"
-            android:textSize="20sp"
+            android:textSize="32sp"
             android:textStyle="bold"/>
 
 
@@ -142,9 +191,14 @@
             android:layout_height="wrap_content"
             android:layout_marginRight="8dp"
             android:layout_marginLeft="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
             android:layout_gravity="center"
+            android:background="@color/buttonGreen"
+            android:textColor="@color/white"
             android:text="Start workout" />
 
     </LinearLayout>
+
 
 </RelativeLayout>

@@ -1,14 +1,11 @@
-package com.example.vreeni.firebaseauthentication;
+package com.example.vreeni.StreetMovementApp;
 
 import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.io.Serializable;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Created by vreee on 4/01/2018.

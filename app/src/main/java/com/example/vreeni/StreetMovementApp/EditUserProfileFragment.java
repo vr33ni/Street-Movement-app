@@ -1,36 +1,31 @@
-package com.example.vreeni.firebaseauthentication;
+package com.example.vreeni.StreetMovementApp;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
-import android.text.InputFilter;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
-import com.google.firebase.storage.FirebaseStorage;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.example.vreeni.firebaseauthentication.User.AGE;
-import static com.example.vreeni.firebaseauthentication.User.NATIONALITY;
-import static com.example.vreeni.firebaseauthentication.User.NICKNAME;
+import static com.example.vreeni.StreetMovementApp.User.AGE;
+import static com.example.vreeni.StreetMovementApp.User.NATIONALITY;
+import static com.example.vreeni.StreetMovementApp.User.NICKNAME;
 
 public class EditUserProfileFragment extends Fragment implements View.OnClickListener {
     private String TAG = "Edit User Profile ";

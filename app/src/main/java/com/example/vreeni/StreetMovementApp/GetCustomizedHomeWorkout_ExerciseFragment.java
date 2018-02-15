@@ -1,10 +1,9 @@
-package com.example.vreeni.firebaseauthentication;
+package com.example.vreeni.StreetMovementApp;
 
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.support.annotation.NonNull;
-import android.support.v4.app.Fragment;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,33 +13,21 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.SetOptions;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
-import static com.example.vreeni.firebaseauthentication.User.AGE;
-import static com.example.vreeni.firebaseauthentication.User.LISTOFHOMEWORKOUTS;
-import static com.example.vreeni.firebaseauthentication.User.STATUS;
-import static com.example.vreeni.firebaseauthentication.User.WARMUPSSKIPPED;
-import static com.example.vreeni.firebaseauthentication.User.WORKOUTSCOMPLETED;
+import static com.example.vreeni.StreetMovementApp.User.LISTOFHOMEWORKOUTS;
+import static com.example.vreeni.StreetMovementApp.User.WORKOUTSCOMPLETED;
 
 
 /**

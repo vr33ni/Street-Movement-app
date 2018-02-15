@@ -1,4 +1,4 @@
-package com.example.vreeni.firebaseauthentication;
+package com.example.vreeni.StreetMovementApp;
 
 import android.os.CountDownTimer;
 import android.support.annotation.NonNull;
@@ -18,17 +18,13 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.SetOptions;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.example.vreeni.firebaseauthentication.User.WARMUPSCOMPLETED;
-import static com.example.vreeni.firebaseauthentication.User.WARMUPSSKIPPED;
-import static com.example.vreeni.firebaseauthentication.User.WORKOUTSCOMPLETED;
+import static com.example.vreeni.StreetMovementApp.User.WARMUPSSKIPPED;
 
 /**
  * Created by vreee on 27/01/2018.

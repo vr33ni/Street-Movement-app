@@ -1,4 +1,4 @@
-package com.example.vreeni.firebaseauthentication; /**
+package com.example.vreeni.StreetMovementApp; /**
  * Created by vreee on 19/12/2017.
  */
 

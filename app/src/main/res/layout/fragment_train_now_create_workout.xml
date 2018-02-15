@@ -54,6 +54,7 @@
                 android:layout_marginRight="8dp"
                 android:layout_marginLeft="8dp"
                 android:layout_gravity="center"
+                android:backgroundTint="@color/colorPrimaryDark"
                 android:text="Train now" />
 
             <Button
@@ -64,6 +65,7 @@
                 android:layout_marginRight="8dp"
                 android:layout_marginLeft="8dp"
                 android:layout_gravity="center"
+                android:backgroundTint="@color/colorPrimaryDark"
                 android:text="Create Workout" />
 
 

@@ -1,6 +1,5 @@
-package com.example.vreeni.firebaseauthentication;
+package com.example.vreeni.StreetMovementApp;
 
-import android.app.Activity;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -11,9 +10,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -25,14 +22,12 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 
-import java.util.List;
-
-import static com.example.vreeni.firebaseauthentication.User.AGE;
-import static com.example.vreeni.firebaseauthentication.User.EMAIL;
-import static com.example.vreeni.firebaseauthentication.User.FULLNAME;
-import static com.example.vreeni.firebaseauthentication.User.NATIONALITY;
-import static com.example.vreeni.firebaseauthentication.User.NICKNAME;
-import static com.example.vreeni.firebaseauthentication.User.STATUS;
+import static com.example.vreeni.StreetMovementApp.User.AGE;
+import static com.example.vreeni.StreetMovementApp.User.EMAIL;
+import static com.example.vreeni.StreetMovementApp.User.FULLNAME;
+import static com.example.vreeni.StreetMovementApp.User.NATIONALITY;
+import static com.example.vreeni.StreetMovementApp.User.NICKNAME;
+import static com.example.vreeni.StreetMovementApp.User.STATUS;
 
 public class UserProfileFragment extends Fragment implements View.OnClickListener {
     private Button btnEditProfile;

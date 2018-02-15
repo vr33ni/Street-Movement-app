@@ -1,4 +1,4 @@
-package com.example.vreeni.firebaseauthentication;
+package com.example.vreeni.StreetMovementApp;
 
 import org.junit.Test;
 

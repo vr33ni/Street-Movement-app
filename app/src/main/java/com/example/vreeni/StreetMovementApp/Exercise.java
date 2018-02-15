@@ -1,12 +1,7 @@
-package com.example.vreeni.firebaseauthentication;
+package com.example.vreeni.StreetMovementApp;
 
-import android.media.Image;
 import android.net.Uri;
-import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.view.View;
-import android.widget.EditText;
-import android.widget.ImageView;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -16,7 +11,6 @@ import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by vreee on 4/01/2018.
@@ -25,8 +19,6 @@ import java.util.Map;
 public class Exercise {
     private String description; //name of the exercise, eg Pullups
     private HashMap<String, Object> Description;
-    private int repetition; //5x 5 pullups
-    private int duration; //30sec hanging (duration = optional)
     private File img;
 
     private FirebaseStorage storage = FirebaseStorage.getInstance();
@@ -40,15 +32,6 @@ public class Exercise {
 
     public Exercise(String description) {
         this.description = description;
-    }
-
-
-    public int getRepetition() {
-        return repetition;
-    }
-
-    public int getDuration() {
-        return duration;
     }
 
 
