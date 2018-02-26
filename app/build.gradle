@@ -2,13 +2,20 @@ apply plugin: 'com.android.application'
 
 
 android {
+    signingConfigs {
+        key{
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+            storeFile file ('C:\\Users\\vreee\\.android\\debug.keystore')
+            storePassword 'android'
+        }
+    }
     compileSdkVersion 26
     buildToolsVersion '26.0.2'
     flavorDimensions "minSdkVersion"
-
     defaultConfig {
-        applicationId "com.example.vreeni.firebaseauthentiction"
-        minSdkVersion 15
+        applicationId "com.example.vreeni.StreetMovementApp"
+        minSdkVersion 16
         targetSdkVersion 26
         versionCode 1
         versionName "1.0"
@@ -19,19 +26,19 @@ android {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+        debug {
+            signingConfig signingConfigs.key
+        }
     }
     lintOptions {
         abortOnError false
     }
-
     productFlavors {
-
         // Build variant with minSdk 16 to include Facebook and FirebaseUI libraries.
-        minSdkJellybean {
-            dimension "minSdkVersion"
-            minSdkVersion 16
-        }
-
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 
@@ -64,13 +71,15 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
     compile 'com.github.bumptech.glide:glide:3.7.0'
-
     //google maps location
     compile 'com.google.android.gms:play-services-location:11.8.0'
-
     //firebase analytics
     compile 'com.google.firebase:firebase-core:11.8.0'
     implementation 'com.google.android.gms:play-services-maps:11.8.0'
+    implementation 'com.android.support:support-v4:26.1.0'
+    //google maps geojson import
+    compile 'com.google.maps.android:android-maps-utils:0.5+'
+
 }
 
 apply plugin: 'com.google.gms.google-services'

@@ -55,12 +55,12 @@ public class GetCustomizedHomeWorkoutSelectionFragment extends Fragment implemen
         TextView timeView = (TextView) view.findViewById(R.id.time);
         timeView.setText(time + " minutes");
 
-        imageEx1 = (ImageView) view.findViewById(R.id.imgEx1);
-        Glide
-                .with(this)
-                .load(imgEx1)
-                .override(200, 200) // resizes the image to these dimensions (in pixel). does not respect aspect ratio
-                .into(imageEx1);
+//        imageEx1 = (ImageView) view.findViewById(R.id.imgEx1);
+//        Glide
+//                .with(this)
+//                .load(imgEx1)
+//                .override(200, 200) // resizes the image to these dimensions (in pixel). does not respect aspect ratio
+//                .into(imageEx1);
     }
 
 

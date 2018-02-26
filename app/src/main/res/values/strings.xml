@@ -1,12 +1,13 @@
 <resources>
-    <string name="app_name">StreetMovement App</string>
-    <string name="label_main">StreetMovement App</string>
+    <string name="app_name">Street Movement App</string>
+    <string name="label_main">Street Movement App</string>
 
 
-    <string name="google_geo_api_key">AIzaSyB5Vn2zH4_Zfyp5rDOh21WFtfiP7UEHi20</string>
+    <string name="google_geo_api_key">AIzaSyBANBTlbpdpXpvDd9GQZuFkw2Pvgk1vno0</string>
 
 
-    <string name="startScreen">Welcome to the new StreetMovement mobile app!\n\n
+
+    <string name="startScreen">Welcome to the new Street Movement mobile app!\n\n
         Get a personalized workout by our professional instructors or create your own.\n
         Let us help you develop and maintain a routine and find the best outdoor spots to get moving.\n
        </string>

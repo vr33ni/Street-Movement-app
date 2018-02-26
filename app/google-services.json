@@ -62,7 +62,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:746512766672:android:74860c42f846e189",
         "android_client_info": {
-          "package_name": "com.example.vreeni.firebaseauthentiction"
+          "package_name": "com.example.vreeni.StreetMovementApp"
         }
       },
       "oauth_client": [
@@ -70,7 +70,7 @@
           "client_id": "746512766672-9tkql993udo9rafjlple32rh3keu800f.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.vreeni.firebaseauthentiction",
+            "package_name": "com.example.vreeni.StreetMovementApp",
             "certificate_hash": "516daa4c24da4666600a3164de590da53b08380a"
           }
         },

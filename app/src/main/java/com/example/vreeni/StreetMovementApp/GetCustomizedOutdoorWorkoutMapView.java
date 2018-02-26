@@ -1,16 +1,11 @@
 package com.example.vreeni.StreetMovementApp;
 
-
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.Manifest;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Looper;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -18,61 +13,67 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
-
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
+import android.widget.CheckBox;
 import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
+import com.google.firebase.firestore.QuerySnapshot;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 
 /**
  * Created by vreee on 8/02/2018.
  */
 
-public class GetCustomizedOutdoorWorkoutMapView extends Fragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, GoogleMap.OnMarkerClickListener, LocationListener {
+public class GetCustomizedOutdoorWorkoutMapView extends Fragment implements OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener, GoogleMap.OnMarkerClickListener {
+
+    private static final String LOG_TAG = "OutdoorWorkout MapView";
 
     private MapView mMapView;
     private GoogleMap mGoogleMap;
     private View mView;
 
-    private static final String TAG = "OutdoorsMaps";
+    private CheckBox chckBxPk;
+    private CheckBox chckBxCali;
 
-    private CameraPosition mCameraPosition;
+    private List<Marker> listOfPkMarkers;
+    private List<Marker> listOfCaliMarkers;
 
     // The entry point to the Fused Location Provider.
     private FusedLocationProviderClient mFusedLocationProviderClient;
 
-    // A default location (Sydney, Australia) and default zoom to use when location permission is
+    // A default location (Streetmekka, Copenhagen) and default zoom to use when location permission is
     // not granted.
-    private final LatLng mDefaultLocation = new LatLng(-33.8523341, 151.2106085);
-    private static final int DEFAULT_ZOOM = 15;
+    private final LatLng mDefaultLocation = new LatLng(55.66208270000001, 12.540357099999937);
+    private static final int DEFAULT_ZOOM = 13;
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private boolean mLocationPermissionGranted;
 
     // The geographical location where the device is currently located. That is, the last-known
     // location retrieved by the Fused Location Provider.
     private Location mLastKnownLocation;
+    private Marker currentMarker;
 
     // Keys for storing activity state.
     private static final String KEY_CAMERA_POSITION = "camera_position";
     private static final String KEY_LOCATION = "location";
+
 
 
     @Override
@@ -83,13 +84,13 @@ public class GetCustomizedOutdoorWorkoutMapView extends Fragment implements OnMa
         mMapView = (MapView) mView.findViewById(R.id.mapview);
         mMapView.onCreate(savedInstanceState);
 
+
         // Retrieve location and camera position from saved instance state.
         if (savedInstanceState != null) {
             mLastKnownLocation = savedInstanceState.getParcelable(KEY_LOCATION);
-            mCameraPosition = savedInstanceState.getParcelable(KEY_CAMERA_POSITION);
+            CameraPosition mCameraPosition = savedInstanceState.getParcelable(KEY_CAMERA_POSITION);
         }
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this.getActivity());
-
 
         mMapView.getMapAsync(this); //this is important
 
@@ -105,32 +106,65 @@ public class GetCustomizedOutdoorWorkoutMapView extends Fragment implements OnMa
             mMapView.onCreate(null);
             mMapView.onResume();
             mMapView.getMapAsync(this);
-
         }
+
+        //display the checkboxes show parkour parks / show calisthenics park
+        chckBxPk = (CheckBox) mView.findViewById(R.id.showPkParks);
+        chckBxCali = (CheckBox) mView.findViewById(R.id.showCaliParks);
+
+
 
     }
 
-
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void onMapReady(GoogleMap googleMap) {
         MapsInitializer.initialize(getContext());
 
+        listOfPkMarkers= new ArrayList<>();
+        listOfCaliMarkers = new ArrayList<>();
+
+        //set marker
         mGoogleMap = googleMap;
         googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-        mGoogleMap.addMarker(new MarkerOptions().position(/*some location*/ new LatLng(55.474649, 8.461485000000030)).title("Street Mekka").snippet("mekkaaaaa"));
-        CameraPosition Streetmekka = CameraPosition.builder().target(new LatLng(55.474649, 8.461485000000030)).zoom(16).bearing(0).tilt(45).build();
-        mGoogleMap.moveCamera(CameraUpdateFactory.newCameraPosition(Streetmekka));
-
+        mGoogleMap.setOnMarkerClickListener(this);
+        mGoogleMap.setOnInfoWindowClickListener(this);
 
         // Prompt the user for permission.
         getLocationPermission();
-
         // Turn on the My Location layer and the related control on the map.
         updateLocationUI();
-
         // Get the current location of the device and set the position of the map.
         getDeviceLocation();
+/*
+  update information on firebase
+*/
+//        JasonHandler jh = new JasonHandler();
+//        jh.retrieveFileFromResource();
+//        //making changes to the park locations via this method
+//        jh.updateFirestore();
+
+        //download the locations of the parks from firestore and display them on the map
+        getLocationsFromFirestoreToMap();
+
+        //handle checkbox clicks
+        if (chckBxPk !=null) {
+            chckBxPk.setChecked(true);
+            chckBxPk.setOnClickListener(v -> {
+                if (chckBxPk.isChecked()) showPkSpots();
+                else hidePkSpots();
+            });
+        }
+        if (chckBxCali !=null) {
+            chckBxCali.setChecked(true);
+            chckBxCali.setOnClickListener(v -> {
+                if (chckBxCali.isChecked()) showCaliSpots();
+                else hideCaliSpots();
+            });
+        }
+
     }
+
 
 
     @Override
@@ -169,53 +203,6 @@ public class GetCustomizedOutdoorWorkoutMapView extends Fragment implements OnMa
         mMapView.onLowMemory();
     }
 
-    @Override
-    public void onLocationChanged(Location location) {
-        //new stuff, doesnt do anything
-        if(location != null) {
-            LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-            mGoogleMap.animateCamera(CameraUpdateFactory.zoomTo(20));
-            mGoogleMap.addMarker(new MarkerOptions().position(latLng).title("updated!")); //marker title never updates
-            mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 20));
-        }
-    }
-
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-
-    }
-
-    @Override
-    public void onProviderEnabled(String provider) {
-
-    }
-
-    @Override
-    public void onProviderDisabled(String provider) {
-
-    }
-
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
-    }
-
-    @Override
-    public boolean onMarkerClick(Marker marker) {
-        return false;
-    }
-
-
     /**
      * Gets the current location of the device, and positions the map's camera.
      */
@@ -227,24 +214,25 @@ public class GetCustomizedOutdoorWorkoutMapView extends Fragment implements OnMa
         try {
             if (mLocationPermissionGranted) {
                 Task<Location> locationResult = mFusedLocationProviderClient.getLastLocation();
-                Task<Location> locationTask = locationResult.addOnCompleteListener(this.getActivity(), new OnCompleteListener<Location>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Location> task) {
-                        if (task.isSuccessful()) {
-                            // Set the map's camera position to the current location of the device.
-                            mLastKnownLocation = task.getResult();
-                            mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                                    new LatLng(mLastKnownLocation.getLatitude(),
-                                            mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
-                        } else {
-                            Log.d(TAG, "Current location is null. Using defaults.");
-                            Log.e(TAG, "Exception: %s", task.getException());
-                            mGoogleMap.moveCamera(CameraUpdateFactory
-                                    .newLatLngZoom(mDefaultLocation, DEFAULT_ZOOM));
-                            mGoogleMap.getUiSettings().setMyLocationButtonEnabled(false);
-                        }
+                locationResult.addOnCompleteListener(this.getActivity(), task -> {
+                    if (task.isSuccessful()) {
+                        // Set the map's camera position to the current location of the device.
+                        mLastKnownLocation = task.getResult();
+                          mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                                new LatLng(mLastKnownLocation.getLatitude(),
+                                        mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
+                    } else {
+                        Log.d(LOG_TAG, "Current location null. Using defaults.");
+                        Log.e(LOG_TAG, "Exception: %s", task.getException());
+                        mGoogleMap.moveCamera(CameraUpdateFactory
+                                .newLatLngZoom(mDefaultLocation, DEFAULT_ZOOM));
+                        mGoogleMap.getUiSettings().setMyLocationButtonEnabled(false);
                     }
                 });
+            } else {
+                //permission to show location denied
+                mGoogleMap.moveCamera(CameraUpdateFactory
+                        .newLatLngZoom(mDefaultLocation, DEFAULT_ZOOM));
             }
         } catch (SecurityException e)  {
             Log.e("Exception: %s", e.getMessage());
@@ -314,4 +302,112 @@ public class GetCustomizedOutdoorWorkoutMapView extends Fragment implements OnMa
         }
     }
 
+
+    public void getLocationsFromFirestoreToMap() {
+        final FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("ParkourParks")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            for (DocumentSnapshot document : task.getResult()) {
+                                if (document != null) {
+//                                    Log.d(LOG_TAG, document.getId() + " => " + document.getData());
+
+                                    ParkourPark queriedLocation = document.toObject(ParkourPark.class);
+                                    queriedLocation.setDescription(document.getString("description (in Danish)"));
+
+
+                                    //add the queried object to a list of parkour and/or calisthenics spots
+                                    if (queriedLocation.isParkour()) {
+                                        //show pk spots so that everything is loaded in in on map ready
+                                        addMarkersOnMap(queriedLocation);
+                                    }
+                                    if (queriedLocation.isCalisthenics()){
+                                        //show cali spots so that everything is loaded in in on map ready
+                                        addMarkersOnMap(queriedLocation);
+                                    }
+                                }
+                            }
+                        } else {
+                            Log.d(LOG_TAG, "Error getting documents: ", task.getException());
+                        }
+                    }
+                });
+    }
+
+    @Override
+    public void onInfoWindowClick(Marker marker) {
+        if (marker.equals(currentMarker)) {
+            //do sth
+            Log.d(LOG_TAG, "InfoWindow clicked: " + marker.getTitle());
+        }
+    }
+
+
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+        return false;
+    }
+
+    public void showPkSpots() {
+        //show parkour spots only
+        for (Marker m : listOfPkMarkers) {
+            m.setVisible(true);
+        }
+        //create class to store marker info?
+    }
+
+    public void showCaliSpots () {
+        //show cali spots only
+        for (Marker m : listOfCaliMarkers) {
+            m.setVisible(true);
+        }
+    }
+
+    public void hidePkSpots() {
+        for (Marker m : listOfPkMarkers) {
+            m.setVisible(false);
+        }
+    }
+
+    public void hideCaliSpots() {
+        for (Marker m : listOfCaliMarkers) {
+            m.setVisible(false);
+        }
+    }
+
+    public void addMarkersOnMap(ParkourPark queriedLocation) {
+        GeoPoint gp = queriedLocation.getCoordinates();
+        String name = queriedLocation.getName();
+        String shortDescription = queriedLocation.getDescription();
+        HashMap<String, Object> photoI = queriedLocation.getPhoto_0();
+        String photoURL;
+        if (photoI != null) {
+            photoURL = (String) photoI.get("url");
+        } else {
+            //default photo
+            photoURL = "http://map.gadeidraet.dk/content/uploads/2016/06/068eb118452253193acfc9a00cb5b8f9_frederiksbergroskildevej300x300.jpg";
+        }
+        Log.d(LOG_TAG, "photo url: " + photoURL);
+        //show pk spots so that everything is loaded in in on map ready
+        //define marker options and set the custom info window
+        MarkerOptions markerOpt = new MarkerOptions();
+        markerOpt.position(/*some location*/ new LatLng(gp.getLatitude(), gp.getLongitude()))
+                .title(name + "_" +
+                        "Description: " + shortDescription)
+                .snippet(photoURL);
+        //pass along the picture URL to the customInfoWindow
+        GoogleMapsCustomInfoWindow adapter = new GoogleMapsCustomInfoWindow(getActivity(), photoURL);
+        mGoogleMap.setInfoWindowAdapter(adapter);
+        Marker m = mGoogleMap.addMarker(markerOpt);
+        if (queriedLocation.isParkour()) {
+            listOfPkMarkers.add(m);
+        }
+        if (queriedLocation.isCalisthenics()){
+            listOfCaliMarkers.add(m);
+        }
+        m.showInfoWindow();
+    }
 }

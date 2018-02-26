@@ -29,10 +29,10 @@
         <!--google maps api-->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="google_geo_api_key"/>
+            android:value="AIzaSyBANBTlbpdpXpvDd9GQZuFkw2Pvgk1vno0"/>
 
         <activity
-            android:name="com.example.vreeni.StreetMovementApp.LoginActivity"
+            android:name=".LoginActivity"
             android:label="@string/label_main">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -41,14 +41,11 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.example.vreeni.StreetMovementApp.MainActivity"
+            android:name=".MainActivity"
             android:label="@string/label_main" />
         <!-- label definiing the stuff written in the navigation toolbar on top INCLUDE LOGOUT FUNCTION HERE -->
 
-        <activity android:name="com.example.vreeni.StreetMovementApp.StartScreenActivity"/>
-
-
-
+        <activity android:name=".StartScreenActivity"/>
 
 
     </application>
