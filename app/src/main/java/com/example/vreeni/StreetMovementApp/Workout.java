@@ -8,9 +8,14 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.HashMap;
 
 /**
- * Created by vreee on 4/01/2018.
+ * Created by vreeni on 4/01/2018.
  */
 
+/**
+ * Class representing a workout document in the database
+ * => containing all the fields that are also listed in the database, so data from a database query can be converted to a workout object
+ * Implementing Parcelable Interface allowing for Workout objects to be put as parcelables in bundles
+ */
 public class Workout implements Parcelable {
     FirebaseFirestore db = FirebaseFirestore.getInstance();
 

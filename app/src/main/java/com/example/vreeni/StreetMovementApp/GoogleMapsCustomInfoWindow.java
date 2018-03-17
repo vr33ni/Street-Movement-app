@@ -19,16 +19,20 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class GoogleMapsCustomInfoWindow implements GoogleMap.InfoWindowAdapter {
+
+/**
+ * Class defining the properties of a custom info window that is displayed after clicking on a marker on google maps
+ * => implementation of the InfoWindowAdapter
+ */
+public class GoogleMapsCustomInfoWindow implements GoogleMap.InfoWindowAdapter{
 
     private static final String LOG_TAG = "CustomInfoWindow";
 
     private Activity context;
     private String photoUrl;
 
-    public GoogleMapsCustomInfoWindow(Activity context, String photoUrl){
+    public GoogleMapsCustomInfoWindow(Activity context){
         this.context = context;
-        this.photoUrl = photoUrl;
     }
 
     @Override
@@ -50,9 +54,9 @@ public class GoogleMapsCustomInfoWindow implements GoogleMap.InfoWindowAdapter {
         ivPark.setImageResource(R.drawable.img_railheaven);
         tvTitle.setText(str2[0]);
         tvSubTitle.setText(str2[1]);
+        tvSubTitle.setMaxLines(3);
 
-        Log.d(LOG_TAG, "photo url: " + photoUrl);
-
+//        Log.d(LOG_TAG, "photo url: " + photoUrl);
         loadImageWithGlide(marker, ivPark);
 
         return view;
@@ -63,6 +67,7 @@ public class GoogleMapsCustomInfoWindow implements GoogleMap.InfoWindowAdapter {
 
         Glide.with(context)
                 .load(marker.getSnippet())
+                .override(700, 400)
                 .listener(new RequestListener<String, GlideDrawable>() {
                     @Override
                     public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
@@ -79,24 +84,6 @@ public class GoogleMapsCustomInfoWindow implements GoogleMap.InfoWindowAdapter {
                     }
                 })
                 .into(iv);
-
-//        Glide.with(this.context)
-//                .load(photoUrl)
-//                .asBitmap()
-//                .fitCenter()
-//                .override(700,450)
-//                .dontAnimate()
-//                .listener(new RequestListener<String, Bitmap>() {
-//                    @Override
-//                    public boolean onException(Exception e, String model, Target<Bitmap> target, boolean isFirstResource) {
-//                        e.printStackTrace();
-//                        return false;
-//                    }
-//                    @Override
-//                    public boolean onResourceReady(Bitmap resource, String model, Target<Bitmap> target, boolean isFromMemoryCache, boolean isFirstResource) {
-//                        if(!isFromMemoryCache) marker.showInfoWindow();
-//                        return false;
-//                    }
-//                }).into(iv);
     }
+
 }

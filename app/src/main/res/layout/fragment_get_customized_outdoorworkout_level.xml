@@ -24,7 +24,7 @@
             android:orientation="vertical">
 
             <ImageView
-                android:id="@+id/IMG_chooseWorkout"
+                android:id="@+id/outdoorWkChooseLvl"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="8dp"
@@ -32,8 +32,8 @@
                 android:adjustViewBounds="true"
                 android:contentDescription="chooseWorkout"
                 android:paddingTop="0dp"
-                android:src="@drawable/bg_choosechallenge"
-                app:srcCompat="@drawable/bg_choosechallenge" />
+                android:src="@drawable/img_railheaven"
+                app:srcCompat="@drawable/img_railheaven" />
 
             <TextView
                 android:layout_width="match_parent"
@@ -42,55 +42,40 @@
                 android:layout_marginRight="8dp"
                 android:layout_marginLeft="8dp"
                 android:gravity="center"
-                android:text="Choose Workout"
-                android:textSize="20sp"
+                android:text="Choose your level"
+                android:textSize="24sp"
                 android:textStyle="italic"/>
 
             <Button
-                android:id="@+id/train_now_create_workout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:backgroundTint="@color/colorPrimaryDark"
-                android:elevation="10sp"
-                android:layout_marginRight="8dp"
-                android:layout_marginLeft="8dp"
-                 android:layout_gravity="center"
-                 android:text="Workout" />
-
-            <Button
-                android:id="@+id/movementChallenge"
+                android:id="@+id/btn_predef_outdoorworkout_beginner"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:layout_marginRight="8dp"
                 android:layout_marginLeft="8dp"
                 android:layout_gravity="center"
-                android:backgroundTint="@color/colorPrimaryDark"
-                android:text="Movement specific challenge *" />
+                android:text="Beginner" />
 
             <Button
-                android:id="@+id/smChallenge"
+                android:id="@+id/btn_predef_outdoorworkout_intermediate"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:layout_marginRight="8dp"
                 android:layout_marginLeft="8dp"
                 android:layout_gravity="center"
-                android:backgroundTint="@color/colorPrimaryDark"
-                android:text="Street Movement Challenge *" />
+                android:text="Intermediate" />
 
-            <TextView
+            <Button
+                android:id="@+id/btn_predef_outdoorworkout_advanced"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
                 android:layout_marginRight="8dp"
                 android:layout_marginLeft="8dp"
-                android:layout_marginTop="8dp"
-                android:textStyle="italic"
-                android:textSize="12sp"
-                android:layout_gravity="end"
-                android:textAlignment="textEnd"
-                android:text="* Not available yet"/>
+                android:layout_gravity="center"
+                android:text="Advanced" />
+
 
 
         </LinearLayout>

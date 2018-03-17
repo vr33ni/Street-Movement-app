@@ -30,20 +30,7 @@
             android:layout_height="0dp"
             android:layout_weight="1" />
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/textTopRight"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Version 1"
-                android:textAppearance="?android:attr/textAppearanceMedium" />
-
-
-        </LinearLayout>
     </LinearLayout>
 
     <View
@@ -75,35 +62,25 @@
                 android:layout_marginBottom="5dp"
                 android:layout_marginLeft="8dp"
                 android:layout_marginRight="8dp"
+                android:gravity="center"
+                android:background="@drawable/xploring_the_city"
+                android:text=""
+                android:textColor="#FFF"
+                android:textSize="30sp" />
+
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="150dp"
+                android:layout_marginBottom="5dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
                 android:background="@drawable/background_streetcamp"
                 android:gravity="center"
                 android:text="Streetcamp 2016"
                 android:textColor="#FFF"
                 android:textSize="30sp" />
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="150dp"
-                android:layout_marginBottom="5dp"
-                android:layout_marginLeft="8dp"
-                android:layout_marginRight="8dp"
-                android:background="#26a69a"
-                android:gravity="center"
-                android:text="Create Workout"
-                android:textColor="#FFF"
-                android:textSize="30sp" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="150dp"
-                android:layout_marginBottom="5dp"
-                android:layout_marginLeft="8dp"
-                android:layout_marginRight="8dp"
-                android:background="#9575cd"
-                android:gravity="center"
-                android:text="Continue Workout"
-                android:textColor="#FFF"
-                android:textSize="30sp" />
 
             <TextView
                 android:layout_width="match_parent"

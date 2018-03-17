@@ -1,15 +1,20 @@
 package com.example.vreeni.StreetMovementApp;
 
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
 
 import java.util.ArrayList;
 
 /**
- * Created by vreee on 30/12/2017.
+ * Created by vreeni on 30/12/2017.
  */
 
-//this class handles the creation of a user in the firebase Database
-public class User { //change this to extends FIREBASEUser !!!
+/**
+ * Class representing a user document in the database
+ * => containing all the fields that are also listed in the database, so data from a database query can be converted to a workout object
+ */
+//possiblty make it implement parcelable interface as well
+public class User {
 
     //FIRESTORE
     FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -20,12 +25,15 @@ public class User { //change this to extends FIREBASEUser !!!
     private String nickname;
     private String status;
     private String age;
+    private String loginMethod;
+    private GeoPoint position;
 
     private long workoutsCompleted;
     private long warmupsSkipped;
     private long warmupsCompleted;
 
 
+    static final String LOGINMETHOD = "loginMethod";
     static final String AGE = "age";
     static final String EMAIL = "email";
     static final String FULLNAME = "name";
@@ -44,6 +52,16 @@ public class User { //change this to extends FIREBASEUser !!!
 
     public User() {}
 
+
+
+    public String getLoginMethod() {
+        return loginMethod;
+    }
+
+    public void setLoginMethod(String loginMethod) {
+        this.loginMethod = loginMethod;
+    }
+
     public ArrayList<Object> getListOfHomeWorkouts() {
         return listOfHomeWorkouts;
     }
@@ -60,6 +78,13 @@ public class User { //change this to extends FIREBASEUser !!!
         this.listOfOutdoorWorkouts = listOfOutdoorWorkouts;
     }
 
+    public GeoPoint getPosition() {
+        return position;
+    }
+
+    public void setPosition(GeoPoint position) {
+        this.position = position;
+    }
     //    protected void checkFireStoreDatabase() {
 //        // Create a new user with a first and last name
 //        FirebaseFirestore db = FirebaseFirestore.getInstance();

@@ -43,26 +43,29 @@ import java.util.TreeSet;
 import static com.facebook.FacebookSdk.getApplicationContext;
 
 /**
- * Created by vreee on 17/02/2018.
+ * Created by vreeni on 17/02/2018.
  */
 
+/**
+ * Class handling the reading of JSON files and the writing of the desired data to the database
+ */
 public class JasonHandler {
     private static final String LOG_TAG = "JsonParser";
 
     private Context context = getApplicationContext();
 
     private GeoPoint gp;
-
     private List<ParkourPark> listOfParkLocations;
-
     private List<HashMap> listOfPhotos;
 
 
-    public JasonHandler() {
-
-    }
+    public JasonHandler() {}
 
 
+    /**
+     * JSON file is saved in the assets folder of the application and read into a String
+     * @return file content is returned as a String
+     */
     public String loadJSONFromAsset() {
         String json;
         try {
@@ -81,33 +84,47 @@ public class JasonHandler {
     }
 
 
+    /**
+     * handling the extraction of the desired information from the file
+     * file consists of JSONObjects and JSONArrays that can both be understood and accessed as key value pairs
+     * try:
+     * 1. desired data (= parkour park locations) is part of the array "pins"
+     * 2. desired data to be saved in a list of type ParkourPark
+     * 3. looping through the array of pins and creating of a new JSONObject for each pin as well as a new JSONArray for each pin containing the pin categories on which this pin can be categorized based on
+     * 4. looping through the array of pinCats and creating a new ParkourPark object whenever the categories for the respective pin object matches either "parkour" or "calisthenics" => set boolean values of ParkourPark objects for Parkour / Calisthenics
+     * 5. creating JSONArray "photos" for each pin and a new list of type PhotoData to store the information of each photo in a list of photo objects for each pin
+     * 6. get information on latitude and longitude ("latitude", "longitude") from the JSON String; format values (one value contains 2 commas) before parsing Strings to doubles; set double values for the ParkourPark object
+     * 7. get information on source ("permalink") and set value for the ParkourPark object
+     * 8. get information on name/title ("title", if null: "address") and set value for ParkourPark object
+     * 9. get information on description ("description"9 and set value for ParkourPark object
+     * 10. add ParkourPark object with newly set fields to the list of ParkourPark objects, if list doesnt contain this object already (.contains based on overriden .equals and hashcode methods in ParkourPark class)
+     * catch: exceptions
+     */
     @RequiresApi(api = Build.VERSION_CODES.N)
     public void retrieveFileFromResource() {
+        //1.
         try {
             JSONObject obj = new JSONObject(loadJSONFromAsset());
             JSONObject arr = obj.getJSONObject("array");
             JSONObject obj1 = arr.getJSONObject("data");
             JSONArray arr2 = obj1.getJSONArray("pins");
 
+            //2.
             listOfParkLocations = new ArrayList<>();
 
 
-            //loop through the array of pin locations
+            //3. loop through the array of pin locations
             for (int i = 0; i < arr2.length(); i++) {
                 JSONObject pin = arr2.getJSONObject(i);
                 JSONArray pinCats = pin.getJSONArray("pin_categories");
 
 
-                //loop through the array of pin categories that are listed within each pin location
+                //4. loop through the array of pin categories that are listed within each pin location
                 for (int j = 0; j < pinCats.length(); j++) {
                     //if parkour || calisthenics = true
                     if ((pinCats.getString(j).equals("3")) || (pinCats.getString(j).equals("13"))) {
                         ParkourPark parkLoc = new ParkourPark();
-                        JSONArray photos = pin.getJSONArray("photos");
 
-                        /*
-                          set the category for the park
-                        */
                         //if category = 3, set parkLoc category parkour true
                         if (pinCats.getString(j).equals("3")) {
                             parkLoc.setParkour(true);
@@ -117,15 +134,14 @@ public class JasonHandler {
                             parkLoc.setCalisthenics(true);
                         }
 
+                        //5.
+                        JSONArray photos = pin.getJSONArray("photos");
                         //get and set photos for all the parks that offer pk or calisthenics
                         String url;
                         String fileName;
                         String id;
-
                         ArrayList<PhotoData> spotPhotos = new ArrayList<>();
-
                         Log.d(LOG_TAG, "list of photos " + photos.length());
-
                         //loop through the json array photos
                         for (int k = 0; k < photos.length(); k++) {
 //                            //create photo object for each object in the json array "photos"
@@ -139,16 +155,13 @@ public class JasonHandler {
                             photo.setId(id);
                             photo.setFileName(fileName);
                             spotPhotos.add(photo);
-
-                            Log.d(LOG_TAG, "list of spot photos " + spotPhotos);
                         }
-
-                        parkLoc.setListOfPhotoData(spotPhotos);
-//
+//                        parkLoc.setListOfPhotoData(spotPhotos);
+                        Log.d(LOG_TAG, "list of spot photos " + parkLoc.getListOfPhotoData());
 
 
                         /*
-                          get and set coordinates for parkour and calisthenics locations
+                         6. get and set coordinates for parkour and calisthenics locations
                         */
                         //get latitude and longitude
                         String lat = pin.getString("latitude");
@@ -169,15 +182,16 @@ public class JasonHandler {
                             dlon = Double.parseDouble(lon);
                         }
                         //set coordinates in the parkLoc object
-                        parkLoc.setCoordinates(calculateGeoPoint(dlat, dlon));
+//                        parkLoc.setCoordinates(calculateGeoPoint(dlat, dlon));
                         parkLoc.setLati(dlat);
                         parkLoc.setLongi(dlon);
 
+//                        7.
                         //set source
-                        String link = pin.getString("permalink");
                         parkLoc.setSource(pin.getString("permalink"));
 
 
+//                        8.
                         //set name/title
                         if (pin.getString("title") != null) {
                             parkLoc.setName(pin.getString("title"));
@@ -185,6 +199,7 @@ public class JasonHandler {
                             parkLoc.setName(pin.getString("address"));
                         }
 
+//                        9.
                         //set Description
                         String description = pin.getString("description");
                         parkLoc.setDescription(formatDescription(description));
@@ -193,6 +208,7 @@ public class JasonHandler {
                         //set photos to use as snippets
 
 
+//                        10.
                         if (listOfParkLocations.contains(parkLoc)) {
                             //dont add duplicates
                         } else {
@@ -212,6 +228,14 @@ public class JasonHandler {
         }
     }
 
+    /**
+     * updates to firestore database always require a reference to the database and a hashmap containing the key value pairs that are supposed to be written to the database
+     * db = Reference to database
+     * pkRef = DocumentReference created for each ParkourPark object in the list of park locations (if the reference doesnt exist already, it will be created based on the name of the park)
+     * creating HashMap and adding key value pairs (key names should be the same as the fields of the object for easier later retrieval)
+     * => here, information is added as String-String, String-Geopoint or String-Object
+     * update Documents and Document fields in database based on data in hashmap
+     */
     public void updateFirestore() {
         final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
@@ -264,6 +288,11 @@ public class JasonHandler {
         return new GeoPoint(latitude, longitude);
     }
 
+    /**
+     * formatting the description strings by removing unwanted characters
+     * @param description unformatted input String with potentially unwanted characters
+     * @return formatted String
+     */
     public String formatDescription(String description) {
         //formatting the description strings for irregularities
         String item1 = "<p class=\"p1\">";

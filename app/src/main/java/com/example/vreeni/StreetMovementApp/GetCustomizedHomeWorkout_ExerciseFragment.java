@@ -1,14 +1,21 @@
 package com.example.vreeni.StreetMovementApp;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -31,9 +38,14 @@ import static com.example.vreeni.StreetMovementApp.User.WORKOUTSCOMPLETED;
 
 
 /**
- * Created by vreee on 24/01/2018.
+ * Created by vreeni on 24/01/2018.
  */
 
+/**
+ * Fragment displaying the current Home Exercise that is being done as well as the timer with the remaining Home Workout time
+ * contains webview with an embedded vimeo video
+ * contains reference to the database => after timer has run out, adds Home Workout as a DocumentReference to a list of completed Home Workouts to the user profile
+ */
 public class GetCustomizedHomeWorkout_ExerciseFragment extends android.support.v4.app.Fragment implements View.OnClickListener{
     private String TAG = "Workout in process: ";
 
@@ -41,6 +53,7 @@ public class GetCustomizedHomeWorkout_ExerciseFragment extends android.support.v
     private String exerciseI;
     private String exerciseII;
     private String imgEx1;
+    private String vidEx1;
     private ImageView imageEx1;
     private ArrayList<Object> listOfHomeWks;
 
@@ -51,6 +64,7 @@ public class GetCustomizedHomeWorkout_ExerciseFragment extends android.support.v
     private long nrOfWorkouts;
 
     private TextView timer;
+    private WebView webView;
     private int time;
 
 
@@ -60,10 +74,10 @@ public class GetCustomizedHomeWorkout_ExerciseFragment extends android.support.v
 
         Bundle workoutBundle = getArguments();
         if (null != workoutBundle) {
+            myWorkout = workoutBundle.getParcelable("Workout");
             exerciseI = workoutBundle.getString("Exercise1");
             exerciseII = workoutBundle.getString("Exercise2");
-            imgEx1 = workoutBundle.getString("Image");
-            myWorkout = workoutBundle.getParcelable("Workout");
+            vidEx1 = (String) myWorkout.getExerciseI().get("video");
             wkReference = workoutBundle.getString("WorkoutID");
 //            time = workoutBundle.getInt("Time");
             //maybe here create exercise objects and set the fields?? (exerciseI = new Exercise(); exerciseI.setDescription, setIsCompleted....)
@@ -72,6 +86,28 @@ public class GetCustomizedHomeWorkout_ExerciseFragment extends android.support.v
         }
         TextView ex1 = (TextView) view.findViewById(R.id.exercise_description);
         ex1.setText(exerciseI);
+
+        //including the webview - vimeo vide
+        webView = (WebView) view.findViewById(R.id.webView);
+        webView.setInitialScale(1);
+        webView.setWebChromeClient(new WebChromeClient());
+        webView.getSettings().setAllowFileAccess(true);
+        webView.getSettings().setPluginState(WebSettings.PluginState.ON);
+        webView.getSettings().setPluginState(WebSettings.PluginState.ON_DEMAND);
+        webView.setWebViewClient(new WebViewClient());
+        webView.getSettings().setJavaScriptEnabled(true);
+        webView.getSettings().setLoadWithOverviewMode(true);
+        webView.getSettings().setUseWideViewPort(true);
+        DisplayMetrics displaymetrics = new DisplayMetrics();
+        ((WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(displaymetrics);
+        int height = displaymetrics.heightPixels;
+        int width = displaymetrics.widthPixels;
+        Log.e("WebView Log", width + "-" + height);
+        String data_html = "<!DOCTYPE html><html> <head> <meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"target-densitydpi=high-dpi\" /> <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"> <link rel=\"stylesheet\" media=\"screen and (-webkit-device-pixel-ratio:1.5)\" href=\"hdpi.css\" /></head> <body style=\"background:white;margin:0 0 0 0; padding:0 0 0 0;\"> <iframe style=\"background:white;\" width=' " + width + "' height='" + height / 2 + "' src=\"" + vidEx1 + "\" frameborder=\"0\"></iframe> </body> </html> ";
+        webView.loadDataWithBaseURL("http://vimeo.com", data_html, "text/html", "UTF-8", null);
+
+        //end of webview
+
 
         time = 10;
 
@@ -96,7 +132,7 @@ public class GetCustomizedHomeWorkout_ExerciseFragment extends android.support.v
                     //start workout after 5 seconds = just for testing to implement a pause for 30 sec
                     startTimer();
                 }
-            }, 5000);
+            }, 1000);
         }
 
     }

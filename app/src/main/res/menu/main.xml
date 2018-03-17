@@ -3,8 +3,20 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/miCompose"
+        android:icon="@drawable/ic_gmaps_locations"
+        android:title="Compose"
+        app:showAsAction="always"/>
+
+    <item
         android:id="@+id/action_settings"
         android:title="@string/action_settings"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/developer"
+        android:orderInCategory="100"
+        android:title="Developer"
         app:showAsAction="never" />
 
   <!--  <item
@@ -12,6 +24,7 @@
         android:icon="@drawable/ic_achievement3"
         android:title="Compose"
         app:showAsAction="always"></item> -->
+
     <item
         android:id="@+id/log_out_button"
         android:orderInCategory="100"

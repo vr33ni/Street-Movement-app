@@ -31,6 +31,12 @@
                 android:id="@+id/insta"
                 android:icon="@drawable/ic_insta_black"
                 android:title="@string/menu_cat2_item2" />
+
+            <item
+                android:id="@+id/vimeo"
+                android:icon="@drawable/ic_vimeo"
+                android:title="Vimeo" />
+
             <item
                 android:id="@+id/youtube"
                 android:icon="@drawable/ic_youtube_black_smaller"

@@ -1,12 +1,14 @@
 package com.example.vreeni.StreetMovementApp;
 
 import android.content.Intent;
+import android.location.Location;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
+import com.facebook.AccessToken;
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -36,6 +38,13 @@ import static com.example.vreeni.StreetMovementApp.User.WARMUPSSKIPPED;
 import static com.example.vreeni.StreetMovementApp.User.WORKOUTSCOMPLETED;
 
 
+/**
+ * Activity handling the login process
+ * layout and flow to be improved
+ * => separation into login and register activity?
+ * => layout of Facebook/Google/Email buttons
+ * => google smartlock?
+ */
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
     private String TAG = "LoginActivity: ";
 
@@ -148,6 +157,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 if (task.isSuccessful()) {
                     DocumentSnapshot document = task.getResult();
                     if (document.exists()) {
+                        AccessToken accessToken = AccessToken.getCurrentAccessToken();
+                        Log.d(TAG, "logged in with " + accessToken.getToken());
+
                         Log.d(TAG, "User already exists in database");
                         //perform updates on fields
                     } else {
@@ -176,7 +188,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     }
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         DocumentReference userDocRef = db.collection("Users").document(FirebaseAuth.getInstance().getCurrentUser().getEmail());
-
                 Map<String, Object> newEntry = new HashMap<String, Object>();
                 newEntry.put(FULLNAME, loginName);
                 newEntry.put(EMAIL, loginEmail);

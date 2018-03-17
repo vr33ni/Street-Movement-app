@@ -1,6 +1,8 @@
 package com.example.vreeni.StreetMovementApp;
 
 import android.os.Build;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.annotation.RequiresApi;
 
 import com.google.android.gms.maps.model.Marker;
@@ -13,11 +15,16 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Created by vreee on 17/02/2018.
+ * Created by vreeni on 17/02/2018.
  */
 
-public class ParkourPark {
 
+/**
+ * Class representing a ParkourPark document in the database
+ * => containing all the fields that are also listed in the database, so data from a database query can be converted to a ParkourPark object
+ * Implementing Parcelable Interface allowing for ParkourPark objects to be put as parcelables in bundles
+ */
+public class ParkourPark implements Parcelable {
 
     private GeoPoint coordinates;
     private double lati;
@@ -29,6 +36,7 @@ public class ParkourPark {
     private String description;
 
     private ArrayList<PhotoData> listOfPhotoData;
+    private ArrayList<HashMap<String, Object>> listOfRatings; //instead of a list of rating objects, have a list of hashmaps with each hashmap representing a rating consisting of key value pairs such as "name"-tim, "comment"-cool spot, "Rating"-5
 
     private HashMap<String, Object> photo_0;
     private HashMap<String, Object> photo_1;
@@ -40,6 +48,18 @@ public class ParkourPark {
 
     public ParkourPark() {}
 
+//    public ParkourPark(GeoPoint point) {
+//        coordinates = point;
+//    }
+
+
+    public ArrayList<HashMap<String, Object>> getListOfRatings() {
+        return listOfRatings;
+    }
+
+    public void setListOfRatings(ArrayList<HashMap<String, Object>> listOfRatings) {
+        this.listOfRatings = listOfRatings;
+    }
 
     public ArrayList<PhotoData> getListOfPhotoData() {
         return listOfPhotoData;
@@ -48,7 +68,6 @@ public class ParkourPark {
     public void setListOfPhotoData(ArrayList<PhotoData> listOfPhotoData) {
         this.listOfPhotoData = listOfPhotoData;
     }
-
 
     public HashMap<String, Object> getPhoto_0() {
         return photo_0;
@@ -187,4 +206,57 @@ public class ParkourPark {
     public void setName(String name) {
         this.name = name;
     }
+
+    protected ParkourPark(Parcel in) {
+//        coordinates = (GeoPoint) in.readValue(GeoPoint.class.getClassLoader());
+        lati = in.readDouble();
+        longi = in.readDouble();
+        name = in.readString();
+        parkour = in.readByte() != 0x00;
+        calisthenics = in.readByte() != 0x00;
+        source = in.readString();
+        description = in.readString();
+        photo_0 = (HashMap) in.readValue(HashMap.class.getClassLoader());
+        photo_1 = (HashMap) in.readValue(HashMap.class.getClassLoader());
+        photo_2 = (HashMap) in.readValue(HashMap.class.getClassLoader());
+        photo_3 = (HashMap) in.readValue(HashMap.class.getClassLoader());
+        photo_4 = (HashMap) in.readValue(HashMap.class.getClassLoader());
+        photo_5 = (HashMap) in.readValue(HashMap.class.getClassLoader());
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+//        dest.writeValue(coordinates); doesnt implement parelable and only needed when passing pk park objects in bundle
+        dest.writeDouble(lati);
+        dest.writeDouble(longi);
+        dest.writeString(name);
+        dest.writeByte((byte) (parkour ? 0x01 : 0x00));
+        dest.writeByte((byte) (calisthenics ? 0x01 : 0x00));
+        dest.writeString(source);
+        dest.writeString(description);
+        dest.writeValue(photo_0);
+        dest.writeValue(photo_1);
+        dest.writeValue(photo_2);
+        dest.writeValue(photo_3);
+        dest.writeValue(photo_4);
+        dest.writeValue(photo_5);
+    }
+
+    @SuppressWarnings("unused")
+    public static final Parcelable.Creator<ParkourPark> CREATOR = new Parcelable.Creator<ParkourPark>() {
+        @Override
+        public ParkourPark createFromParcel(Parcel in) {
+            return new ParkourPark(in);
+        }
+
+        @Override
+        public ParkourPark[] newArray(int size) {
+            return new ParkourPark[size];
+        }
+    };
 }

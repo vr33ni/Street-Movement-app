@@ -28,9 +28,14 @@ import java.util.Random;
 
 
 /**
- * Created by vreee on 20/12/2017.
+ * Created by vreeni on 20/12/2017.
  */
 
+/**
+ * Fragment displaying options for different levels of Home Workouts (Beginner, Intermediate, Advanced)
+ * calls workout from the database
+ * puts workout as parcelable object to a bundle and passes it on to the next fragment
+ */
 public class GetCustomizedHomeWorkoutLevelFragment extends Fragment implements View.OnClickListener {
 
     private FirebaseStorage storage = FirebaseStorage.getInstance();
@@ -40,7 +45,11 @@ public class GetCustomizedHomeWorkoutLevelFragment extends Fragment implements V
     boolean intermediate;
     boolean advanced;
 
-    private  Bundle beginnerBundle; //to pass arguments to the next fragment
+    Button btnPredefHomeWorkoutBeginner;
+    Button btnPredefHomeWorkoutIntermediate;
+    Button btnPredefHomeWorkoutAdvanced;
+
+    private  Bundle bundle; //to pass arguments to the next fragment
 
     private String TAG = "Choose Level: ";
 
@@ -49,14 +58,18 @@ public class GetCustomizedHomeWorkoutLevelFragment extends Fragment implements V
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        Button btnPredefHomeWorkoutBeginner = (Button) view.findViewById(R.id.btn_predef_homeworkout_beginner);
+        btnPredefHomeWorkoutBeginner = (Button) view.findViewById(R.id.btn_predef_homeworkout_beginner);
         btnPredefHomeWorkoutBeginner.setOnClickListener(this);
+        btnPredefHomeWorkoutBeginner.setEnabled(true);
 
-        Button btnPredefHomeWorkoutIntermediate = (Button) view.findViewById(R.id.btn_predef_homeworkout_intermediate);
+        btnPredefHomeWorkoutIntermediate = (Button) view.findViewById(R.id.btn_predef_homeworkout_intermediate);
         btnPredefHomeWorkoutIntermediate.setOnClickListener(this);
+        btnPredefHomeWorkoutIntermediate.setEnabled(true);
 
-        Button btnPredefHomeWorkoutAdvanced = (Button) view.findViewById(R.id.btn_predef_homeworkout_advanced);
+        btnPredefHomeWorkoutAdvanced = (Button) view.findViewById(R.id.btn_predef_homeworkout_advanced);
         btnPredefHomeWorkoutAdvanced.setOnClickListener(this);
+        btnPredefHomeWorkoutAdvanced.setEnabled(true);
+
 
         beginner=false;
         intermediate=false;
@@ -72,42 +85,60 @@ public class GetCustomizedHomeWorkoutLevelFragment extends Fragment implements V
 
     }
 
+
+    /**
+     * handling of the button clicks
+     * => button click disables the other buttons,
+     * => starts a query to the database querying the respective Home Workout,
+     * => and redirects to the next fragment in the workout flow
+     * @param v representing the buttons "Beginner", "Intermediate" or "Advanced"
+     */
     @Override
     public void onClick(View v) {
 
-        Fragment fragment = null;
         if (v.getId() == R.id.btn_predef_homeworkout_beginner) {
             beginner=true;
-            queryLevel1HomeWorkout();
+            btnPredefHomeWorkoutIntermediate.setEnabled(false);
+            btnPredefHomeWorkoutAdvanced.setEnabled(false);
+            queryHomeWorkout();
 
         } else if (v.getId() == R.id.btn_predef_homeworkout_intermediate) {
             intermediate=true;
-            //new fragment for choosing your focus of a predefined home workout for intermediate
+            btnPredefHomeWorkoutBeginner.setEnabled(false);
+            btnPredefHomeWorkoutAdvanced.setEnabled(false);
+            queryHomeWorkout();
 
         } else if (v.getId() == R.id.btn_predef_homeworkout_advanced) {
             advanced=true;
-            //new fragment for choosing your level of a predefined home workout for advanced
+            btnPredefHomeWorkoutIntermediate.setEnabled(false);
+            btnPredefHomeWorkoutBeginner.setEnabled(false);
+            queryHomeWorkout();
         }
 
         //create new fragment displaying the result of either of the choices
-        GetCustomizedHomeWorkoutSelectionFragment result = new GetCustomizedHomeWorkoutSelectionFragment();
+//        GetCustomizedHomeWorkoutSelectionFragment result = new GetCustomizedHomeWorkoutSelectionFragment();
         //check which bundle obj exists, beginner, intermed, advanced? use boolean? level1= true?
-        if (beginnerBundle!=null) {
-            result.setArguments(beginnerBundle);
-            getActivity().getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, result)
-                    .addToBackStack(null)
-                    .commit();
-        }
+//        if (beginnerBundle!=null) {
+//            fragment.setArguments(beginnerBundle);
+//            getActivity().getSupportFragmentManager().beginTransaction()
+//                    .replace(R.id.fragment_container, fragment)
+//                    .addToBackStack(null)
+//                    .commit();
+//        }
     }
 
 
-    public void queryLevel1HomeWorkout() {
+    public void queryHomeWorkout() {
         final FirebaseFirestore db = FirebaseFirestore.getInstance();
         final CollectionReference wkquery = db.collection("PredefinedWorkouts");
+        //define which level is to be queried
+        String levelSelected;
+        if (beginner) levelSelected ="Beginner";
+        else if (intermediate) levelSelected ="Intermediate";
+        else levelSelected="Advanced";
         //query to get all documents that both home workouts and suited for beginners
         Query query = wkquery.whereEqualTo("setting", "Home")
-                .whereEqualTo("level", "Beginner");
+                .whereEqualTo("level", levelSelected);
         query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -145,50 +176,60 @@ public class GetCustomizedHomeWorkoutLevelFragment extends Fragment implements V
                                         HashMap<String, Object> exI = workout.getExerciseI();
                                         String descriptionEx1 = (String) exI.get("description");
                                         String urlImgEx1 = (String) exI.get("image");
+                                        String urlVidEx1 = (String) exI.get("video");
+
 
                                         //access the object exercise 2 as hashmap and get its key-values
                                         HashMap<String, Object> exII = workout.getExerciseII();
                                         String descriptionEx2 = (String) exII.get("description");
                                         String urlImgEx2 = (String) exII.get("image");
+                                        String urlVidEx2 = (String) exII.get("video");
+
 
                                         //access the object exercise 3 as hashmap and get its key-values
                                         HashMap<String, Object> exIII = workout.getExerciseIII();
                                         String descriptionEx3 = (String) exIII.get("description");
                                         String urlImgEx3 = (String) exIII.get("image");
+                                        String urlVidEx3 = (String) exIII.get("video");
 
                                         //access the object exercise 4 as hashmap and get its key-values
                                         HashMap<String, Object> exIV = workout.getExerciseIV();
-                                        String descriptionEx4 = (String) exIII.get("description");
-                                        String urlImgEx4 = (String) exIII.get("image");
+                                        String descriptionEx4 = (String) exIV.get("description");
+                                        String urlImgEx4 = (String) exIV.get("image");
+                                        String urlVidEx4 = (String) exIV.get("video");
+
 
                                         //access the object exercise 5 as hashmap and get its key-values
                                         HashMap<String, Object> exV = workout.getExerciseV();
-                                        String descriptionE53 = (String) exIII.get("description");
-                                        String urlImgEx5 = (String) exIII.get("image");
+                                        String descriptionE53 = (String) exV.get("description");
+                                        String urlImgEx5 = (String) exV.get("image");
+                                        String urlVidEx5 = (String) exV.get("video");
+
 
                                         String workoutID = document.getId();
                                         //here no object is created, but simply the string from the database accessed
                                         //String descriptionEx2 = task.getResult().getString("Exercise II");
 
                                         // yes put this info to the bundle right here, working!
-                                        beginnerBundle = new Bundle();
+                                        bundle = new Bundle();
                                         //passing object as parcelable
-                                        beginnerBundle.putParcelable("Workout", workout);
-                                        beginnerBundle.putString("Exercise1", descriptionEx1);
-                                        beginnerBundle.putString("Exercise2", descriptionEx2);
-                                        beginnerBundle.putString("Image", urlImgEx1);
-                                        beginnerBundle.putInt("Time", (int)time);
-                                        beginnerBundle.putString("WorkoutID", workoutID);
-                                        //beginnerBundle.putBoolean("ExerciseCompleted", exerciseCompleted);
+                                        bundle.putParcelable("Workout", workout);
+                                        bundle.putString("Exercise1", descriptionEx1);
+                                        bundle.putString("Exercise2", descriptionEx2);
+                                        bundle.putString("Image", urlImgEx1);
+                                        bundle.putInt("Time", (int)time);
+                                        bundle.putString("WorkoutID", workoutID);
 
-//                                        GetCustomizedHomeWorkoutSelectionFragment result = new GetCustomizedHomeWorkoutSelectionFragment();
-//                                        if (beginnerBundle!=null) {
-//                                            result.setArguments(beginnerBundle);
-//                                            getActivity().getSupportFragmentManager().beginTransaction()
-//                                                    .replace(R.id.fragment_container, result)
-//                                                    .addToBackStack(null)
-//                                                    .commit();
-//                                        }
+                                            //beginnerBundle.putBoolean("ExerciseCompleted", exerciseCompleted);
+
+                                        GetCustomizedHomeWorkoutSelectionFragment result = new GetCustomizedHomeWorkoutSelectionFragment();
+                                        if (bundle!=null) {
+                                            result.setArguments(bundle);
+                                            getActivity().getSupportFragmentManager().beginTransaction()
+                                                    .replace(R.id.fragment_container, result)
+                                                    .addToBackStack(null)
+                                                    .commit();
+                                        }
 
                                         Log.d(TAG, "DocumentSnapshot data: " + task.getResult().getData().get("exerciseI"));
                                     } else {

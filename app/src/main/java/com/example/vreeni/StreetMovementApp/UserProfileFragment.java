@@ -29,8 +29,13 @@ import static com.example.vreeni.StreetMovementApp.User.NATIONALITY;
 import static com.example.vreeni.StreetMovementApp.User.NICKNAME;
 import static com.example.vreeni.StreetMovementApp.User.STATUS;
 
+/**
+ * Fragment displaying the user profile
+ * => offering the possiblity to change certain user information and redirect to the EditUserProfile Fragment
+ *
+ */
 public class UserProfileFragment extends Fragment implements View.OnClickListener {
-    private Button btnEditProfile;
+    private String TAG = "User Profile ";
 
     private TextView txtProfileName;
     private TextView txtProfileEmail;
@@ -42,8 +47,6 @@ public class UserProfileFragment extends Fragment implements View.OnClickListene
     //get firestore database data
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private DocumentReference usersDocRef = db.collection("Users").document(FirebaseAuth.getInstance().getCurrentUser().getEmail());
-
-    private String TAG = "User Profile ";
 
 
     @Override
@@ -59,7 +62,7 @@ public class UserProfileFragment extends Fragment implements View.OnClickListene
         //get and set extra information that the user has entered to the firebase database
         //displayUserExtraDetails();
 
-        btnEditProfile = (Button) view.findViewById(R.id.edit_user_info);
+        Button btnEditProfile = (Button) view.findViewById(R.id.edit_user_info);
         btnEditProfile.setOnClickListener(this);
 
         txtProfileName = (TextView) view.findViewById(R.id.profile_section_fullname);
@@ -68,8 +71,6 @@ public class UserProfileFragment extends Fragment implements View.OnClickListene
         txtProfileAge = (TextView) getView().findViewById(R.id.profile_section_age);
         txtProfileNationality = (TextView) getView().findViewById(R.id.profile_section_nationality);
         txtProfileStatus = (TextView) getView().findViewById(R.id.profile_section_status);
-
-
     }
 
     @Nullable
@@ -93,8 +94,12 @@ public class UserProfileFragment extends Fragment implements View.OnClickListene
         }
     }
 
-    //maybe create an interface that can then be implemented by both the user class, the user profile fragment and the edit user profile
-    //realtime database updates
+
+    /**
+     * if user documentReference exists, this method adds a SnapshotListener to the documentReference
+     * if the snapshot isn't empty, Strings are created and assigned the desired information from the document snapshot
+     * textViews are then set with the newly retrieved Strings
+     */
     public void displayFirestoreData() {
         if (usersDocRef != null) {
         }
@@ -131,90 +136,6 @@ public class UserProfileFragment extends Fragment implements View.OnClickListene
 
     }
 
-
-    public void displayUserStandardDetails() {
-        FirebaseAuth user = FirebaseAuth.getInstance();
-
-        //get user email from firebase api
-        String email = user.getCurrentUser().getEmail();
-        TextView txtProfileEmail = (TextView) getView().findViewById(R.id.profile_section_email);
-        txtProfileEmail.setText(email);
-
-        //get user name form firebase api
-        String name = user.getCurrentUser().getDisplayName();
-        TextView txtProfileName = (TextView) getView().findViewById(R.id.profile_section_fullname);
-        txtProfileName.setText(name);
-
-    }
-
-    public void displayUserExtraDetails() {
-
-        //check if user has entered a nickname
-        DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference();
-        DatabaseReference usersRef = mDatabase.getRef();
-        DatabaseReference singleUserRef = usersRef.getRef();
-        mDatabase.addListenerForSingleValueEvent
-                (new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        //if the currently logged user exists
-                        if (dataSnapshot.child("Users").child(FirebaseAuth.getInstance().getCurrentUser().getEmail()).child(NICKNAME).exists()) {
-                            //user has chosen a nick name
-                            String nickname = dataSnapshot.child("Users").child(FirebaseAuth.getInstance().getCurrentUser().getEmail()).child("Nickname").getValue(String.class);
-                            TextView txtProfileNickname = (TextView) getView().findViewById(R.id.profile_section_nickname);
-                            txtProfileNickname.setText(nickname);
-                        } else {
-                            //no nickname yet
-                        }
-                    }
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                    }
-                });
-
-        //check if user has entered age
-        mDatabase.addListenerForSingleValueEvent
-                (new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        //if the currently logged user exists
-                        if (dataSnapshot.child("Users").child(FirebaseAuth.getInstance().getCurrentUser().getDisplayName()).child("Age").exists()) {
-                            //user has set his age
-                            String age = dataSnapshot.child("Users").child(FirebaseAuth.getInstance().getCurrentUser().getDisplayName()).child("Age").getValue(String.class);
-                            TextView txtProfileAge = (TextView) getView().findViewById(R.id.profile_section_age);
-                            txtProfileAge.setText(age);
-                        } else {
-                            //
-                        }
-                    }
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                    }
-                });
-
-        //check if user has entered nationality
-        mDatabase.addListenerForSingleValueEvent
-                (new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        //if the currently logged user exists
-                        if (dataSnapshot.child("Users").child(FirebaseAuth.getInstance().getCurrentUser().getDisplayName()).child("Nationality").exists()) {
-                            //user has set a nationality
-                            String nationality = dataSnapshot.child("Users").child(FirebaseAuth.getInstance().getCurrentUser().getDisplayName()).child("Nationality").getValue(String.class);
-                            TextView txtProfileNationality = (TextView) getView().findViewById(R.id.profile_section_nationality);
-                            txtProfileNationality.setText(nationality);
-                        } else {
-                            //
-                        }
-                    }
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                    }
-                });
-
-
-
-    }
 
     //retrieving data from the main activity
     //leave this method for practice purpose, but not necessary, as the fragment can access all the firebase details itself

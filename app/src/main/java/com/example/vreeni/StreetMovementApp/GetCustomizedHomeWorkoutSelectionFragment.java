@@ -6,6 +6,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -13,13 +14,20 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 
 /**
- * Created by vreee on 20/12/2017.
+ * Created by vreeni on 20/12/2017.
  */
 
+/**
+ * Fragment displaying the randomly selected Home Workout from the database
+ * gets arguments from bundle and displays a summary of the workout
+ * passes on the bundle to the next fragment in the workout flow
+ */
 public class GetCustomizedHomeWorkoutSelectionFragment extends Fragment implements View.OnClickListener {
     private String exerciseI;
     private String exerciseII;
     private String imgEx1;
+//    private WebView vidEx1;
+
     private int time;
     private ImageView imageEx1;
     private Workout workout;

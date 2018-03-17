@@ -104,6 +104,31 @@
                 android:orientation="vertical">
 
                 <LinearLayout
+                    android:id="@+id/profile_section_setDisplayname"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="100dp"
+                        android:layout_height="wrap_content"
+                        android:text="Name"
+                        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+                    <EditText
+                        android:id="@+id/profile_section_edit-displayname"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentLeft="true"
+                        android:layout_alignParentTop="true"
+                        android:hint="Enter your name"
+                        android:inputType="textPersonName"
+                        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+                </LinearLayout>
+
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
@@ -111,7 +136,7 @@
                     <TextView
                         android:layout_width="100dp"
                         android:layout_height="wrap_content"
-                        android:text="Nick name"
+                        android:text="User name"
                         android:textAppearance="?android:attr/textAppearanceSmall" />
 
                     <EditText
@@ -120,7 +145,7 @@
                         android:layout_height="wrap_content"
                         android:layout_alignParentLeft="true"
                         android:layout_alignParentTop="true"
-                        android:hint="Enter your nick name"
+                        android:hint="Choose a user name"
                         android:inputType="textPersonName"
                         android:textAppearance="?android:attr/textAppearanceSmall" />
 

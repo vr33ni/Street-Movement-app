@@ -9,9 +9,12 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 /**
- * Created by vreee on 20/12/2017.
+ * Created by vreeni on 20/12/2017.
  */
 
+/**
+ * Fragment containing two buttons offering the user to choose between a customized workout and creating his/her own
+ */
 public class CreateWorkoutFragment extends Fragment implements View.OnClickListener {
     private Button btnPredefWorkout;
     private Button btnCreateYourOwnWorkout;
@@ -24,20 +27,16 @@ public class CreateWorkoutFragment extends Fragment implements View.OnClickListe
 
         btnPredefWorkout = (Button) view.findViewById(R.id.btn_get_predef_workout);
         btnPredefWorkout.setOnClickListener(this);
-
         btnCreateYourOwnWorkout = (Button) view.findViewById(R.id.btn_create_your_own_workout);
         btnCreateYourOwnWorkout.setOnClickListener(this);
-
-
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
         return inflater.inflate(R.layout.fragment_create_workout, container, false);
-
     }
+
     @Override
     public void onClick(View v) {
         Fragment fragment = null;

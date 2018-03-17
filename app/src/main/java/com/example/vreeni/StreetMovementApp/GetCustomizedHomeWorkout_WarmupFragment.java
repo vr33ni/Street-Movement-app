@@ -27,9 +27,14 @@ import java.util.Map;
 import static com.example.vreeni.StreetMovementApp.User.WARMUPSSKIPPED;
 
 /**
- * Created by vreee on 27/01/2018.
+ * Created by vreeni on 27/01/2018.
  */
 
+/**
+ * Fragment displaying information on Home Warmups before training
+ * contains different Image-, TextViews and Buttons
+ * contains reference to the database updating the number of warmups completed or skipped (no differentiation between home/outdoor)
+ */
 public class GetCustomizedHomeWorkout_WarmupFragment extends Fragment implements View.OnClickListener {
     private String TAG = "Warmup: ";
 

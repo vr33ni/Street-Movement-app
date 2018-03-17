@@ -11,10 +11,14 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -27,22 +31,20 @@ import static com.example.vreeni.StreetMovementApp.User.AGE;
 import static com.example.vreeni.StreetMovementApp.User.NATIONALITY;
 import static com.example.vreeni.StreetMovementApp.User.NICKNAME;
 
+/**
+ * Fragment handling edits to the user profile:
+ * ==> possibility to change username, age and nationality and send the updates to the database
+ */
 public class EditUserProfileFragment extends Fragment implements View.OnClickListener {
     private String TAG = "Edit User Profile ";
 
     private DatabaseReference mDatabase;
-
-    private Button btnSaveProfile;
+    private FirebaseAuth.AuthStateListener mAuthListener;
 
     private EditText editUsername;
     private EditText editAge;
     private EditText editNationality;
-
-    private String username_input;
-    private String age_input;
-    private String nationality_input;
-
-
+    private EditText editDisplayName;
 
 
     @Override
@@ -50,8 +52,13 @@ public class EditUserProfileFragment extends Fragment implements View.OnClickLis
         super.onViewCreated(view, savedInstanceState);
 
         //Button to save the profile
-        btnSaveProfile = (Button) view.findViewById(R.id.save_user_info);
+        Button btnSaveProfile = (Button) view.findViewById(R.id.save_user_info);
         btnSaveProfile.setOnClickListener(this);
+
+        if (FirebaseAuth.getInstance().getCurrentUser().getDisplayName()==null) {
+            view.findViewById(R.id.profile_section_setDisplayname).setVisibility(View.VISIBLE);
+            editDisplayName = (EditText) view.findViewById(R.id.profile_section_edit_displayname);
+        }
 
         //field that allows changes on the nick name
         editUsername = (EditText) view.findViewById(R.id.profile_section_edit_nickname);
@@ -61,7 +68,6 @@ public class EditUserProfileFragment extends Fragment implements View.OnClickLis
 
         //field that allows you to enter your nationality
         editNationality = (EditText) view.findViewById(R.id.profile_section_edit_nationality);
-
     }
 
 
@@ -72,16 +78,26 @@ public class EditUserProfileFragment extends Fragment implements View.OnClickLis
     }
 
 
+    /**
+     * handling save button clicks
+     * => once clicked, EditText input is trimmed and set as parameter in the updateFireStoreData method that is called
+     * finally, the next fragment is loaded
+     *
+     * @param v referring to the Save-Button View that is being clicked
+     */
     @Override
     public void onClick(View v) {
         //save information and return to userProfileFraagment
 
-        username_input = editUsername.getText().toString().trim();
-        age_input = editAge.getText().toString().trim();
-        nationality_input = editNationality.getText().toString().trim();
+        String displayname_input = editDisplayName.getText().toString().trim();
+        String username_input = editUsername.getText().toString().trim();
+        String age_input = editAge.getText().toString().trim();
+        String nationality_input = editNationality.getText().toString().trim();
 
+        Log.d(TAG, "displayname " + displayname_input);
         //update Firestore data
-        updateFireStoreData(username_input, age_input, nationality_input);
+
+        updateFireStoreData(displayname_input, username_input, age_input, nationality_input);
         //update realtime database
         //updateUserExtras(username_input, age_input, nationality_input);
 
@@ -99,11 +115,54 @@ public class EditUserProfileFragment extends Fragment implements View.OnClickLis
     }
 
 
+    /**
+     * check if the parameters do not equal an empty string
+     * => if not empty: create new hashmap that will contain the key value pair that is sent to the database
+     *
+     * @param displayname
+     * @param nicknameUpdate    user input for the nickname
+     * @param ageUpdate         user input for the age
+     * @param nationalityUpdate user input for the nationality
+     */
     //update the user entered information to the database, if the strings arent empty
-    public void updateFireStoreData(String nicknameUpdate, String ageUpdate, String nationalityUpdate) {
+    public void updateFireStoreData(String displayname, String nicknameUpdate, String ageUpdate, String nationalityUpdate) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        FirebaseUser currUser = FirebaseAuth.getInstance().getCurrentUser();
         DocumentReference userDocRef = db.collection("Users").document(FirebaseAuth.getInstance().getCurrentUser().getEmail());
+
+        if ((displayname != null || !displayname.matches(""))) {
+            Log.d(TAG, "updating displayname... " + displayname);
+                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                        .setDisplayName(displayname)
+                        .build();
+                user.updateProfile(profileUpdates)
+                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete (@NonNull Task < Void > task) {
+                        if (task.isSuccessful()) {
+                            Log.d(TAG, "User profile updated.");
+                        }
+                    }
+                });
+        }
+
+
+//            userDocRef
+//                    .update("name", displayname)
+//                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+//                        @Override
+//                        public void onSuccess(Void aVoid) {
+//                            Log.d(TAG, "DocumentSnapshot successfully updated!");
+//                        }
+//                    })
+//                    .addOnFailureListener(new OnFailureListener() {
+//                        @Override
+//                        public void onFailure(@NonNull Exception e) {
+//                            Log.w(TAG, "Error updating document", e);
+//                        }
+//                    });
+//        }
+
 
         //NOTE: Both .set(.., SetOptions.merge()) and .update perform the same action
         if (!nicknameUpdate.matches("")) {
@@ -139,7 +198,9 @@ public class EditUserProfileFragment extends Fragment implements View.OnClickLis
                         }
                     });
         }
-        if (!nationalityUpdate.matches("")) {
+        if (!nationalityUpdate.matches(""))
+
+        {
             userDocRef
                     .update(NATIONALITY, nationalityUpdate)
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -154,11 +215,32 @@ public class EditUserProfileFragment extends Fragment implements View.OnClickLis
                             Log.w(TAG, "Error updating document", e);
                         }
                     });
-
         }
+
     }
 
 }
+
+//        public void updateDisplayname(String displayname) {
+//            Map<String, Object> dataUpdate = new HashMap<String, Object>();
+//            dataUpdate.put(NICKNAME, displayname);
+//            userDocRef
+//                    .set(dataUpdate, SetOptions.merge()).addOnSuccessListener(new OnSuccessListener<Void>() {
+//                @Override
+//                public void onSuccess(Void aVoid) {
+//                    Log.d(TAG, "Document has been saved");
+//                }
+//            }).addOnFailureListener(new OnFailureListener() {
+//                @Override
+//                public void onFailure(@NonNull Exception e) {
+//                    Log.d(TAG, "Document could not be saved");
+//                }
+//            });
+//
+//        }
+
+
+
 
 
 /*

@@ -1,5 +1,5 @@
 package com.example.vreeni.StreetMovementApp; /**
- * Created by vreee on 19/12/2017.
+ * Created by vreeni on 19/12/2017.
  */
 
 import android.os.Bundle;
@@ -10,6 +10,10 @@ import android.view.View;
 import android.view.ViewGroup;
 
 
+/**
+ * Fragment that is displayed after a successful login and that can be accessed from the navigation menu item "Home"
+ * final purpose yet to be defined, currently displaying space fillers
+ */
 public class HomeFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
