@@ -134,9 +134,7 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
     private static final int REQUEST_TAKE_PHOTO = 3;
     private Uri photoURI;
     private File photoFile;
-    private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
-    private static final int REQUEST_CAMERA_PERMISSION = 10;
-    private static final String FRAGMENT_DIALOG = "dialog";
+    private String mCurrentPhotoPath;
 
     //Constants used in the location settings dialog.
     private static final int REQUEST_LOCATION_PERMISSION = 1;
@@ -430,9 +428,8 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
 //                } else {
 //                    super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 //                }
+        }
     }
-    }
-
 
 
     /**
@@ -761,6 +758,11 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
         Log.d(LOG_TAG, "opening the popup window to select upload source");
     }
 
+    /**
+     * once popup window is open, dim everything behind it for the time it is opened
+     *
+     * @param popupWindow
+     */
     private void dimBehind(PopupWindow popupWindow) {
         View container;
         if (popupWindow.getBackground() == null) {
@@ -851,7 +853,6 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
     }
 
 
-
     /**
      * access the user's camera to take a photo and load into the imageview in the popup window
      */
@@ -871,8 +872,8 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
             // Continue only if the File was successfully created
             if (photoFile != null) {
                 File testFile = new File(mCurrentPhotoPath);
-                Log.d(LOG_TAG, "test file length: "+ testFile.getAbsolutePath().length());
-                Log.d(LOG_TAG, "test file Path: "+ mCurrentPhotoPath);
+                Log.d(LOG_TAG, "test file length: " + testFile.getAbsolutePath().length());
+                Log.d(LOG_TAG, "test file Path: " + mCurrentPhotoPath);
 
                 photoURI = FileProvider.getUriForFile(this.getActivity(),
                         "com.example.vreeni.StreetMovementApp", photoFile);
@@ -884,6 +885,15 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
     }
 
 
+    /**
+     * attempt to set imageView as bitmap
+     *
+     * @param context
+     * @param fileName
+     * @param width
+     * @param height
+     * @return
+     */
     private Bitmap getBitmapFromAssets(Context context, String fileName, int width, int height) {
         AssetManager asset = context.getAssets();
         InputStream is;
@@ -921,6 +931,13 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
         return inSampleSize;
     }
 
+    /**
+     * callback for camera intents, handling both retrieveFromGallyer() and takePicture()
+     *
+     * @param requestCode either pickImage from Gallery or takePicture to access the camera
+     * @param resultCode
+     * @param data
+     */
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -962,17 +979,10 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
 //                        })
 //                        .error(R.drawable.img_railheaven)
 //                        .into(selectedImage);
-            }
-
         }
 
-
-
-    public void saveImage() {
     }
 
-
-    String mCurrentPhotoPath;
 
     private File createImageFile() throws IOException {
         // Create an image file name
@@ -1217,74 +1227,4 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
         addToBeApprovedLocationMarkersOnMap(latLng);
     }
 
-
-
-
-    /**
-     * Shows an error message dialog.
-     */
-    public static class ErrorDialog extends DialogFragment {
-
-        private static final String ARG_MESSAGE = "message";
-
-        public static ErrorDialog newInstance(String message) {
-            ErrorDialog dialog = new ErrorDialog();
-            Bundle args = new Bundle();
-            args.putString(ARG_MESSAGE, message);
-            dialog.setArguments(args);
-            return dialog;
-        }
-
-        @NonNull
-        @Override
-        public Dialog onCreateDialog(Bundle savedInstanceState) {
-            final Activity activity = getActivity();
-            return new AlertDialog.Builder(activity)
-                    .setMessage(getArguments().getString(ARG_MESSAGE))
-                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            activity.finish();
-                        }
-                    })
-                    .create();
-        }
-    }
-
-        /**
-         * Shows OK/Cancel confirmation dialog about camera permission.
-         */
-        public static class CameraConfirmationDialog extends DialogFragment {
-
-
-            @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
-            @NonNull
-            @Override
-            public Dialog onCreateDialog(Bundle savedInstanceState) {
-                final android.app.Fragment parent = getParentFragment();
-                return new AlertDialog.Builder(getActivity())
-                        .setMessage("Requesting camera permission")
-                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                            @RequiresApi(api = Build.VERSION_CODES.M)
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                parent.requestPermissions(new String[]{android.Manifest.permission.CAMERA},
-                                        REQUEST_CAMERA_PERMISSION);
-                            }
-                        })
-                        .setNegativeButton(android.R.string.cancel,
-                                new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        Activity activity = parent.getActivity();
-                                        if (activity != null) {
-                                            activity.finish();
-                                        }
-                                    }
-                                })
-                        .create();
-            }
-        }
-
-
-    }
+}
