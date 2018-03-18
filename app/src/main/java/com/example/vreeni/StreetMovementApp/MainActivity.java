@@ -77,7 +77,20 @@ public class MainActivity extends BaseActivity
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
-
+//        toolbar.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if (v.getId() == R.id.showMap) {
+//                    Fragment fragment = new MapView_Fragment();
+//                    if (fragment != null) {
+//                        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+//                        ft.replace(R.id.fragment_container, fragment).replace(R.id.fragment_container, fragment).addToBackStack(null);
+//                        ft.commit();
+//                        ft.addToBackStack(null);
+//                    }
+//                }
+//            }
+//        });
 
         //show the start fragment after login
         if (savedInstanceState == null) {
@@ -100,7 +113,7 @@ public class MainActivity extends BaseActivity
 
         //set username in navigation drawer header and make it clickable, linking to the user profile
         TextView txtProfileName = (TextView) navigationView.getHeaderView(0).findViewById(R.id.profile_section);
-        if (FirebaseAuth.getInstance().getCurrentUser().getDisplayName()!=null) {
+        if (FirebaseAuth.getInstance().getCurrentUser().getDisplayName() != null) {
             Log.d(TAG, "profilename " + FirebaseAuth.getInstance().getCurrentUser().getDisplayName());
             String profileName = firebaseAuth.getCurrentUser().getDisplayName();
             txtProfileName.setText(profileName);
@@ -109,7 +122,7 @@ public class MainActivity extends BaseActivity
             txtProfileName.setText(profileName);
         }
         txtProfileName.setOnClickListener(new View.OnClickListener() {
-           @Override
+            @Override
             public void onClick(View v) {
                 Fragment fragment = null;
                 if (v.getId() == R.id.profile_section) {
@@ -124,12 +137,8 @@ public class MainActivity extends BaseActivity
                 drawer.closeDrawer(GravityCompat.START);
             }
         });
-
         checkLoginMethod();
-
-
     }
-
 
 
     //enabling the options menu in the appbar / toolbar
@@ -150,7 +159,7 @@ public class MainActivity extends BaseActivity
         }
         //if is only one fragment on the back stack, check if its the home fragment or not
         // if so: logout; if not: move the task to the background
-        if(getFragmentManager().getBackStackEntryCount() == 1) {
+        if (getFragmentManager().getBackStackEntryCount() == 1) {
             Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
             if (currentFragment instanceof HomeFragment) {
                 logout();
@@ -164,8 +173,7 @@ public class MainActivity extends BaseActivity
             Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
             if (currentFragment instanceof HomeFragment) {
                 logout();
-            }
-            else {
+            } else {
                 super.onBackPressed();
             }
         }
@@ -199,7 +207,7 @@ public class MainActivity extends BaseActivity
             fragment.setArguments(bundle);
         } else if (id == R.id.youtube) {
             bundle.putString("url", "https://www.youtube.com/user/StreetmovementDK");
-            fragment = new MapView_Fragment();
+            fragment = new WebViewFragment_SocialMediaChannels();
             fragment.setArguments(bundle);
         }
         if (fragment != null) {
@@ -207,7 +215,6 @@ public class MainActivity extends BaseActivity
             ft.replace(R.id.fragment_container, fragment).replace(R.id.fragment_container, fragment).addToBackStack(null);
             ft.commit();
             ft.addToBackStack(null);
-
         }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
@@ -219,28 +226,38 @@ public class MainActivity extends BaseActivity
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
         switch (item.getItemId()) {
+            case R.id.showMap:
+                    Fragment fragment = new MapView_Fragment();
+                    if (fragment != null) {
+                        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+                        ft.replace(R.id.fragment_container, fragment).replace(R.id.fragment_container, fragment).addToBackStack(null);
+                        ft.commit();
+                        ft.addToBackStack(null);
+                }
+                break;
             case R.id.log_out_button:
                 logout();
+                break;
             case R.id.action_settings:
                 System.out.print("SETTINGS");
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+        return false;
     }
 
 
     //possibly create new class called AppStateHandler handling login, signin and logout
     private void logout() {
-//        checkLoginMethod();
-        if (loginMethod!=null) {
+        if (loginMethod != null) {
             if (loginMethod.equals("Facebook")) {
                 //signout via firebase + facebook
                 Log.d(TAG, "google sign out successful");
                 FirebaseAuth.getInstance().signOut();
                 LoginManager.getInstance().logOut();
                 updateUI(null);
-            } else if (loginMethod.equals("Google")){
+            } else if (loginMethod.equals("Google")) {
                 GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                         .requestIdToken(getString(R.string.default_web_client_id))
                         .requestEmail()
@@ -263,8 +280,7 @@ public class MainActivity extends BaseActivity
                 FirebaseAuth.getInstance().signOut();
                 updateUI(null);
             }
-        }
-        else {
+        } else {
             Log.d(TAG, "login method not found.");
         }
 //        Intent intent = new Intent(MainActivity.this, SignInActivity.class);
@@ -276,26 +292,26 @@ public class MainActivity extends BaseActivity
     public void checkLoginMethod() {
         final FirebaseFirestore db = FirebaseFirestore.getInstance();
         FirebaseUser currUser = FirebaseAuth.getInstance().getCurrentUser();
-            final DocumentReference userDocRef = db.collection("Users").document(currUser.getEmail());
-                Log.d(TAG, "userDocRef: " + userDocRef);
-                //access current values saved under this user
-                userDocRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                    @Override
-                    public void onSuccess(DocumentSnapshot documentSnapshot) {
-                        if (documentSnapshot.exists()) {
-                            User currentUser = documentSnapshot.toObject(User.class);
-                            Log.d(TAG, "checking loginmethod - userDocRef: " + currentUser);
+        final DocumentReference userDocRef = db.collection("Users").document(currUser.getEmail());
+        Log.d(TAG, "userDocRef: " + userDocRef);
+        //access current values saved under this user
+        userDocRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                if (documentSnapshot.exists()) {
+                    User currentUser = documentSnapshot.toObject(User.class);
+                    Log.d(TAG, "checking loginmethod - userDocRef: " + currentUser);
 //
-                            Map<String, Object> data = new HashMap<>();
-                            data = documentSnapshot.getData();
-                            loginMethod = (String) data.get("loginMethod");
-                        } else {
-                            //sometimes if a user has just been created, it might not yet have been fully saved as a document to the database
-                            checkLoginMethod();
-                        }
-                    }
-                });
+                    Map<String, Object> data = new HashMap<>();
+                    data = documentSnapshot.getData();
+                    loginMethod = (String) data.get("loginMethod");
+                } else {
+                    //sometimes if a user has just been created, it might not yet have been fully saved as a document to the database
+                    checkLoginMethod();
+                }
             }
+        });
+    }
 
     private void updateUI(FirebaseUser user) {
         hideProgressDialog();
@@ -305,7 +321,6 @@ public class MainActivity extends BaseActivity
             //start main activity with nav. drawer and fragments
 //            Intent intent = new Intent(SignInActivity.this, MainActivity.class);
 //            startActivity(intent);
-
         } else {
             Log.d(TAG, "not logged in");
             Intent intent = new Intent(MainActivity.this, SignInActivity.class);

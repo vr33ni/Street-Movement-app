@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/miCompose"
+        android:id="@+id/showMap"
         android:icon="@drawable/ic_gmaps_locations"
         android:title="Compose"
         app:showAsAction="always"/>

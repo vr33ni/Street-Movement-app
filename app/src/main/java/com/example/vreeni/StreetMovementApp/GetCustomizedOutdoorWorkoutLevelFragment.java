@@ -76,8 +76,6 @@ public class GetCustomizedOutdoorWorkoutLevelFragment extends Fragment implement
             if (pk.getPhoto_0() != null) {
                 HashMap<String, Object> photo = pk.getPhoto_0();
                 String photoURL = (String) photo.get("url");
-//                Uri photoURI = Uri.parse(photoURL);
-//                iv.setImageURI(photoURI);
                 loadImgWithGlide(photoURL, iv);
             } else {
                 //default photo, but prevent that by having pictures of all spots in the map view fragment already
