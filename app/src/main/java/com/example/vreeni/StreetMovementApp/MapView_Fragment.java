@@ -989,15 +989,6 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
         return image;
     }
 
-    private Uri contentUri;
-    private void galleryAddPic() {
-        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-        File f = new File(mCurrentPhotoPath);
-        contentUri = Uri.fromFile(f);
-        mediaScanIntent.setData(contentUri);
-        this.getActivity().sendBroadcast(mediaScanIntent);
-    }
-
 
     /**
      * getting last known location. This happens when location tracking is disabled.
