@@ -17,7 +17,7 @@
    <!-- <uses-permission android:name="android.permission.CAMERA" /> -->
 
     <uses-feature android:name="android.hardware.camera" />
-        android:required="false" />
+        android:required="true" />
 
 
 
@@ -38,7 +38,7 @@
         <!--google maps api-->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyBANBTlbpdpXpvDd9GQZuFkw2Pvgk1vno0"/>
+            android:value="@string/google_geo_api_key"/>
 
         <activity
             android:name=".SignInActivity"
