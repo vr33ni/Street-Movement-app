@@ -2,6 +2,7 @@ package com.example.vreeni.StreetMovementApp;
 
 import android.media.JetPlayer;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
@@ -54,6 +55,8 @@ public class GetCustomizedOutdoorWorkout_ParkourParkView_Fragment extends Fragme
     private EditText et_comment;
     private RatingBar ratingBar;
     private Button btnSubmitRating;
+    private long mLastClickTime = 0;
+
 
     private FirebaseStorage storage = FirebaseStorage.getInstance();
     private StorageReference storageRef = storage.getReference();
@@ -151,6 +154,11 @@ public class GetCustomizedOutdoorWorkout_ParkourParkView_Fragment extends Fragme
 
     @Override
     public void onClick(View v) {
+        //make sure button is not clicked accidentally 2 times in a row
+        if (SystemClock.elapsedRealtime() - mLastClickTime < 1000){
+            return;
+        }
+        mLastClickTime = SystemClock.elapsedRealtime();
         if (v.getId() == R.id.btn_submitRating) {
             String comment = et_comment.getText().toString().trim();
             long rating = (long) ratingBar.getRating();

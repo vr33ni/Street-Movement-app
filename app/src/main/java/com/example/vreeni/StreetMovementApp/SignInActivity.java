@@ -174,7 +174,7 @@ public class SignInActivity extends BaseActivity implements
         findViewById(R.id.email_go_to_create_account).setOnClickListener(this);
         findViewById(R.id.email_go_to_sign_in).setOnClickListener(this);
         findViewById(R.id.forgot_password).setOnClickListener(this);
-        findViewById(R.id.verify_email_button).setOnClickListener(this);
+//        findViewById(R.id.verify_email_button).setOnClickListener(this);
         // [END setup email Passowrd
 
         // [START Firebase initialize_auth]

@@ -1,37 +1,28 @@
 package com.example.vreeni.StreetMovementApp;
 
+import android.os.SystemClock;
 import android.support.v4.app.ActivityCompat;
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.DialogFragment;
+
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.AssetManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.text.TextUtils;
 import android.util.Log;
-import android.util.SparseIntArray;
 import android.view.Gravity;
 import android.view.View;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.resource.drawable.GlideDrawable;
-import com.bumptech.glide.request.RequestListener;
-import com.bumptech.glide.request.target.Target;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -73,12 +64,13 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+
 import java.io.IOException;
-import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -86,7 +78,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static android.app.Activity.RESULT_CANCELED;
 import static android.app.Activity.RESULT_OK;
 import static android.os.Environment.DIRECTORY_PICTURES;
 
@@ -122,18 +113,25 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
     private List<Marker> listOfPkMarkers;
     private List<Marker> listOfCaliMarkers;
     private Map<Marker, ParkourPark> mapMarkerToPark;
-    private List<Location> listOfLocationUpdates;
+//    private List<Location> listOfLocationUpdates;
 
     //popup window variables
     private PopupWindow popupWindow;
     private PopupWindow popupWindowSelectUploadSource;
     private ImageView selectedImage;
+    //first popup window
     private EditText et_name;
     private EditText et_desc;
+    private Button btn_submit;
+    //second popup window
+    private Button btn_takePicture;
+    private Button btn_chooseFromGallery;
+    private long mLastClickTime = 0;
+
+
     private static final int PICK_IMAGE_REQUEST = 2;
     private static final int REQUEST_TAKE_PHOTO = 3;
     private Uri photoURI;
-    private File photoFile;
     private String mCurrentPhotoPath;
 
     //Constants used in the location settings dialog.
@@ -146,10 +144,12 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
     //Callback for Location events. Initializes the location update circle
     private LocationCallback mLocationCallback;
 
+    private LocationHandler locationHandler;
+
     /*
      * Tracks the status of the location updates request. Value changes when the user presses the
      * Start Updates and Stop Updates buttons. */
-    private boolean mTrackingLocation = false;
+    private boolean mTrackingLocation;
 
     /*
      * Checks whether the user wants to share his location with others
@@ -198,6 +198,11 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
         mMapView.onCreate(null);
 
         updateValuesFromBundle(savedInstanceState);
+
+        locationHandler = new LocationHandler(this.getActivity(), this.getActivity(), mGoogleMap);
+        mLastKnownLocation = locationHandler.getmLastKnownLocation();
+        mTrackingLocation = locationHandler.ismTrackingLocation();
+
 
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this.getActivity());
         mLocationCallback = new LocationCallback();
@@ -250,7 +255,7 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
         listOfPkMarkers = new ArrayList<>();
         listOfCaliMarkers = new ArrayList<>();
         mapMarkerToPark = new HashMap<>();
-        listOfLocationUpdates = new ArrayList<>();
+//        listOfLocationUpdates = new ArrayList<>();
 
         firstRun = true;
 
@@ -301,26 +306,19 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
         //possibly separate comman for when map is first loaded? to only move camera once
         //get last location => once retrieved, start regular updates?
 
-        mTrackingLocation = true;
-        createLocationCallback();
-        startTrackingLocation();
+
+        locationHandler = new LocationHandler(this.getActivity(), this.getActivity(), mGoogleMap);
+        locationHandler.startTrackingLocation();
+
+
+//        updateLocationUI(locationHandler.getmLastKnownLocation());
+//        displayLocationData();
+
+//        createLocationCallback();
+//        startTrackingLocation();
 
 //        //make clickable, once map is ready
 //        btnRefresh.setOnClickListener(this);
-    }
-
-    /**
-     * stop location tracking
-     */
-    public void stopTrackingLocation() {
-        if (mTrackingLocation) {
-            mTrackingLocation = false;
-            mLastKnownLocation.setLatitude(0);
-            mLastKnownLocation.setLongitude(0);
-            updateLocationUI(mLastKnownLocation); //updating the location UI based on a null value, which leads to the recentering around a defaultLocation (StreetMekka)
-            Log.d(LOG_TAG, "location tracking disabled. Location set to 0.");
-//            mFusedLocationProviderClient.removeLocationUpdates(mLocationCallback);
-        }
     }
 
 
@@ -382,7 +380,7 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
                 for (Location location : locationResult.getLocations()) {
                     Log.i(LOG_TAG, "Location: " + location.getLatitude() + " " + location.getLongitude() + " " + location.getTime());
                     mLastKnownLocation = location;
-                    listOfLocationUpdates.add(location);
+//                    listOfLocationUpdates.add(location);
                     updateLocationUI(location);
                     updateLocationOnFirebase();
                     displayLocationData();
@@ -401,35 +399,35 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
         return permissionState == PackageManager.PERMISSION_GRANTED;
     }
 
-    /**
-     * Callback received when a permissions request has been completed. If permission is granted, get the location.
-     */
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case REQUEST_LOCATION_PERMISSION:
-                // If the permission is granted, get the location,
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Log.d(LOG_TAG, "location permission granted");
-                    startTrackingLocation(); //includes the update of the location UI
-                } else {
-                    Log.d(LOG_TAG, "location permission denied");
-                    mLastKnownLocation.setLatitude(0);
-                    mLastKnownLocation.setLongitude(0);
-                    updateLocationUI(mLastKnownLocation); //updating the location UI based on a null value, which leads to the recentering around a defaultLocation (StreetMekka)
-                }
-                break;
-//            case REQUEST_CAMERA_PERMISSION:
-//                if (grantResults.length != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-//                    ErrorDialog.newInstance(("Requesting permission"))
-//                            .show(getChildFragmentManager(), FRAGMENT_DIALOG);
+//    /**
+//     * Callback received when a permissions request has been completed. If permission is granted, get the location.
+//     */
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode,
+//                                           @NonNull String[] permissions, @NonNull int[] grantResults) {
+//        switch (requestCode) {
+//            case REQUEST_LOCATION_PERMISSION:
+//                // If the permission is granted, get the location,
+//                if (grantResults.length > 0
+//                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//                    Log.d(LOG_TAG, "location permission granted");
+//                    locationHandler.startTrackingLocation(); //includes the update of the location UI
 //                } else {
-//                    super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+//                    Log.d(LOG_TAG, "location permission denied");
+//                    mLastKnownLocation.setLatitude(0);
+//                    mLastKnownLocation.setLongitude(0);
+//                    updateLocationUI(mLastKnownLocation); //updating the location UI based on a null value, which leads to the recentering around a defaultLocation (StreetMekka)
 //                }
-        }
-    }
+//                break;
+////            case REQUEST_CAMERA_PERMISSION:
+////                if (grantResults.length != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+////                    ErrorDialog.newInstance(("Requesting permission"))
+////                            .show(getChildFragmentManager(), FRAGMENT_DIALOG);
+////                } else {
+////                    super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+////                }
+//        }
+//    }
 
 
     /**
@@ -457,19 +455,21 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
      * camera movement to the user's location is disabled in the locationRequest, cause it would not allow the user to explore the map without the camera constantly moving back to the current location
      * user can focus on his location by pressing google map's own myLocation button in the top right corner
      *
-     * @param mLastKnownLocation
+     * @param location
      */
-    private void setInitialLocationUI(Location mLastKnownLocation) {
+    private void setInitialLocationUI(Location location) {
         if (mGoogleMap == null) {
             return;
         }
+        Log.d(LOG_TAG, "mlastknown set initial " + locationHandler.getmLastKnownLocation());
+
         try {
-            if (mLastKnownLocation != null) {
+            if (location != null) {
                 mGoogleMap.setMyLocationEnabled(true);
                 mGoogleMap.getUiSettings().setMyLocationButtonEnabled(true);
                 mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                        new LatLng(mLastKnownLocation.getLatitude(),
-                                mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
+                        new LatLng(location.getLatitude(),
+                                location.getLongitude()), DEFAULT_ZOOM));
 //                Snackbar.make(getActivity().getWindow().getDecorView().getRootView().findViewById(android.R.id.content),
 //                        "First location update", Snackbar.LENGTH_SHORT).show(); !!!keeps crashing when screen rotation
             } else {
@@ -488,17 +488,17 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
      * Updates the map's UI settings based on whether the user has granted location permission.
      * Responsible for whether or not the map contains the blue dot, can be recentered, etc.
      */
-    private void updateLocationUInoCamRecentering(Location mLastKnownLocation) {
+    private void updateLocationUInoCamRecentering(Location location) {
         if (mGoogleMap == null) {
             return;
         }
         try {
-            if (mLastKnownLocation != null) {
+            if (location != null) {
                 mGoogleMap.setMyLocationEnabled(true);
                 mGoogleMap.getUiSettings().setMyLocationButtonEnabled(true);
                 Location updatedLocation = new Location("");
-                updatedLocation.setLatitude(mLastKnownLocation.getLatitude());
-                updatedLocation.setLongitude(mLastKnownLocation.getLongitude());
+                updatedLocation.setLatitude(location.getLatitude());
+                updatedLocation.setLongitude(location.getLongitude());
 //                mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
 //                        new LatLng(mLastKnownLocation.getLatitude(),
 //                                mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
@@ -543,7 +543,7 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
                                     addApprovedLocationMarkersOnMap(queriedLocation);
                                 }
                             }
-                            if (getActivity().getWindow() != null) {
+                            if (getActivity() != null) {
                                 Snackbar.make(getActivity().getWindow().getDecorView().getRootView().findViewById(android.R.id.content),
                                         "Spotmap up to date", Snackbar.LENGTH_SHORT).show();
                             }
@@ -730,9 +730,9 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
         selectedImage = (ImageView) layout.findViewById(R.id.iv_toBeApprovedLocation_image);
         Button btn_selectImg = (Button) layout.findViewById(R.id.btn_selectImage);
         btn_selectImg.setOnClickListener(this);
-        Button btn_submit = (Button) layout.findViewById(R.id.btn_submitForApproval);
+        btn_submit = (Button) layout.findViewById(R.id.btn_submitForApproval);
         btn_submit.setOnClickListener(this);
-
+        btn_submit.setEnabled(true);
 //        int x = Resources.getSystem().getDisplayMetrics().widthPixels/2-150;
 //        int y = Resources.getSystem().getDisplayMetrics().heightPixels/2-100;
         popupWindow.showAtLocation(this.getView(), Gravity.CENTER, 0, 0);
@@ -741,16 +741,22 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
     }
 
 
+    /**
+     * opens a second popup window where the user can choose if he wants to take a picture using the camera or upload one from the gallery
+     * once one button is clicked, the other one is set to disabled
+     */
     public void openPopUpWindowSelectUploadSource() {
         View layout = getLayoutInflater().inflate(R.layout.custom_popup_window_select_upload_source, null);
         popupWindowSelectUploadSource = new PopupWindow(
                 layout,
                 LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT, true);
-        Button btn_takePicture = (Button) layout.findViewById(R.id.btn_takePicture);
+        btn_takePicture = (Button) layout.findViewById(R.id.btn_takePicture);
         btn_takePicture.setOnClickListener(this);
-        Button btn_chooseFromGallery = (Button) layout.findViewById(R.id.btn_chooseFromGallery);
+        btn_takePicture.setEnabled(true);
+        btn_chooseFromGallery = (Button) layout.findViewById(R.id.btn_chooseFromGallery);
         btn_chooseFromGallery.setOnClickListener(this);
+        btn_chooseFromGallery.setEnabled(true);
         Button btn_cancel = (Button) layout.findViewById(R.id.btn_cancel_selectImg_process);
         btn_cancel.setOnClickListener(this);
         popupWindowSelectUploadSource.showAtLocation(this.getView(), Gravity.CENTER, 0, 0);
@@ -760,8 +766,7 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
 
     /**
      * once popup window is open, dim everything behind it for the time it is opened
-     *
-     * @param popupWindow
+     * @param popupWindow based on which popup window is set as a parameter, it is taken as reference point and everything behind is dimmed
      */
     private void dimBehind(PopupWindow popupWindow) {
         View container;
@@ -791,23 +796,45 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
      */
     public void submitNewLocationForApprovalToFirestore() {
         if (validateUserInput()) {
-            final FirebaseFirestore db = FirebaseFirestore.getInstance();
-            DocumentReference spotToBeApproved = db.collection("TrainingLocationsToBeApproved").document(/*marker.getId()*/);
-            HashMap<String, Object> data = new HashMap<>();
-            data.put("name", et_name.getText());
-            data.put("description", et_desc.getText());
-            data.put("image", selectedImage);
-            spotToBeApproved
-                    .set(data, SetOptions.merge()).addOnSuccessListener(new OnSuccessListener<Void>() {
-                @Override
-                public void onSuccess(Void aVoid) {
+            //upload image to storage
+            final FirebaseStorage storage = FirebaseStorage.getInstance();
+            StorageReference storageRef = storage.getReference();
+            StorageReference toBeApprovedTrainingLocationsRef = storageRef.child("toBeApprovedTrainingLocations/" + photoURI.getLastPathSegment());
+            Log.d(LOG_TAG, "Uri: " + photoURI);
+
+            UploadTask uploadTask = toBeApprovedTrainingLocationsRef.putFile(photoURI);
+            uploadTask.addOnFailureListener(exception -> {
+                // Handle unsuccessful uploads
+            }).addOnSuccessListener(taskSnapshot -> {
+                btn_submit.setEnabled(false);
+                // once file is uploading successfully, button is set to disabled to prevent multiple upload
+                // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
+                Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                Log.d(LOG_TAG, "download url " + downloadUrl);
+
+                //upload text information to database + create reference to storage
+                final FirebaseFirestore db = FirebaseFirestore.getInstance();
+                DocumentReference spotToBeApproved = db.collection("TrainingLocationsToBeApproved").document(/*marker.getId()*/);
+                DocumentReference userDocRef = db.collection("Users").document(FirebaseAuth.getInstance().getCurrentUser().getEmail());
+
+                HashMap<String, Object> data = new HashMap<>();
+                String s = et_name.getText().toString().trim();
+                data.put("name", et_name.getText().toString().trim());
+                data.put("description", et_desc.getText().toString().trim());
+                data.put("suggestedBy", userDocRef);
+                data.put("image", downloadUrl.toString());
+                spotToBeApproved
+                        .set(data, SetOptions.merge()).addOnSuccessListener(aVoid -> {
                     Log.d(LOG_TAG, "New Location has been submitted for approval: " + spotToBeApproved.getId());
-                }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    Log.d(LOG_TAG, "New Location could not be saved");
-                }
+                    //close popup window after upload
+                    popupWindow.dismiss();
+                    //mark marker as diff color or transparent? to see its only a suggestion.
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.d(LOG_TAG, "New Location could not be saved");
+                    }
+                });
             });
         } else {
             return;
@@ -829,16 +856,17 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
         } else {
             et_name.setError(null);
         }
+
+        String description = et_desc.getText().toString();
+        if (TextUtils.isEmpty(description)) {
+            et_desc.setError("Required.");
+            valid = false;
+        } else {
+            et_desc.setError(null);
+        }
         return valid;
     }
 
-//    private void requestCameraPermission() {
-//        if (shouldShowRequestPermissionRationale(android.Manifest.permission.CAMERA)) {
-//            new CameraConfirmationDialog().show(getChildFragmentManager(), FRAGMENT_DIALOG);
-//        } else {
-//            requestPermissions(new String[]{android.Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
-//        }
-//    }
 
     /**
      * access the user's image gallery to select a photo and load into the imageview in the popup window
@@ -861,7 +889,7 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
         // Ensure that there's a camera activity to handle the intent
         if (takePictureIntent.resolveActivity(this.getActivity().getPackageManager()) != null) {
             // Create the File where the photo should go
-            photoFile = null;
+            File photoFile = null;
             try {
                 photoFile = createImageFile();
                 Log.d(LOG_TAG, "creating photofile: " + photoFile);
@@ -878,57 +906,11 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
                 photoURI = FileProvider.getUriForFile(this.getActivity(),
                         "com.example.vreeni.StreetMovementApp", photoFile);
                 Log.d(LOG_TAG, "uri: " + photoURI);
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
                 startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
                 Log.d(LOG_TAG, "intent: " + takePictureIntent + " , " + REQUEST_TAKE_PHOTO);
             }
         }
-    }
-
-
-    /**
-     * attempt to set imageView as bitmap
-     *
-     * @param context
-     * @param fileName
-     * @param width
-     * @param height
-     * @return
-     */
-    private Bitmap getBitmapFromAssets(Context context, String fileName, int width, int height) {
-        AssetManager asset = context.getAssets();
-        InputStream is;
-        try {
-            is = asset.open(fileName);
-        } catch (IOException e) {
-            return null;
-        }
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeStream(is, null, options);
-        try {
-            is.reset();
-        } catch (IOException e) {
-            return null;
-        }
-        options.inSampleSize = calculateInSampleSize(options, width, height);
-        options.inJustDecodeBounds = false;
-        return BitmapFactory.decodeStream(is, null, options);
-    }
-
-    public static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
-        final int height = options.outHeight;
-        final int width = options.outWidth;
-        int inSampleSize = 1;
-
-        if (height > reqHeight || width > reqWidth) {
-            final int halfHeight = height / 2;
-            final int halfWidth = width / 2;
-            while ((halfHeight / inSampleSize) >= reqHeight
-                    && (halfWidth / inSampleSize) >= reqWidth) {
-                inSampleSize *= 2;
-            }
-        }
-        return inSampleSize;
     }
 
     /**
@@ -942,10 +924,11 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
-            Uri uri = data.getData();
-            Log.d(LOG_TAG, "uri " + uri);
+//            Uri uri = data.getData();
+            photoURI = data.getData();
+            Log.d(LOG_TAG, "uri " + photoURI);
             try {
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getActivity().getContentResolver(), uri);
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getActivity().getContentResolver(), photoURI);
                 popupWindowSelectUploadSource.dismiss();
                 selectedImage.setVisibility(View.VISIBLE);
                 selectedImage.setImageBitmap(bitmap);
@@ -956,27 +939,10 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
         } else if (requestCode == REQUEST_TAKE_PHOTO && resultCode == RESULT_OK) {
             popupWindowSelectUploadSource.dismiss();
             selectedImage.setVisibility(View.VISIBLE);
-            Log.d(LOG_TAG, "file path" + photoFile.getAbsolutePath());
-            Log.d(LOG_TAG, "getBitmapFromAssets " + getBitmapFromAssets(this.getActivity(), photoFile.getAbsolutePath(), 100, 100));
-//            selectedImage.setImageResource(R.drawable.img_railheaven);
-//            selectedImage.setImageBitmap(getBitmapFromAssets(this.getActivity(),photoFile.getAbsolutePath(), 100, 100));
-            Log.d(LOG_TAG, "BitmapFactory" + BitmapFactory.decodeFile(photoFile.getAbsolutePath()));
-            selectedImage.setImageBitmap(BitmapFactory.decodeFile(photoFile.getAbsolutePath()));
-
+            selectedImage.setImageURI(photoURI);
+            Log.d(LOG_TAG, "file path" + selectedImage);
 //                Glide.with(this)
 //                        .load(getBitmapFromAssets(this.getActivity(), mCurrentPhotoPath, 100, 100))
-//                        .listener(new RequestListener<Uri, GlideDrawable>() {
-//                            @Override
-//                            public boolean onException(Exception e, Uri model, Target<GlideDrawable> target, boolean isFirstResource) {
-//                                Log.d(LOG_TAG, "Glide" + e);
-//                                return false;
-//                            }
-//
-//                            @Override
-//                            public boolean onResourceReady(GlideDrawable resource, Uri model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-//                                return false;
-//                            }
-//                        })
 //                        .error(R.drawable.img_railheaven)
 //                        .into(selectedImage);
         }
@@ -1040,11 +1006,11 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
      * display location data in a textview at the bottom of the fragment
      */
     public void displayLocationData() {
-        if (mLastKnownLocation != null) {
+        if (locationHandler.getmLastKnownLocation() != null) {
             tvMyLocation.setText(getString(R.string.location_text,
-                    mLastKnownLocation.getLatitude(),
-                    mLastKnownLocation.getLongitude(),
-                    mLastKnownLocation.getTime()));
+                    locationHandler.getmLastKnownLocation().getLatitude(),
+                    locationHandler.getmLastKnownLocation().getLongitude(),
+                    locationHandler.getmLastKnownLocation().getTime()));
         }
     }
 
@@ -1057,9 +1023,13 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
      */
     @Override
     public void onClick(View v) {
+        if (SystemClock.elapsedRealtime() - mLastClickTime < 1000){
+            return;
+        }
+        mLastClickTime = SystemClock.elapsedRealtime();
         if (v.getId() == R.id.btn_refresh) {
             Log.d(LOG_TAG, "refresh location");
-            startTrackingLocation();
+            locationHandler.startTrackingLocation();
 //             stopTrackingLocation();
 //            getLocation();
         }
@@ -1084,6 +1054,8 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
 
 
     }
+
+
 
 
     /**
@@ -1146,11 +1118,12 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
         super.onResume();
         mMapView.onResume();
         Log.d(LOG_TAG, "on resume");
-        if (mTrackingLocation && checkPermissions()) {
-            startTrackingLocation(); //includes updating the location UI
-        } else
-            updateLocationUI(mLastKnownLocation); //updating the location UI based on a null value, which leads to the recentering around a defaultLocation (StreetMekka)
+        if (mTrackingLocation && locationHandler.checkPermissions()) {
+            Log.d(LOG_TAG, "permission checked " + locationHandler.checkPermissions());
+            locationHandler.startTrackingLocation(); //includes updating the location UI
 
+        } else
+            updateLocationUI(locationHandler.getmLastKnownLocation()); //updating the location UI based on a null value, which leads to the recentering around a defaultLocation (StreetMekka)
 //      getLocation();
     }
 
@@ -1179,8 +1152,8 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
     public void onDestroy() {
         super.onDestroy();
         mMapView.onDestroy();
-//        stopLocationUpdates();
-        Log.d(LOG_TAG, "location updates on");
+        locationHandler.stopTrackingLocation();
+        Log.d(LOG_TAG, "location updates stopped");
     }
 
     public static GeoPoint calculateGeoPoint(double latitude, double longitude) {

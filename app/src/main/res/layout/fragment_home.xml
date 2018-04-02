@@ -56,6 +56,20 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="GFNCS ADD"
+                android:onClick="addGeofencesButtonHandler"
+                android:id="@+id/add_geofences_button"/>
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="GFNCS REMOVE"
+                android:onClick="removeGeofencesButtonHandler"
+                android:id="@+id/remove_geofences_button"/>
+
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="150dp"

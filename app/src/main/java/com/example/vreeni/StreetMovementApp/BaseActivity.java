@@ -30,7 +30,7 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onStop() {
+    protected void onStop() {
         super.onStop();
         hideProgressDialog();
     }

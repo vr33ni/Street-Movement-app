@@ -5,14 +5,16 @@
     <item
         android:id="@+id/showMap"
         android:icon="@drawable/ic_gmaps_locations"
-        android:title="Compose"
+        android:title="maps"
         app:showAsAction="always"/>
+
 
     <item
         android:id="@+id/action_settings"
         android:title="@string/action_settings"
         app:showAsAction="never" />
 
+    
     <item
         android:id="@+id/developer"
         android:orderInCategory="100"
