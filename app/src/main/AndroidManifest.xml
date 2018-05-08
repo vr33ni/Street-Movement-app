@@ -44,7 +44,9 @@
 
         <activity
             android:name=".SignInActivity"
-            android:label="@string/label_main">
+            android:label="@string/label_main"
+            android:noHistory="true">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -53,7 +55,8 @@
         </activity>
         <activity
             android:name=".MainActivity"
-            android:label="@string/label_main" />
+            android:label="@string/label_main"
+            android:screenOrientation="portrait" />
         <!-- label defining the stuff written in the navigation toolbar on top -->
 
         <!--<activity android:name=".StartScreenActivity"/>-->

@@ -2,16 +2,16 @@ apply plugin: 'com.android.application'
 
 
 android {
-    signingConfigs {
-        key{
-            keyAlias 'androiddebugkey'
-            keyPassword 'android'
-            storeFile file ('C:\\Users\\vreee\\.android\\debug.keystore')
-            storePassword 'android'
-        }
-    }
+//    signingConfigs {
+//        key{
+//            keyAlias 'androiddebugkey'
+//            keyPassword 'android'
+//            storeFile file ('C:\\Users\\vreee\\.android\\debug.keystore')
+//            storePassword 'android'
+//        }
+//    }
     compileSdkVersion 26
-    buildToolsVersion '26.0.2'
+    buildToolsVersion '27.0.3'
     flavorDimensions "minSdkVersion"
     defaultConfig {
         applicationId "com.example.vreeni.StreetMovementApp"
@@ -26,9 +26,9 @@ android {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
-        debug {
-            signingConfig signingConfigs.key
-        }
+//        debug {
+//            signingConfig signingConfigs.key
+//        }
     }
     lintOptions {
         abortOnError false
@@ -73,6 +73,14 @@ dependencies {
     compile 'com.github.bumptech.glide:glide:3.7.0'
     //google maps location
     compile 'com.google.android.gms:play-services-location:11.8.0'
+    compile 'com.google.android.gms:play-services-places:11.8.0'
+    compile 'com.google.android.gms:play-services-maps:11.8.0'
+
+    //mp android charts library
+    implementation 'com.github.PhilJay:MPAndroidChart:v3.0.3'
+
+
+
     //firebase analytics
     compile 'com.google.firebase:firebase-core:11.8.0'
     implementation 'com.google.android.gms:play-services-maps:11.8.0'

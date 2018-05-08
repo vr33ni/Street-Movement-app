@@ -4,6 +4,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by vreeni on 30/12/2017.
@@ -26,6 +27,8 @@ public class User {
     private String status;
     private String age;
     private String loginMethod;
+
+
     private GeoPoint position;
 
     private long workoutsCompleted;
@@ -45,14 +48,31 @@ public class User {
     static final String WARMUPSCOMPLETED = "warmupsSkipped";
     static final String LISTOFHOMEWORKOUTS = "listOfHomeWorkouts";
     static final String LISTOFOUTDOORWORKOUTS = "listOfOutdoorWorkouts";
+    static final String LISTOFMOVEMENTSPECIFICCHALLENGES = "listOfMovementSpecificChallenges";
+    static final String LISTOFSTREETMOVEMENTCHALLENGES = "listOfStreetMovementChallenges";
+    static final String POSITION = "position";
+    static final String POSITIONLASTUPDATE = "positionLastUpdate";
+
+
+
+
 
     private ArrayList<Object> listOfHomeWorkouts = new ArrayList<>();
     private ArrayList<Object> listOfOutdoorWorkouts = new ArrayList<>();
+    private ArrayList<Object> listOfMovSpecChallenges = new ArrayList<>();
+    private ArrayList<Object> listOfSMChallenges = new ArrayList<>();
+
 
 
     public User() {}
 
+    public GeoPoint getPosition() {
+        return position;
+    }
 
+    public void setPosition(GeoPoint position) {
+        this.position = position;
+    }
 
     public String getLoginMethod() {
         return loginMethod;
@@ -70,6 +90,30 @@ public class User {
         this.listOfHomeWorkouts = listOfHomeWorkouts;
     }
 
+    public FirebaseFirestore getDb() {
+        return db;
+    }
+
+    public void setDb(FirebaseFirestore db) {
+        this.db = db;
+    }
+
+    public ArrayList<Object> getListOfMovSpecChallenges() {
+        return listOfMovSpecChallenges;
+    }
+
+    public void setListOfMovSpecChallenges(ArrayList<Object> listOfMovSpecChallenges) {
+        this.listOfMovSpecChallenges = listOfMovSpecChallenges;
+    }
+
+    public ArrayList<Object> getListOfSMChallenges() {
+        return listOfSMChallenges;
+    }
+
+    public void setListOfSMChallenges(ArrayList<Object> listOfSMChallenges) {
+        this.listOfSMChallenges = listOfSMChallenges;
+    }
+
     public ArrayList<Object> getListOfOutdoorWorkouts() {
         return listOfOutdoorWorkouts;
     }
@@ -77,25 +121,6 @@ public class User {
     public void setListOfOutdoorWorkouts(ArrayList<Object> listOfOutdoorWorkouts) {
         this.listOfOutdoorWorkouts = listOfOutdoorWorkouts;
     }
-
-    public GeoPoint getPosition() {
-        return position;
-    }
-
-    public void setPosition(GeoPoint position) {
-        this.position = position;
-    }
-    //    protected void checkFireStoreDatabase() {
-//        // Create a new user with a first and last name
-//        FirebaseFirestore db = FirebaseFirestore.getInstance();
-//        DocumentReference usersDocRef = db.collection("Users").document(userFullName);
-//
-//        if (usersDocRef != null) {
-//        } else {
-//            createNewEntry();
-//        }
-//    }
-
 
     public long getWarmupsCompleted() {
         return warmupsCompleted;
@@ -169,92 +194,8 @@ public class User {
         this.warmupsSkipped = warmupsSkipped;
     }
 
-    //    public void createNewEntry() {
-//        FirebaseFirestore db = FirebaseFirestore.getInstance();
-//        DocumentReference usersDocRef = db.collection("Users").document(userFullName);
-//        Map<String, Object> userEntry;
-//
-//        userEntry = new HashMap<>();
-//        userEntry.put(FULLNAME, userFullName);
-//        userEntry.put(EMAIL, userEmail);
-//        userEntry.put(NICKNAME, "-");
-//        userEntry.put(AGE, "-");
-//        userEntry.put(NATIONALITY, "-");
-//        userEntry.put(STATUS, "Baby monkey");
-//        db.document(userFullName).set(userEntry, SetOptions.merge()).addOnSuccessListener(new OnSuccessListener<Void>() {
-//            @Override
-//            public void onSuccess(Void aVoid) {
-//                Log.d(TAG, "Document has been saved");
-//            }
-//        }).addOnFailureListener(new OnFailureListener() {
-//            @Override
-//            public void onFailure(@NonNull Exception e) {
-//                Log.d(TAG, "Document could not be saved");
-//            }
-//        });
-//    }
 
 }
 
-
-/*
-    protected void updateRealTimeDatabase() {
-        //whenever a new user object is created, it signifies the usage of the app by the current user
-        //the creation of a user object also prompts the program to check if the current user already exists in the database
-        //if not, create a new Database entry
-        //OR: only create user object when it is actually a new user that will be stored in database? would be more logical
-        mDatabase = FirebaseDatabase.getInstance().getReference();
-        usersRef = mDatabase.getRef();
-        if (usersRef != null) {
-        } else {
-            users = mDatabase.child("Users");
-        }
-        updateDatabaseEntry();
-    }
-
-    //CHECK IF USER EXISTS
-    private void updateDatabaseEntry() {
-        final DatabaseReference nameRef = usersRef.getRef();
-        nameRef.addListenerForSingleValueEvent
-                (new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        if (dataSnapshot.equals(getUsername())) {
-                            //username already exists
-                        } else {
-                            //user doesnt exist yet
-                            addNewUser();
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                    }
-                });
-
-    }
-
-
-    //method for saving user data in database if the entry doesnt exist yet
-
-    private void addNewUser() {
-        users = mDatabase.child("Users");
-        if (getUserID() != null) {
-            //create new child with the user name
-            DatabaseReference newUser = users.child(getUsername());
-            //create new child called user id and its value
-            DatabaseReference userID = newUser.child("UserID");
-            userID.setValue(getUserID());
-
-            DatabaseReference displayname = newUser.child("User name");
-            displayname.setValue(getUsername());
-
-            DatabaseReference emailaddress = newUser.child(EMAIL);
-            emailaddress.setValue(getEmail());
-
-        }
-    }
-
-    */
 
 

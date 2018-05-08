@@ -238,7 +238,7 @@ public class JasonHandler {
 //                data.put("parkour", pkPark.isParkour());
 //                data.put("calisthenics", pkPark.isCalisthenics());
 //                data.put("coordinates", pkPark.getCoordinates());
-                data.put("source", pkPark.getSource());
+//                data.put("source", pkPark.getSource());
                 data.put("description (in Danish)", pkPark.getDescription());
 
 

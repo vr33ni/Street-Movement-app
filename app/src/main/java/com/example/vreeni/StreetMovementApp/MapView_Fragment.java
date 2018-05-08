@@ -13,11 +13,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
@@ -73,6 +69,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -97,8 +94,6 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
     private GoogleMap mGoogleMap;
     private View mView;
 
-    private Bundle outdoorBundle; //to pass arguments to the next fragment
-
     //to set the value based on whether its the first run of location callbacks or not
     private boolean firstRun;
 
@@ -108,7 +103,10 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
 
     //textview in the bottom of the window displaying the location details and timestamp of last location update
     private TextView tvMyLocation;
-    private ImageButton btnRefresh;
+
+    //textfield acting as a searchbar
+    private EditText searchBar;
+    private ImageButton btn_search;
 
     private List<Marker> listOfPkMarkers;
     private List<Marker> listOfCaliMarkers;
@@ -123,16 +121,15 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
     private EditText et_name;
     private EditText et_desc;
     private Button btn_submit;
-    //second popup window
-    private Button btn_takePicture;
-    private Button btn_chooseFromGallery;
     private long mLastClickTime = 0;
 
 
     private static final int PICK_IMAGE_REQUEST = 2;
     private static final int REQUEST_TAKE_PHOTO = 3;
     private Uri photoURI;
+    private Uri downloadUrl;
     private String mCurrentPhotoPath;
+    private LatLng lating;
 
     //Constants used in the location settings dialog.
     private static final int REQUEST_LOCATION_PERMISSION = 1;
@@ -161,6 +158,7 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
      * Time when the location was updated represented as a String.
      */
     private String mLastUpdateTime;
+    private String time;
 
     /* A default location (Streetmekka, Copenhagen) and default zoom to use when location permission is
      * not granted. */
@@ -177,6 +175,9 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
     private static final String KEY_CAMERA_POSITION = "camera_position";
     private final static String KEY_LOCATION = "location";
     private final static String KEY_LAST_UPDATED_TIME_STRING = "last-updated-time-string";
+
+    private static final int PLACE_PICKER_REQUEST = 1;
+
 
 
     /**
@@ -227,11 +228,12 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
         chckBxCali = (CheckBox) mView.findViewById(R.id.showCaliParks);
 
         //display a textview with current location data
-        tvMyLocation = (TextView) mView.findViewById(R.id.tv_mylocation);
+//        tvMyLocation = (TextView) mView.findViewById(R.id.tv_mylocation);
 
         //display the refresh button
-        btnRefresh = (ImageButton) mView.findViewById(R.id.btn_refresh);
-
+        searchBar = (EditText) mView.findViewById(R.id.et_searchbar);
+        btn_search = (ImageButton) mView.findViewById(R.id.btn_search);
+        btn_search.setOnClickListener(this);
     }
 
     /**
@@ -284,7 +286,7 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
 //        jh.updateFirestore();
 
         //download the locations of the parks from firestore and display them on the map
-        getLocationsFromFirestoreToMap();
+        getTrainingLocationsFromFirestoreToMap();
 
         //handle checkbox clicks
         if (chckBxPk != null) {
@@ -305,20 +307,12 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
         //retrieve regular location updates
         //possibly separate comman for when map is first loaded? to only move camera once
         //get last location => once retrieved, start regular updates?
-
-
         locationHandler = new LocationHandler(this.getActivity(), this.getActivity(), mGoogleMap);
         locationHandler.startTrackingLocation();
-
 
 //        updateLocationUI(locationHandler.getmLastKnownLocation());
 //        displayLocationData();
 
-//        createLocationCallback();
-//        startTrackingLocation();
-
-//        //make clickable, once map is ready
-//        btnRefresh.setOnClickListener(this);
     }
 
 
@@ -383,7 +377,7 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
 //                    listOfLocationUpdates.add(location);
                     updateLocationUI(location);
                     updateLocationOnFirebase();
-                    displayLocationData();
+//                    displayLocationData();
                 }
             }
         };
@@ -525,7 +519,7 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
      * then creates a parkour park object for each document, sets its description (Field description is slightly different to database and has to be set manually);
      * then calls the method addMarker to create a marker on the map based on the properties of this parkour park object such as coordinates, name, etc.
      */
-    public void getLocationsFromFirestoreToMap() {
+    public void getTrainingLocationsFromFirestoreToMap() {
         final FirebaseFirestore db = FirebaseFirestore.getInstance();
 //        delete specific document from the database => apparently only works form within the code, database deleltion alone doesnt do it
 //        db.collection("ParkourParks").document("PLUG N PLAY").delete();
@@ -566,20 +560,37 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
         Log.d(LOG_TAG, "InfoWindow clicked: " + marker.getTitle());
         //passing object as parcelable
         //get hashmap marker - park object to get the location object
-        outdoorBundle = new Bundle();
-        outdoorBundle.putParcelable("OutdoorWorkout", mapMarkerToPark.get(marker));
+        Bundle outdoorBundle = new Bundle();
+        outdoorBundle.putParcelable("TrainingLocation", mapMarkerToPark.get(marker));
         //create new fragment displaying the result of either of the choices
-        fragment = new GetCustomizedOutdoorWorkoutLevelFragment();
-        Log.d(LOG_TAG, "outdoor bundle content " + outdoorBundle.getParcelable("OutdoorWorkout"));
-
+        fragment = new Fragment_TrainingLocation_View();
+        Log.d(LOG_TAG, "outdoor bundle content " + outdoorBundle.getParcelable("TrainingLocation"));
         if (outdoorBundle != null) {
             fragment.setArguments(outdoorBundle);
             getActivity().getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, fragment)
                     .addToBackStack(null)
                     .commit();
-        }
 
+
+//        Fragment fragment = null;
+//        Log.d(LOG_TAG, "InfoWindow clicked: " + marker.getTitle());
+//        //passing object as parcelable
+//        //get hashmap marker - park object to get the location object
+//        outdoorBundle = new Bundle();
+//        outdoorBundle.putParcelable("OutdoorWorkout", mapMarkerToPark.get(marker));
+//        //create new fragment displaying the result of either of the choices
+//        fragment = new Fragment_Training_Workout_Level_Outdoor();
+//        Log.d(LOG_TAG, "outdoor bundle content " + outdoorBundle.getParcelable("OutdoorWorkout"));
+//        if (outdoorBundle != null) {
+//            fragment.setArguments(outdoorBundle);
+//            getActivity().getSupportFragmentManager().beginTransaction()
+//                    .replace(R.id.fragment_container, fragment)
+//                    .addToBackStack(null)
+//                    .commit();
+//        }
+
+        }
     }
 
 
@@ -698,20 +709,10 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
     /**
      * enables the user to add a new training location to the map that will then be uploaded to firebase for approval
      * opens a popup window
-     *
-     * @param latIng location parameter that is being passed from onMaplongClick
      */
-    public void addToBeApprovedLocationMarkersOnMap(LatLng latIng) {
-        MarkerOptions markerOpt = new MarkerOptions();
-        markerOpt.position(latIng);
-        Marker m = mGoogleMap.addMarker(markerOpt);
-        m.hideInfoWindow();
-        Log.d(LOG_TAG, "adding new to be approved marker on map");
-
+    public void addToBeApprovedLocationMarkersOnMap() {
         openPopupWindow();
-
-        // addToBeApprovedLocationMarkersOnMap(latLng, );
-
+        Log.d(LOG_TAG, "adding new to be approved marker on map");
     }
 
     /**
@@ -751,10 +752,10 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
                 layout,
                 LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT, true);
-        btn_takePicture = (Button) layout.findViewById(R.id.btn_takePicture);
+        Button btn_takePicture = (Button) layout.findViewById(R.id.btn_takePicture);
         btn_takePicture.setOnClickListener(this);
         btn_takePicture.setEnabled(true);
-        btn_chooseFromGallery = (Button) layout.findViewById(R.id.btn_chooseFromGallery);
+        Button btn_chooseFromGallery = (Button) layout.findViewById(R.id.btn_chooseFromGallery);
         btn_chooseFromGallery.setOnClickListener(this);
         btn_chooseFromGallery.setEnabled(true);
         Button btn_cancel = (Button) layout.findViewById(R.id.btn_cancel_selectImg_process);
@@ -797,6 +798,7 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
     public void submitNewLocationForApprovalToFirestore() {
         if (validateUserInput()) {
             //upload image to storage
+            Date currentTime = Calendar.getInstance().getTime();
             final FirebaseStorage storage = FirebaseStorage.getInstance();
             StorageReference storageRef = storage.getReference();
             StorageReference toBeApprovedTrainingLocationsRef = storageRef.child("toBeApprovedTrainingLocations/" + photoURI.getLastPathSegment());
@@ -806,10 +808,10 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
             uploadTask.addOnFailureListener(exception -> {
                 // Handle unsuccessful uploads
             }).addOnSuccessListener(taskSnapshot -> {
-                btn_submit.setEnabled(false);
+//                btn_submit.setEnabled(false);
                 // once file is uploading successfully, button is set to disabled to prevent multiple upload
                 // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
-                Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                downloadUrl = taskSnapshot.getDownloadUrl();
                 Log.d(LOG_TAG, "download url " + downloadUrl);
 
                 //upload text information to database + create reference to storage
@@ -818,17 +820,25 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
                 DocumentReference userDocRef = db.collection("Users").document(FirebaseAuth.getInstance().getCurrentUser().getEmail());
 
                 HashMap<String, Object> data = new HashMap<>();
-                String s = et_name.getText().toString().trim();
                 data.put("name", et_name.getText().toString().trim());
                 data.put("description", et_desc.getText().toString().trim());
                 data.put("suggestedBy", userDocRef);
                 data.put("image", downloadUrl.toString());
+                data.put("coordinates", calculateGeoPoint(lating.latitude, lating.longitude));
+                data.put("date", currentTime);
                 spotToBeApproved
                         .set(data, SetOptions.merge()).addOnSuccessListener(aVoid -> {
                     Log.d(LOG_TAG, "New Location has been submitted for approval: " + spotToBeApproved.getId());
                     //close popup window after upload
                     popupWindow.dismiss();
                     //mark marker as diff color or transparent? to see its only a suggestion.
+                    Marker m = mGoogleMap.addMarker((new MarkerOptions()
+                            .position(lating)
+                            .title(et_name.getText().toString().trim() + "_" +
+                                    "Description: " + et_desc.getText().toString().trim())
+                            .snippet(downloadUrl.toString())
+                            .alpha(0.3f)));
+                    m.hideInfoWindow();
                 }).addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
@@ -1002,17 +1012,17 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
     }
 
 
-    /**
-     * display location data in a textview at the bottom of the fragment
-     */
-    public void displayLocationData() {
-        if (locationHandler.getmLastKnownLocation() != null) {
-            tvMyLocation.setText(getString(R.string.location_text,
-                    locationHandler.getmLastKnownLocation().getLatitude(),
-                    locationHandler.getmLastKnownLocation().getLongitude(),
-                    locationHandler.getmLastKnownLocation().getTime()));
-        }
-    }
+//    /**
+//     * display location data in a textview at the bottom of the fragment
+//     */
+//    public void displayLocationData() {
+//        if (locationHandler.getmLastKnownLocation() != null) {
+//            tvMyLocation.setText(getString(R.string.location_text,
+//                    locationHandler.getmLastKnownLocation().getLatitude(),
+//                    locationHandler.getmLastKnownLocation().getLongitude(),
+//                    locationHandler.getmLastKnownLocation().getTime()));
+//        }
+//    }
 
     /**
      * implemented method from View.OnClickListener interface
@@ -1027,12 +1037,7 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
             return;
         }
         mLastClickTime = SystemClock.elapsedRealtime();
-        if (v.getId() == R.id.btn_refresh) {
-            Log.d(LOG_TAG, "refresh location");
-            locationHandler.startTrackingLocation();
-//             stopTrackingLocation();
-//            getLocation();
-        }
+
         //opening a second popup window asking to choose the upload source
         if (v.getId() == R.id.btn_selectImage) {
             openPopUpWindowSelectUploadSource();
@@ -1051,11 +1056,22 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
         if (v.getId() == R.id.btn_submitForApproval) {
             submitNewLocationForApprovalToFirestore();
         }
-
+        if (v.getId() == R.id.btn_search) {
+            //search for entered text
+            search();
+        }
 
     }
 
 
+    public void search() {
+        for (Map.Entry entry : mapMarkerToPark.entrySet()) {
+            //check if the term entered equals one of the marker names from the map
+            if (searchBar.getText().toString().trim().equals(entry.getKey())) {
+
+            }
+        }
+    }
 
 
     /**
@@ -1071,7 +1087,6 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
             if (savedInstanceState.keySet().contains(TRACKING_LOCATION_KEY)) {
                 mTrackingLocation = savedInstanceState.getBoolean(TRACKING_LOCATION_KEY);
             }
-
             // Update the value of mCurrentLocation from the Bundle and update the UI to show the
             // correct latitude and longitude.
             if (savedInstanceState.keySet().contains(KEY_LOCATION)) {
@@ -1124,7 +1139,6 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
 
         } else
             updateLocationUI(locationHandler.getmLastKnownLocation()); //updating the location UI based on a null value, which leads to the recentering around a defaultLocation (StreetMekka)
-//      getLocation();
     }
 
     @Override
@@ -1160,6 +1174,9 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
         return new GeoPoint(latitude, longitude);
     }
 
+    /**
+     * update the user's current location on firebase
+     */
     public void updateLocationOnFirebase() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         DocumentReference userDocRef = db.collection("Users").document(FirebaseAuth.getInstance().getCurrentUser().getEmail());
@@ -1168,8 +1185,14 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
         user.setPosition(currPos);
         if (mLastKnownLocation != null) {
             Log.d(LOG_TAG, "writing new location to database");
+            time = String.format(this.getActivity().getString(R.string.location_text),
+                    locationHandler.getmLastKnownLocation().getLatitude(),
+                    locationHandler.getmLastKnownLocation().getLongitude(),
+                    locationHandler.getmLastKnownLocation().getTime());
+            final String[] timeOnly = time.split("Timestamp: ");
             Map<String, Object> dataUpdate = new HashMap<String, Object>();
             dataUpdate.put("position", currPos);
+            dataUpdate.put("positionLastUpdate", timeOnly[1]);
             userDocRef
                     .set(dataUpdate, SetOptions.merge()).addOnSuccessListener(new OnSuccessListener<Void>() {
                 @Override
@@ -1196,8 +1219,8 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
      */
     @Override
     public void onMapLongClick(LatLng latLng) {
-        //add marker
-        addToBeApprovedLocationMarkersOnMap(latLng);
+        //set class variable lating, so it can be accessed from other methods and used to finally create the new (transparent) marker with the yet to be approved location
+        lating = latLng;
+        addToBeApprovedLocationMarkersOnMap();
     }
-
 }

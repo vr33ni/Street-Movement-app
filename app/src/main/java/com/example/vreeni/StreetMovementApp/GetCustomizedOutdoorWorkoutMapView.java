@@ -1,7 +1,5 @@
 package com.example.vreeni.StreetMovementApp;
 
-import android.app.Activity;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Build;
@@ -15,7 +13,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.CheckBox;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -31,9 +28,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
@@ -86,11 +81,7 @@ public class GetCustomizedOutdoorWorkoutMapView extends Fragment implements OnMa
     // not granted.
     private final LatLng mDefaultLocation = new LatLng(55.66208270000001, 12.540357099999937);
     private static final int DEFAULT_ZOOM = 12;
-    private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
-    /**
-     * Code used in requesting runtime permissions.
-     */
-    private static final int REQUEST_PERMISSIONS_REQUEST_CODE = 34;
+    private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 5;
 
 
     private boolean mLocationPermissionGranted;
@@ -103,6 +94,29 @@ public class GetCustomizedOutdoorWorkoutMapView extends Fragment implements OnMa
     private static final String KEY_CAMERA_POSITION = "camera_position";
     private static final String KEY_LOCATION = "location";
 
+    private Bundle bundle;
+    private String activity;
+    private String setting;
+
+
+    public static GetCustomizedOutdoorWorkoutMapView newInstance(String act, String set) {
+        final Bundle bundle = new Bundle();
+        GetCustomizedOutdoorWorkoutMapView fragment = new GetCustomizedOutdoorWorkoutMapView();
+        bundle.putString("Activity", act);
+        bundle.putString("Setting", set);
+        fragment.setArguments(bundle);
+        return fragment;
+    }
+
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            activity = getArguments().getString("Activity");
+            setting = getArguments().getString("Setting");
+        }
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -383,10 +397,10 @@ public class GetCustomizedOutdoorWorkoutMapView extends Fragment implements OnMa
         //passing object as parcelable
         //get hashmap marker - park object to get the location object
         outdoorBundle=new Bundle();
-        outdoorBundle.putParcelable("OutdoorWorkout", mapMarkerToPark.get(marker));
+        outdoorBundle.putParcelable("TrainingLocation", mapMarkerToPark.get(marker));
         //create new fragment displaying the result of either of the choices
-        fragment = new GetCustomizedOutdoorWorkout_ParkourParkView_Fragment();
-        Log.d(LOG_TAG, "outdoor bundle content " + outdoorBundle.getParcelable("OutdoorWorkout"));
+        fragment = new Fragment_TrainingLocation_View();
+        Log.d(LOG_TAG, "outdoor bundle content " + outdoorBundle.getParcelable("TrainingLocation"));
 
         if (outdoorBundle != null) {
             fragment.setArguments(outdoorBundle);

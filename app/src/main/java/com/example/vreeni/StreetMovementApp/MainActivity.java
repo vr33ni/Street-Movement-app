@@ -1,21 +1,13 @@
 package com.example.vreeni.StreetMovementApp;
 
-import android.*;
 import android.Manifest;
 import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
-import android.content.Context;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.location.Location;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
@@ -24,11 +16,9 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -46,17 +36,16 @@ import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingClient;
 import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -77,13 +66,11 @@ public class MainActivity extends BaseActivity
         implements NavigationView.OnNavigationItemSelectedListener, OnCompleteListener<Void> {
 
     private static final String TAG = MainActivity.class.getSimpleName();
-    private boolean isCallingLocationUpdates = false;
 
-    //firebase analytics
-    private FirebaseAnalytics mFirebaseAnalytics;
+    //Toolbar navigation/backbutton handling
+    ActionBarDrawerToggle mDrawerToggle;
+    private boolean mToolBarNavigationListenerIsRegistered = false;
 
-    private HomeFragment hf;
-    private WebViewFragment wvf;
 
     private FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
     private String loginMethod;
@@ -98,6 +85,7 @@ public class MainActivity extends BaseActivity
         ADD, REMOVE, NONE
     }
 
+
     /**
      * Provides access to the Geofencing API.
      */
@@ -107,6 +95,7 @@ public class MainActivity extends BaseActivity
      * The list of geofences used in this sample.
      */
     private ArrayList<Geofence> mGeofenceList;
+    private GeofenceMaxNrHandler geofenceMax;
 
     /**
      * Used when requesting to add or remove geofences.
@@ -118,45 +107,24 @@ public class MainActivity extends BaseActivity
     private Button mRemoveGeofencesButton;
 
     private PendingGeofenceTask mPendingGeofenceTask = PendingGeofenceTask.NONE;
+    private Bundle startedFromGeofenceNotification;
     //END OF GEOFENCING
 
-    //SEND LOCATION UPDATES
-    // private boolean isOutdoorTraining => if true, update location every few seconds, if false, do nothing
-    // Used in checking for runtime permissions.
-    //Constants used in the location settings dialog.
-//    private static final int REQUEST_LOCATION_PERMISSION = 1;
-    // The BroadcastReceiver used to listen from broadcasts from the service.
-//    private MyReceiver myReceiver;
-    // A reference to the service used to get location updates.
-//    private LocationUpdatesService mService
-    // Tracks the bound state of the service.
-//    private boolean mBound = false;
-//    // Monitors the state of the connection to the service.
-//    private final ServiceConnection mServiceConnection = new ServiceConnection() {
-//        @Override
-//        public void onServiceConnected(ComponentName name, IBinder service) {
-//            LocationUpdatesService.LocalBinder binder = (LocationUpdatesService.LocalBinder) service;
-//            mService = binder.getService();
-//            Log.d(TAG, "mService = " + mService);
-//            mBound = true;
-//        }
-//        @Override
-//        public void onServiceDisconnected(ComponentName name) {
-//            mService = null;
-//            mBound = false;
-//            Log.d(TAG, "service disconnected");
-//        }
-//    };
 
-
+    /**
+     * setup the Main Activity
+     * check if it was started from a Geofence-Notification (in which case there is a redirection to the MapViewFragment) or by newly starting the application
+     *
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         /*
-         * Geofencing on Create
+         * Geofencing setup
          */
+        geofenceMax = new GeofenceMaxNrHandler(this, this.getBaseContext(), null);
         // Get the UI widgets.
         mAddGeofencesButton = (Button) findViewById(R.id.add_geofences_button);
         mRemoveGeofencesButton = (Button) findViewById(R.id.remove_geofences_button);
@@ -165,33 +133,29 @@ public class MainActivity extends BaseActivity
         // Initially set the PendingIntent used in addGeofences() and removeGeofences() to null.
         mGeofencePendingIntent = null;
         setButtonsEnabledState();
-        // Get the geofences used. Geofence data is hard coded in this sample.
-        populateGeofenceList();
         mGeofencingClient = LocationServices.getGeofencingClient(this);
         /*
          * end of Geofencing on create
          */
 
-        /*
-         * Location Updates
-         */
-//        myReceiver = new MyReceiver();
-//        //Check that the user hasn't revoked permissions by going to Settings.
-//        if (Utils.requestingLocationUpdates(this)) {
-//            if (!checkPermissions()) {
-//                Log.d(TAG, "No permission. Requesting permission");
-//                requestPermissions();
-//            }
-//        }
-
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitle(getString(R.string.app_name));
+
         // Sets the Toolbar to act as the ActionBar for this Activity window.
-        // Make sure the toolbar exists in the activity and is not null
         setSupportActionBar(toolbar);
-
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
-
+        getSupportActionBar().setDisplayShowTitleEnabled(true);
+        // Get DrawerLayout ref from layout
+        DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        // Initialize ActionBarDrawerToggle, which will control toggle of hamburger.
+        // You set the values of R.string.open and R.string.close accordingly.
+        // Also, you can implement drawer toggle listener if you want.
+        mDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawerLayout.addDrawerListener(mDrawerToggle);
+        // Calling sync state is necessary to show your hamburger icon...
+        // or so I hear. Doesn't hurt including it even if you find it works
+        // without it on your test device(s)
+        mDrawerToggle.syncState();
+        showBackButton(false);
 
         //show the start fragment after login
         if (savedInstanceState == null) {
@@ -201,13 +165,6 @@ public class MainActivity extends BaseActivity
             ft.addToBackStack(null);
             ft.commit();
         }
-
-        //define the navigation drawer
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
-        toggle.syncState();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
@@ -227,7 +184,7 @@ public class MainActivity extends BaseActivity
             public void onClick(View v) {
                 Fragment fragment = null;
                 if (v.getId() == R.id.profile_section) {
-                    fragment = new UserProfileFragment();
+                    fragment = new UserProfile_Account();
                 }
                 if (fragment != null) {
                     FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
@@ -239,7 +196,24 @@ public class MainActivity extends BaseActivity
             }
         });
         checkLoginMethod();
+
+        //check if mainActivity was started from Notification
+        Intent intent = this.getIntent();
+        if (intent != null && intent.getExtras() != null && intent.getExtras().containsKey("GeofenceDetails") && (intent.getFlags() & Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) == 0) {
+            String geofenceID = this.getIntent().getExtras().getString("GeofenceDetails");
+            Log.d(TAG, "get extras - Geofence IDs: " + geofenceID);
+            //open map view fragment
+            Fragment fragment = new MapView_Fragment();
+            if (fragment != null) {
+                //add bundle with last location, so new callback isnt neccessary when clicking on the map fragment?
+                FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+                ft.replace(R.id.fragment_container, fragment).replace(R.id.fragment_container, fragment).addToBackStack(null);
+                ft.commit();
+                ft.addToBackStack(null);
+            }
+        }
     }
+
 
     @Override
     public void onStart() {
@@ -249,6 +223,8 @@ public class MainActivity extends BaseActivity
             requestPermissions();
             Log.d(TAG, "on start - requesting permssions");
         } else {
+            geofenceMax = new GeofenceMaxNrHandler(this, this.getBaseContext(), null);
+            geofenceMax.getTrainingLocationsFromFirebaseAndTrack100Closest();
             performPendingGeofenceTask();
             Log.d(TAG, "performing pending geofence task");
         }
@@ -267,8 +243,10 @@ public class MainActivity extends BaseActivity
         builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER);
         Log.d(TAG, "set trigger");
 
-        // Add the geofences to be monitored by geofencing service.
-        builder.addGeofences(mGeofenceList);
+        // Add the geofences to be monitored by geofencing service. somehow link geofences to the original parkour park object?
+        builder.addGeofences(geofenceMax.getmGeofenceList());
+        Log.d(TAG, "geofence list added to builder" + mGeofenceList);
+
 
         // Return a GeofencingRequest.
         return builder.build();
@@ -285,6 +263,7 @@ public class MainActivity extends BaseActivity
             return;
         }
         addGeofences();
+        Log.d(TAG, "adding geofences button clicked");
     }
 
     /**
@@ -334,6 +313,7 @@ public class MainActivity extends BaseActivity
     /**
      * Runs when the result of calling {@link #addGeofences()} and/or {@link #removeGeofences()}
      * is available.
+     *
      * @param task the resulting Task, containing either a result or error.
      */
     @Override
@@ -374,39 +354,6 @@ public class MainActivity extends BaseActivity
         return mGeofencePendingIntent;
     }
 
-    /**
-     * This sample hard codes geofence data. A real app might dynamically create geofences based on
-     * the user's location.
-     */
-    private void populateGeofenceList() {
-        for (Map.Entry<String, LatLng> entry : GeofenceConstants.BAY_AREA_LANDMARKS.entrySet()) {
-
-            Log.d(TAG, "GeofanceConstants Map - size: " + GeofenceConstants.BAY_AREA_LANDMARKS.size());
-            mGeofenceList.add(new Geofence.Builder()
-                    // Set the request ID of the geofence. This is a string to identify this
-                    // geofence.
-                    .setRequestId(entry.getKey())
-
-                    // Set the circular region of this geofence.
-                    .setCircularRegion(
-                            entry.getValue().latitude,
-                            entry.getValue().longitude,
-                            GeofenceConstants.GEOFENCE_RADIUS_IN_METERS
-                    )
-
-                    // Set the expiration duration of the geofence. This geofence gets automatically
-                    // removed after this period of time.
-                    .setExpirationDuration(GeofenceConstants.GEOFENCE_EXPIRATION_IN_MILLISECONDS)
-
-                    // Set the transition types of interest. Alerts are only generated for these
-                    // transition. We track entry and exit transitions in this sample.
-                    .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER |
-                            Geofence.GEOFENCE_TRANSITION_EXIT)
-
-                    // Create the geofence.
-                    .build());
-        }
-    }
 
     /**
      * Ensures that only one button is enabled at any time. The Add Geofences button is enabled
@@ -415,12 +362,12 @@ public class MainActivity extends BaseActivity
      */
     private void setButtonsEnabledState() {
         if (getGeofencesAdded()) {
-            if (mAddGeofencesButton!=null) mAddGeofencesButton.setEnabled(false);
-            if (mRemoveGeofencesButton!=null) mRemoveGeofencesButton.setEnabled(true);
+            if (mAddGeofencesButton != null) mAddGeofencesButton.setEnabled(false);
+            if (mRemoveGeofencesButton != null) mRemoveGeofencesButton.setEnabled(true);
 
         } else {
-            if (mAddGeofencesButton!=null) mAddGeofencesButton.setEnabled(true);
-            if (mRemoveGeofencesButton!=null) mRemoveGeofencesButton.setEnabled(false);
+            if (mAddGeofencesButton != null) mAddGeofencesButton.setEnabled(true);
+            if (mRemoveGeofencesButton != null) mRemoveGeofencesButton.setEnabled(false);
         }
     }
 
@@ -540,6 +487,8 @@ public class MainActivity extends BaseActivity
                 Log.i(TAG, "User interaction was cancelled.");
             } else if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Log.i(TAG, "Permission granted.");
+                geofenceMax = new GeofenceMaxNrHandler(this, this.getBaseContext(), null);
+                geofenceMax.getTrainingLocationsFromFirebaseAndTrack100Closest();
                 performPendingGeofenceTask();
             } else {
                 // Permission denied.
@@ -574,204 +523,6 @@ public class MainActivity extends BaseActivity
     }
 
 
-
-//    /**
-//     * starting location updates
-//     */
-//    @Override
-//    protected void onStart() {
-//        super.onStart();
-//        PreferenceManager.getDefaultSharedPreferences(this)
-//                .registerOnSharedPreferenceChangeListener(this);
-//        if (!checkPermissions()) {
-//                requestPermissions();
-//            }
-//        if (mBound) {
-//            mService.requestLocationUpdates();
-//            Log.d(TAG, "mbound at start, requesting location updates");
-//        }
-//
-//        // Bind to the service. If the service is in foreground mode, this signals to the service
-//        // that since this activity is in the foreground, the service can exit foreground mode.
-//        if (!checkPermissions()) {
-//            requestPermissions();
-//            Log.d(TAG, "checking permissions on start, mService: " + mService);
-//        } else {
-//            Intent myService = new Intent(this, LocationUpdatesService.class);
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//                startForegroundService(myService);
-//            } else {
-//                startService(myService);
-//            }
-//
-//            bindService(new Intent(this, LocationUpdatesService.class), mServiceConnection,
-//                    Context.BIND_AUTO_CREATE);
-//            Log.d(TAG, "permission granted at start. binding service");
-//        }
-//
-//    }
-//
-//
-//    @Override
-//    protected void onResume() {
-//        super.onResume();
-//        LocalBroadcastManager.getInstance(this).registerReceiver(myReceiver,
-//                new IntentFilter(LocationUpdatesService.ACTION_BROADCAST));
-//        Log.d(TAG, "Receiver registered");
-//        Log.d(TAG, "mservice on resume " + mService);
-//
-//
-//    }
-//
-//    @Override
-//    protected void onPause() {
-//        LocalBroadcastManager.getInstance(this).unregisterReceiver(myReceiver);
-//        Log.d(TAG, "Receiver unregistered");
-//        Log.d(TAG, "mservice on pause: " + mService);
-//        super.onPause();
-//    }
-//
-//    @Override
-//    protected void onStop() {
-//        if (mBound) {
-//            // Unbind from the service. This signals to the service that this activity is no longer
-//            // in the foreground, and the service can respond by promoting itself to a foreground
-//            // service.
-//            unbindService(mServiceConnection);
-//            mBound = false;
-//            Log.d(TAG, "stopping service");
-//        }
-//        PreferenceManager.getDefaultSharedPreferences(this)
-//                .unregisterOnSharedPreferenceChangeListener(this);
-//        super.onStop();
-//    }
-//
-//    /**
-//     * Return the current state of the permissions needed.
-//     */
-//    public boolean checkPermissions() {
-//        int permissionState = ActivityCompat.checkSelfPermission(this,
-//                Manifest.permission.ACCESS_FINE_LOCATION);
-//        return permissionState == PackageManager.PERMISSION_GRANTED;
-//    }
-//
-//    /**
-//     * show Dialog asking the user to give permission to access his or her location
-//     */
-//    private void requestPermissions() {
-//        boolean shouldProvideRationale =
-//                ActivityCompat.shouldShowRequestPermissionRationale(this,
-//                        Manifest.permission.ACCESS_FINE_LOCATION);
-//
-//        // Provide an additional rationale to the user. This would happen if the user denied the
-//        // request previously, but didn't check the "Don't ask again" checkbox.
-//        if (shouldProvideRationale) {
-//            Log.i(TAG, "Displaying permission rationale to provide additional context.");
-//            Snackbar.make(
-//                    findViewById(R.id.drawer_layout),
-//                    R.string.permission_rationale,
-//                    Snackbar.LENGTH_INDEFINITE)
-//                    .setAction(R.string.ok, new View.OnClickListener() {
-//                        @Override
-//                        public void onClick(View view) {
-//                            // Request permission
-//                            ActivityCompat.requestPermissions(MainActivity.this,
-//                                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-//                                    REQUEST_LOCATION_PERMISSION);
-//                        }
-//                    })
-//                    .show();
-//        } else {
-//            Log.i(TAG, "Requesting permission");
-//            // Request permission. It's possible this can be auto answered if device policy
-//            // sets the permission in a given state or the user denied the permission
-//            // previously and checked "Never ask again".
-//            ActivityCompat.requestPermissions(MainActivity.this,
-//                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-//                    REQUEST_LOCATION_PERMISSION);
-//        }
-//    }
-//
-//
-//    public void bindToLocationUpdatesService() {
-//        if (mBound) mService.requestLocationUpdates();
-//        bindService(new Intent(this, LocationUpdatesService.class), mServiceConnection,
-//                Context.BIND_AUTO_CREATE);
-//        Log.d(TAG, "permission was granted. Binding service.");
-//    }
-//    public void createServiceConnection(){
-//        bindToLocationUpdatesService();
-//    }
-//
-//    /**
-//     * Callback received when a permissions request has been completed.
-//     */
-//    @Override
-//    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-//                                           @NonNull int[] grantResults) {
-//        Log.d(TAG, "onRequestPermissionResult");
-//        if (requestCode == REQUEST_LOCATION_PERMISSION) {
-//            if (grantResults.length <= 0) {
-//                // If user interaction was interrupted, the permission request is cancelled and you
-//                // receive empty arrays.
-//                Log.d(TAG, "User interaction was cancelled.");
-//            } else if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-//                // Permission was granted.
-//                Log.d(TAG, "Permission granted.");
-//                mBound = true;
-//                createServiceConnection();
-////                if (mBound) mService.requestLocationUpdates();
-//            } else {
-//                // Permission denied.
-////                setButtonsState(false);
-//                Snackbar.make(
-//                        findViewById(R.id.drawer_layout),
-//                        R.string.permission_denied_explanation,
-//                        Snackbar.LENGTH_INDEFINITE)
-//                        .setAction(R.string.settings, new View.OnClickListener() {
-//                            @Override
-//                            public void onClick(View view) {
-//                                // Build intent that displays the App settings screen.
-//                                Intent intent = new Intent();
-//                                intent.setAction(
-//                                        Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-//                                Uri uri = Uri.fromParts("package",
-//                                        BuildConfig.APPLICATION_ID, null);
-//                                intent.setData(uri);
-//                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//                                startActivity(intent);
-//                            }
-//                        })
-//                        .show();
-//            }
-//        }
-//    }
-//
-//    /**
-//     * Receiver for broadcasts sent by {@link LocationUpdatesService}.
-//     */
-//    private class MyReceiver extends BroadcastReceiver {
-//        @Override
-//        public void onReceive(Context context, Intent intent) {
-//            Location location = intent.getParcelableExtra(LocationUpdatesService.EXTRA_LOCATION);
-//            if (location != null) {
-//                Toast.makeText(MainActivity.this, Utils.getLocationText(location),
-//                        Toast.LENGTH_SHORT).show();
-//            }
-//        }
-//    }
-//
-//    @Override
-//    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
-//        // Update the buttons state depending on whether location updates are being requested.
-//        if (s.equals(Utils.KEY_REQUESTING_LOCATION_UPDATES)) {
-//            setButtonsState(sharedPreferences.getBoolean(Utils.KEY_REQUESTING_LOCATION_UPDATES,
-//                    false));
-//        }
-//    }
-
-
-
     //enabling the options menu in the appbar / toolbar
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -793,7 +544,9 @@ public class MainActivity extends BaseActivity
         if (getFragmentManager().getBackStackEntryCount() == 1) {
             Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
             if (currentFragment instanceof HomeFragment) {
-                logout();
+//                logout();
+                moveTaskToBack(false);
+
             } else {
                 moveTaskToBack(false);
             }
@@ -815,31 +568,36 @@ public class MainActivity extends BaseActivity
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
+        int groupId = item.getGroupId();
         int id = item.getItemId();
         Fragment fragment = null;
         Bundle bundle = new Bundle();
-        //add new if statement here and in activity_main_drawer.xml to create a new navigation menu item
-        if (id == R.id.home) {
-            fragment = new HomeFragment();
+        if (groupId == R.id.first_group) {
+            //add new if statement here and in activity_main_drawer.xml to create a new navigation menu item
+            if (id == R.id.home) {
+                fragment = new HomeFragment();
 //            getSupportActionBar().setSubtitle("Home"); //underneath the app name, there will appear a subtitle
-        } else if (id == R.id.training) {
-            fragment = new Training_ChooseWorkout_Fragment();
-        } else if (id == R.id.fb) {
-            bundle.putString("url", "https://www.facebook.com/StreetMovement.dk");
-            fragment = new WebViewFragment_SocialMediaChannels();
-            fragment.setArguments(bundle);
-        } else if (id == R.id.insta) {
-            bundle.putString("url", "https://www.instagram.com/streetmovementdk");
-            fragment = new WebViewFragment_SocialMediaChannels();
-            fragment.setArguments(bundle);
-        } else if (id == R.id.vimeo) {
-            bundle.putString("url", "https://vimeo.com/streetmovement");
-            fragment = new WebViewFragment_SocialMediaChannels();
-            fragment.setArguments(bundle);
-        } else if (id == R.id.youtube) {
-            bundle.putString("url", "https://www.youtube.com/user/StreetmovementDK");
-            fragment = new WebViewFragment_SocialMediaChannels();
-            fragment.setArguments(bundle);
+            } else if (id == R.id.training) {
+                fragment = new Fragment_Training_ChooseActivity();
+            }
+        } else if (groupId == R.id.second_group) {
+            if (id == R.id.fb) {
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://facebook.com/streetmovementdk")));
+            } else if (id == R.id.insta) {
+                Uri uri = Uri.parse("http://instagram.com/_u/streetmovementdk");
+                Intent i = new Intent(Intent.ACTION_VIEW, uri);
+                i.setPackage("com.instagram.android");
+                try {
+                    startActivity(i);
+                } catch (ActivityNotFoundException e) {
+                    startActivity(new Intent(Intent.ACTION_VIEW,
+                            Uri.parse("http://instagram.com/xxx")));
+                }
+            } else if (id == R.id.vimeo) {
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://vimeo.com/streetmovement")));
+            } else if (id == R.id.youtube) {
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com/user/StreetmovementDK")));
+            }
         }
         if (fragment != null) {
             FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
@@ -860,6 +618,7 @@ public class MainActivity extends BaseActivity
             case R.id.showMap:
                 Fragment fragment = new MapView_Fragment();
                 if (fragment != null) {
+                    //add bundle with last location, so new callback isnt neccessary when clicking on the map fragment?
                     FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
                     ft.replace(R.id.fragment_container, fragment).replace(R.id.fragment_container, fragment).addToBackStack(null);
                     ft.commit();
@@ -899,7 +658,6 @@ public class MainActivity extends BaseActivity
                         new OnCompleteListener<Void>() {
                             @Override
                             public void onComplete(@NonNull Task<Void> task) {
-//                            updateUI(null);
                                 //redirect to signout page, login page, etc
                                 Log.d(TAG, "google sign out successful");
                                 updateUI(null);
@@ -960,5 +718,45 @@ public class MainActivity extends BaseActivity
             finish();
         }
     }
+
+    public void showBackButton(boolean enable) {
+
+        // To keep states of ActionBar and ActionBarDrawerToggle synchronized,
+        // when you enable on one, you disable on the other.
+        // And as you may notice, the order for this operation is disable first, then enable - VERY VERY IMPORTANT.
+        if (enable) {
+            // Remove hamburger
+            mDrawerToggle.setDrawerIndicatorEnabled(false);
+            // Show back button
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowHomeEnabled(true);
+
+            // when DrawerToggle is disabled i.e. setDrawerIndicatorEnabled(false), navigation icon
+            // clicks are disabled i.e. the UP button will not work.
+            // We need to add a listener, as in below, so DrawerToggle will forward
+            // click events to this listener.
+            if (!mToolBarNavigationListenerIsRegistered) {
+                mDrawerToggle.setToolbarNavigationClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        // Doesn't have to be onBackPressed
+                        onBackPressed();
+                    }
+                });
+
+                mToolBarNavigationListenerIsRegistered = true;
+            }
+
+        } else {
+            // Remove back button
+            getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+            // Show hamburger
+            mDrawerToggle.setDrawerIndicatorEnabled(true);
+            // Remove the/any drawer toggle listener
+            mDrawerToggle.setToolbarNavigationClickListener(null);
+            mToolBarNavigationListenerIsRegistered = false;
+        }
+    }
+
 
 }

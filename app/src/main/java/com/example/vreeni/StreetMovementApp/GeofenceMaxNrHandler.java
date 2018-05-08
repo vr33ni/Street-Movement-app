@@ -6,6 +6,7 @@ import android.app.Fragment;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Looper;
@@ -18,6 +19,7 @@ import android.Manifest;
 import android.widget.TextView;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
@@ -37,21 +39,22 @@ import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
 
-import java.text.SimpleDateFormat;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 
 /**
  * Created by vreee on 20/03/2018.
  */
 
-public class LocationHandler extends MainActivity implements  ActivityCompat.OnRequestPermissionsResultCallback {
-    private static final String LOG_TAG = "LocationHandler";
+public class GeofenceMaxNrHandler extends MainActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
+    private static final String LOG_TAG = "GeofenceMaxNrHandler";
 
     private boolean firstRun;
 
@@ -87,18 +90,20 @@ public class LocationHandler extends MainActivity implements  ActivityCompat.OnR
      */
     private Location mLastKnownLocation;
     private List<Location> listOfLocationUpdates;
-    private String time;
-
 
     private Context mContext;
     private Activity mActivity;
     private GoogleMap mGoogleMap;
 
     private HashMap<String, ParkourPark> allSpots;
+    private HashMap<String, ParkourPark> max100TrainingLocations = new HashMap<>();
+    /**
+     * The list of geofences used in this sample.
+     */
+    private ArrayList<Geofence> mGeofenceList;
 
 
-
-    public LocationHandler(Activity activity, Context context, GoogleMap map) {
+    public GeofenceMaxNrHandler(Activity activity, Context context, GoogleMap map) {
         mActivity = activity;
         mContext = context;
         mGoogleMap = map;
@@ -108,8 +113,18 @@ public class LocationHandler extends MainActivity implements  ActivityCompat.OnR
         mTrackingLocation = true;
         firstRun = true;
         allSpots = new HashMap<>();
+        mGeofenceList = new ArrayList<>();
+
+    }
 
 
+    public ArrayList<Geofence> getmGeofenceList() {
+        return mGeofenceList;
+    }
+
+
+    public HashMap<String, ParkourPark> getMax100TrainingLocations() {
+        return max100TrainingLocations;
     }
 
     public FusedLocationProviderClient getmFusedLocationProviderClient() {
@@ -177,7 +192,6 @@ public class LocationHandler extends MainActivity implements  ActivityCompat.OnR
     }
 
 
-
     /**
      * initializing the regular location tracking
      * if permission is not granted, request it
@@ -203,8 +217,6 @@ public class LocationHandler extends MainActivity implements  ActivityCompat.OnR
     }
 
 
-
-
     /**
      * stop location tracking
      */
@@ -220,59 +232,94 @@ public class LocationHandler extends MainActivity implements  ActivityCompat.OnR
     }
 
 
-    /**
-     * sets up the initial location request, defines the interval of how often updates are being retrieved, the priority, etc.
-     *
-     * @return
-     */
-    public LocationRequest getLocationRequest() {
-        LocationRequest locationRequest = new LocationRequest();
-        locationRequest.setInterval(100000);
-        locationRequest.setFastestInterval(25000);
-        locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-
-        return locationRequest;
-    }
-
-
-    /**
-     * creating a location callback regularly updating the user's position
-     * calling the method updateLocationUI if the current view is a mapView
-     * calling the method updateLocationOnFirebase to regularly save the user's last position to the database
-     */
     public void createLocationCallback() {
         mLocationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
-
                 for (Location location : locationResult.getLocations()) {
                     Log.i(LOG_TAG, "Location: " + location.getLatitude() + " " + location.getLongitude() + " " + location.getTime());
                     mLastKnownLocation = location;
                     listOfLocationUpdates.add(location);
-                    Log.i(LOG_TAG, "Location List: " + listOfLocationUpdates.size());
 
                     updateLocationUI(mLastKnownLocation);
-                    updateLocationOnFirebase();
+//                    updateLocationOnFirebase();
 //                    displayLocationData();
-
+                    filterSpotsBasedOnRadius();
                 }
+
             }
         };
+
+
     }
 
 
-//    public static final double R = 6372.8; // In kilometers
-//
-//    public static double haversine(double lat1, double lon1, double lat2, double lon2) {
-//        double dLat = Math.toRadians(lat2 - lat1);
-//        double dLon = Math.toRadians(lon2 - lon1);
-//        lat1 = Math.toRadians(lat1);
-//        lat2 = Math.toRadians(lat2);
-//
-//        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
-//        double c = 2 * Math.asin(Math.sqrt(a));
-//        return R * c;
-//    }
+    public void filterSpotsBasedOnRadius() {
+        // GeofenceConstants.MAX_100_TRAINING_LOCATIONS = new HashMap<>();
+        max100TrainingLocations = new HashMap<>();
+        ParkourPark parkLoc = new ParkourPark();
+        parkLoc.setName("Default - Home");
+        parkLoc.setCoordinates(calculateGeoPoint(55.647531, 12.527550));
+        max100TrainingLocations.put("Home", parkLoc);
+        Log.d(LOG_TAG, "max 100 training locations before adding: " + max100TrainingLocations);
+
+        for (Map.Entry<String, ParkourPark> pkPark : allSpots.entrySet()) {
+            Location trainingLocation = new Location("");//provider name is unnecessary
+            trainingLocation.setLatitude(pkPark.getValue().getCoordinates().getLatitude());
+            trainingLocation.setLongitude(pkPark.getValue().getCoordinates().getLongitude());
+            Log.d(LOG_TAG, "allSpots map: " + pkPark.getValue().getCoordinates());
+
+            if ((mLastKnownLocation != null)) {
+                if (mLastKnownLocation.distanceTo(trainingLocation) < GeofenceConstants.GEOFENCE_TRACKING_RADIUS_IN_METERS) {
+                    Log.d(LOG_TAG, "in predef radius around user location: " + mLastKnownLocation + ", training loc: " + trainingLocation);
+                    max100TrainingLocations.put(pkPark.getValue().getName(), pkPark.getValue());
+//                  GeofenceConstants.MAX_100_TRAINING_LOCATIONS.put(pkPark.getKey(), pkPark.getValue());
+                    Log.d(LOG_TAG, "updated map of locations to a max of 100: " + max100TrainingLocations.size());
+                } else
+                    Log.d(LOG_TAG, "distance: " + mLastKnownLocation.distanceTo(trainingLocation));
+            }
+        }
+        GeofenceConstants.MAX_100_TRAINING_LOCATIONS = max100TrainingLocations;
+        populateGeofenceList();
+
+    }
+
+
+    /**
+     * This function dynamically creates geofences based on the user's location.
+     */
+    private void populateGeofenceList() {
+        Log.d(LOG_TAG, "training locations max 100 map: " + GeofenceConstants.MAX_100_TRAINING_LOCATIONS);
+        //checking ALL the retrieved locations
+//        GeofenceConstants.MAX_100_TRAINING_LOCATIONS.entrySet()
+        for (Map.Entry<String, ParkourPark> entry : getMax100TrainingLocations().entrySet()) {
+            Log.d(LOG_TAG, "geofence max list" + getMax100TrainingLocations().size());
+            mGeofenceList.add(new Geofence.Builder()
+                    // Set the request ID of the geofence. This is a string to identify this
+                    // geofence.
+                    .setRequestId(entry.getKey())
+
+                    // Set the circular region of this geofence. If the user is within this radius around the training location, an event will be triggered
+                    .setCircularRegion(
+                            entry.getValue().getCoordinates().getLatitude(),
+                            entry.getValue().getCoordinates().getLongitude(),
+                            GeofenceConstants.GEOFENCE_RADIUS_IN_METERS
+                    )
+
+                    // Set the expiration duration of the geofence. This geofence gets automatically
+                    // removed after this period of time.
+                    .setExpirationDuration(GeofenceConstants.GEOFENCE_EXPIRATION_IN_MILLISECONDS)
+
+                    // Set the transition types of interest. Alerts are only generated for these
+                    // transition. We track entry and exit transitions in this sample.
+                    .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER |
+                            Geofence.GEOFENCE_TRANSITION_EXIT)
+
+                    // Create the geofence.
+//                    .setLoiteringDelay(30000)
+                    .build());
+        }
+    }
 
 
 //    /**
@@ -280,9 +327,9 @@ public class LocationHandler extends MainActivity implements  ActivityCompat.OnR
 //     */
 //    public void displayLocationData() {
 //        if (mLastKnownLocation != null) {
-//            if (mContext!=null) {
+//            if (mContext != null) {
 //                TextView tvMyLocation = (TextView) ((Activity) mContext).findViewById(R.id.tv_mylocation);
-//                if (tvMyLocation!=null) {
+//                if (tvMyLocation != null) {
 //                    tvMyLocation.setText(mContext.getString(R.string.location_text,
 //                            mLastKnownLocation.getLatitude(),
 //                            mLastKnownLocation.getLongitude(),
@@ -300,7 +347,6 @@ public class LocationHandler extends MainActivity implements  ActivityCompat.OnR
                 Manifest.permission.ACCESS_FINE_LOCATION);
         return permissionState == PackageManager.PERMISSION_GRANTED;
     }
-
 
 
     /**
@@ -340,7 +386,7 @@ public class LocationHandler extends MainActivity implements  ActivityCompat.OnR
         if (firstRun) {
             setInitialLocationUI(location);
             firstRun = false;
-            Log.d(LOG_TAG, "first run " + firstRun);
+//            Log.d(LOG_TAG, "first run " + firstRun);
         } else {
             updateLocationUInoCamRecentering(location);
         }
@@ -365,7 +411,7 @@ public class LocationHandler extends MainActivity implements  ActivityCompat.OnR
 //                        new LatLng(mLastKnownLocation.getLatitude(),
 //                                mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
                 if (mContext != null) {
-                    Snackbar.make(((Activity)mContext).findViewById(R.id.fragment_container),
+                    Snackbar.make(((Activity) mContext).findViewById(R.id.fragment_container),
                             "Retrieving location update", Snackbar.LENGTH_SHORT).show();
                 }
             } else {
@@ -415,16 +461,11 @@ public class LocationHandler extends MainActivity implements  ActivityCompat.OnR
         }
     }
 
-
-    /**
-     * updating the user's last position and the last time of update to the database
-     */
     public void updateLocationOnFirebase() {
-        time = String.format(mActivity.getString(R.string.location_text),
-                mLastKnownLocation.getLatitude(),
+        String time = this.getApplicationContext().getString(R.string.location_text);
+        time = String.format(time, mLastKnownLocation.getLatitude(),
                 mLastKnownLocation.getLongitude(),
                 mLastKnownLocation.getTime());
-//        Date date = Calendar.getInstance().getTime(); also get date?
         final String[] timeOnly = time.split("Timestamp: ");
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         DocumentReference userDocRef = db.collection("Users").document(FirebaseAuth.getInstance().getCurrentUser().getEmail());
@@ -435,7 +476,7 @@ public class LocationHandler extends MainActivity implements  ActivityCompat.OnR
             Log.d(LOG_TAG, "writing new location to database");
             Map<String, Object> dataUpdate = new HashMap<String, Object>();
             dataUpdate.put("position", currPos);
-            dataUpdate.put("positionLastUpdate", timeOnly[1]);
+            dataUpdate.put("positionUpdate", timeOnly[1]);
             userDocRef
                     .set(dataUpdate, SetOptions.merge()).addOnSuccessListener(new OnSuccessListener<Void>() {
                 @Override
@@ -458,11 +499,33 @@ public class LocationHandler extends MainActivity implements  ActivityCompat.OnR
     }
 
 
+    @SuppressLint("MissingPermission")
+    public void startTracking100ClosestGeofences() {
+        createLocationCallback();
+        //somehow put pending intent in here
+        mFusedLocationProviderClient.requestLocationUpdates
+                (getLocationRequest(), mLocationCallback, Looper.myLooper() /* Looper */);
+        Log.d(LOG_TAG, "requesting location updates, callback for geofences: " + mLocationCallback);
+    }
+
+
+    //how to find object that relates to geofence again later after notification click
+    public void saveTrainingLocationsInInternalMemory(HashMap<String, ParkourPark> map) {
+        try {
+            File file = new File(getDir("data", MODE_PRIVATE), "map");
+            ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(file));
+            outputStream.writeObject(map);
+            outputStream.flush();
+            outputStream.close();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
     public void getTrainingLocationsFromFirebaseAndTrack100Closest() {
         final FirebaseFirestore db = FirebaseFirestore.getInstance();
-//        GeofenceConstants.TRAINING_LOCATIONS.clear();
         allSpots = new HashMap<>();
-        Log.d(LOG_TAG, "Training location Constants size: " + allSpots.size());
+
         db.collection("ParkourParks")
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -481,6 +544,7 @@ public class LocationHandler extends MainActivity implements  ActivityCompat.OnR
                             Log.d(LOG_TAG, "all spots: " + allSpots.size());
                             startTracking100ClosestGeofences();
 
+
                         } else {
                         }
                     }
@@ -488,13 +552,17 @@ public class LocationHandler extends MainActivity implements  ActivityCompat.OnR
     }
 
 
-    @SuppressLint("MissingPermission")
-    public void startTracking100ClosestGeofences() {
-        createLocationCallback();
-        //somehow put pending intent in here
-        mFusedLocationProviderClient.requestLocationUpdates
-                (getLocationRequest(), mLocationCallback, Looper.myLooper() /* Looper */);
-        Log.d(LOG_TAG, "requesting location updates, callback for geofences: " + mLocationCallback);
-    }
+    /**
+     * sets up the initial location request, defines the interval of how often updates are being retrieved, the priority, etc.
+     *
+     * @return
+     */
+    public LocationRequest getLocationRequest() {
+        LocationRequest locationRequest = new LocationRequest();
+        locationRequest.setInterval(100000);
+        locationRequest.setFastestInterval(50000);
+        locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
 
+        return locationRequest;
+    }
 }

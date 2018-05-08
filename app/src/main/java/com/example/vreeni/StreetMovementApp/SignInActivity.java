@@ -40,6 +40,7 @@ import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.SetOptions;
 
 import java.util.ArrayList;
@@ -50,10 +51,14 @@ import static com.example.vreeni.StreetMovementApp.User.AGE;
 import static com.example.vreeni.StreetMovementApp.User.EMAIL;
 import static com.example.vreeni.StreetMovementApp.User.FULLNAME;
 import static com.example.vreeni.StreetMovementApp.User.LISTOFHOMEWORKOUTS;
+import static com.example.vreeni.StreetMovementApp.User.LISTOFMOVEMENTSPECIFICCHALLENGES;
 import static com.example.vreeni.StreetMovementApp.User.LISTOFOUTDOORWORKOUTS;
+import static com.example.vreeni.StreetMovementApp.User.LISTOFSTREETMOVEMENTCHALLENGES;
 import static com.example.vreeni.StreetMovementApp.User.LOGINMETHOD;
 import static com.example.vreeni.StreetMovementApp.User.NATIONALITY;
 import static com.example.vreeni.StreetMovementApp.User.NICKNAME;
+import static com.example.vreeni.StreetMovementApp.User.POSITION;
+import static com.example.vreeni.StreetMovementApp.User.POSITIONLASTUPDATE;
 import static com.example.vreeni.StreetMovementApp.User.STATUS;
 import static com.example.vreeni.StreetMovementApp.User.WARMUPSCOMPLETED;
 import static com.example.vreeni.StreetMovementApp.User.WARMUPSSKIPPED;
@@ -547,6 +552,7 @@ public class SignInActivity extends BaseActivity implements
                     if (document.exists()) {
                         Log.d(TAG, "User already exists in database");
                         //perform updates on fields
+//                        handleLogin();
                     } else {
                         Log.d(TAG, "Creating user in database...");
                         handleLogin();
@@ -592,6 +598,12 @@ public class SignInActivity extends BaseActivity implements
         newEntry.put(WARMUPSCOMPLETED, 0);
         newEntry.put(LISTOFHOMEWORKOUTS, new ArrayList<Object>());
         newEntry.put(LISTOFOUTDOORWORKOUTS, new ArrayList<Object>());
+        newEntry.put(LISTOFMOVEMENTSPECIFICCHALLENGES, new ArrayList<Object>());
+        newEntry.put(LISTOFSTREETMOVEMENTCHALLENGES, new ArrayList<Object>());
+        newEntry.put(POSITION, new GeoPoint(0, 0));
+        newEntry.put(POSITIONLASTUPDATE, "");
+
+
 
         userDocRef
                 .set(newEntry, SetOptions.merge()).addOnSuccessListener(new OnSuccessListener<Void>() {

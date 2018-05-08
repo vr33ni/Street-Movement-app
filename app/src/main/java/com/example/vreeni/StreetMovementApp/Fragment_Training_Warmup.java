@@ -35,7 +35,7 @@ import static com.example.vreeni.StreetMovementApp.User.WARMUPSSKIPPED;
  * contains different Image-, TextViews and Buttons
  * contains reference to the database updating the number of warmups completed or skipped (no differentiation between home/outdoor)
  */
-public class GetCustomizedHomeWorkout_WarmupFragment extends Fragment implements View.OnClickListener {
+public class Fragment_Training_Warmup extends Fragment implements View.OnClickListener {
     private String TAG = "Warmup: ";
 
     //silently transfer the bundle via this argument without displaying
@@ -53,6 +53,41 @@ public class GetCustomizedHomeWorkout_WarmupFragment extends Fragment implements
     private long warmups_skipped;
     private long warmups_completed;
 
+    private Workout wk;
+
+
+    public static Fragment_Training_Warmup newInstance(Workout workout) {
+        final Bundle bundle = new Bundle();
+        Fragment_Training_Warmup fragment = new Fragment_Training_Warmup();
+        bundle.putParcelable("Workout", workout);
+        fragment.setArguments(bundle);
+        return fragment;
+    }
+
+
+//    public static Fragment_Training_Warmup newInstance(MovementSpecificActivity movspec){
+//        final Bundle bundle = new Bundle();
+//        Fragment_Training_Warmup fragment = new Fragment_Training_Warmup();
+//        bundle.putParcelable("MovementSpecificActivity", movspec);
+//        fragment.setArguments(bundle);
+//        return fragment;
+//    }
+
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            wk = getArguments().getParcelable("Workout");
+        }
+    }
+
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_get_customized_homeworkout_warmup, container, false);
+    }
 
 
     @Override
@@ -60,8 +95,6 @@ public class GetCustomizedHomeWorkout_WarmupFragment extends Fragment implements
         super.onViewCreated(view, savedInstanceState);
 
         //silently transfer the bundle via this argument without displaying
-        bundle = getArguments();
-
         time = 60;
         timer = (TextView) view.findViewById(R.id.warmuptimer);
 
@@ -79,11 +112,12 @@ public class GetCustomizedHomeWorkout_WarmupFragment extends Fragment implements
     }
 
 
-    @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_get_customized_homeworkout_warmup, container, false);
+    public void onStart() {
+        super.onStart();
+        Log.d(TAG, "warmup for: " + wk);
     }
+
 
 
     @Override
@@ -105,7 +139,7 @@ public class GetCustomizedHomeWorkout_WarmupFragment extends Fragment implements
         if (v.getId() == R.id.btn_workout_skipWarmup) {
         updateSkippedWarmups();
             //bundle.putInt("Warm-ups skipped", warmups_skipped);
-            exercises = new GetCustomizedHomeWorkout_ExerciseFragment();
+            exercises = new Fragment_Training_Workout_Exercises();
             //check which bundle obj exists, beginner, intermed, advanced? use boolean? level1= true?
             if (bundle != null) {
                 exercises.setArguments(bundle);
@@ -116,7 +150,7 @@ public class GetCustomizedHomeWorkout_WarmupFragment extends Fragment implements
             }
         }
         if (v.getId() == R.id.btn_workout_continueToExercises) {
-            exercises = new GetCustomizedHomeWorkout_ExerciseFragment();
+            exercises = new Fragment_Training_Workout_Exercises();
             //check which bundle obj exists, beginner, intermed, advanced? use boolean? level1= true?
             if (bundle != null) {
                 exercises.setArguments(bundle);
@@ -203,12 +237,5 @@ public class GetCustomizedHomeWorkout_WarmupFragment extends Fragment implements
     }
 
 
-    public long getWarmups_skipped() {
-        return warmups_skipped;
-    }
-
-    public long getWarmups_completed() {
-        return warmups_completed;
-    }
 }
 

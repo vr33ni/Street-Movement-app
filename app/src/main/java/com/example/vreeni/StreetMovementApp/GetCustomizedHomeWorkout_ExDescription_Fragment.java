@@ -31,6 +31,9 @@ public class GetCustomizedHomeWorkout_ExDescription_Fragment extends Fragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        //enable the easy navigation to open up nav drawer again
+        ((MainActivity) getActivity()).showBackButton(false);
         viewPager = (ViewPager) view.findViewById(R.id.viewpager);
 
         leftNav = (ImageButton) view.findViewById(R.id.left_nav);

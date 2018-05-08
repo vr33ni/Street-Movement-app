@@ -48,7 +48,7 @@
                 app:srcCompat="@drawable/bg_choosechallenge" />
 
             <Button
-                android:id="@+id/btn_predef_workout_home"
+                android:id="@+id/btn_training_workout_home"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
@@ -62,7 +62,7 @@
 
 
             <Button
-                android:id="@+id/btn_predef_workout_outdoors"
+                android:id="@+id/btn_training_workout_outdoors"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"

@@ -27,9 +27,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 public class GoogleMapsCustomInfoWindow implements GoogleMap.InfoWindowAdapter{
 
     private static final String LOG_TAG = "CustomInfoWindow";
-
     private Activity context;
-    private String photoUrl;
 
     public GoogleMapsCustomInfoWindow(Activity context){
         this.context = context;
@@ -46,7 +44,11 @@ public class GoogleMapsCustomInfoWindow implements GoogleMap.InfoWindowAdapter{
 
         ImageView ivPark = (ImageView) view.findViewById(R.id.iv_park);
         TextView tvTitle = (TextView) view.findViewById(R.id.tv_title);
+        tvTitle.setWidth(ivPark.getDrawable().getIntrinsicWidth());
+
         TextView tvSubTitle = (TextView) view.findViewById(R.id.tv_subtitle);
+        tvSubTitle.setWidth(ivPark.getDrawable().getIntrinsicWidth());
+
 
         String str=marker.getTitle();
         final String[] str2=str.split("_");
@@ -56,7 +58,6 @@ public class GoogleMapsCustomInfoWindow implements GoogleMap.InfoWindowAdapter{
         tvSubTitle.setText(str2[1]);
         tvSubTitle.setMaxLines(3);
 
-//        Log.d(LOG_TAG, "photo url: " + photoUrl);
         loadImageWithGlide(marker, ivPark);
 
         return view;

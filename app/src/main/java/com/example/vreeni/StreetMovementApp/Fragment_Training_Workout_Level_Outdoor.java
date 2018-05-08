@@ -39,7 +39,7 @@ import java.util.Random;
  * calls workout from the database
  * puts workout as parcelable object to a bundle and passes it on to the next fragment
  */
-public class GetCustomizedOutdoorWorkoutLevelFragment extends Fragment implements View.OnClickListener {
+public class Fragment_Training_Workout_Level_Outdoor extends Fragment implements View.OnClickListener {
 
     private String TAG = "Outdoor_Choose Level: ";
 
@@ -104,6 +104,7 @@ public class GetCustomizedOutdoorWorkoutLevelFragment extends Fragment implement
         Fragment fragment = null;
         if (v.getId() == R.id.btn_predef_outdoorworkout_beginner) {
             beginner = true;
+            //pass bundle with location info so that after the workout is completed, it can be added to the places where the user has trained
 //            queryLevel1HomeWorkout();
             fragment = new WebViewFragment();
             getActivity().getSupportFragmentManager().beginTransaction()
@@ -120,7 +121,7 @@ public class GetCustomizedOutdoorWorkoutLevelFragment extends Fragment implement
         }
 
         //create new fragment displaying the result of either of the choices
-//        GetCustomizedHomeWorkoutSelectionFragment result = new GetCustomizedHomeWorkoutSelectionFragment();
+//        Fragment_Training_Workout_Selection result = new Fragment_Training_Workout_Selection();
 //        //check which bundle obj exists, beginner, intermed, advanced? use boolean? level1= true?
 //        if (outdoorBundle != null) {
 //            result.setArguments(outdoorBundle);
@@ -211,7 +212,7 @@ public class GetCustomizedOutdoorWorkoutLevelFragment extends Fragment implement
                                         outdoorBundle.putString("WorkoutID", workoutID);
                                         //beginnerBundle.putBoolean("ExerciseCompleted", exerciseCompleted);
 
-//                                        GetCustomizedHomeWorkoutSelectionFragment result = new GetCustomizedHomeWorkoutSelectionFragment();
+//                                        Fragment_Training_Workout_Selection result = new Fragment_Training_Workout_Selection();
 //                                        if (beginnerBundle!=null) {
 //                                            result.setArguments(beginnerBundle);
 //                                            getActivity().getSupportFragmentManager().beginTransaction()

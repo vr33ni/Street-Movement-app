@@ -6,6 +6,7 @@ import android.os.Parcelable;
 import android.support.annotation.RequiresApi;
 
 import com.google.android.gms.maps.model.Marker;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.GeoPoint;
 
 import java.lang.reflect.Array;
@@ -51,7 +52,6 @@ public class ParkourPark implements Parcelable {
 //    public ParkourPark(GeoPoint point) {
 //        coordinates = point;
 //    }
-
 
     public ArrayList<HashMap<String, Object>> getListOfRatings() {
         return listOfRatings;

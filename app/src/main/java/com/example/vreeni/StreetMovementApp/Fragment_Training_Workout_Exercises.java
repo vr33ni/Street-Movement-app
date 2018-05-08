@@ -1,11 +1,13 @@
 package com.example.vreeni.StreetMovementApp;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.FragmentManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -33,6 +35,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import static android.content.Context.MODE_PRIVATE;
 import static com.example.vreeni.StreetMovementApp.User.LISTOFHOMEWORKOUTS;
 import static com.example.vreeni.StreetMovementApp.User.WORKOUTSCOMPLETED;
 
@@ -46,16 +49,17 @@ import static com.example.vreeni.StreetMovementApp.User.WORKOUTSCOMPLETED;
  * contains webview with an embedded vimeo video
  * contains reference to the database => after timer has run out, adds Home Workout as a DocumentReference to a list of completed Home Workouts to the user profile
  */
-public class GetCustomizedHomeWorkout_ExerciseFragment extends android.support.v4.app.Fragment implements View.OnClickListener{
+public class Fragment_Training_Workout_Exercises extends android.support.v4.app.Fragment implements View.OnClickListener {
     private String TAG = "Workout in process: ";
 
-    private Bundle workoutBundle;
+    private Bundle bundle;
     private String exerciseI;
     private String exerciseII;
     private String imgEx1;
     private String vidEx1;
     private ImageView imageEx1;
     private ArrayList<Object> listOfHomeWks;
+    private ParkourPark pk;
 
 
     //all the information in here will be updated in the user object and then uploaded ot the database
@@ -67,19 +71,22 @@ public class GetCustomizedHomeWorkout_ExerciseFragment extends android.support.v
     private WebView webView;
     private int time;
 
+    private boolean timerIsRunning;
+
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        Bundle workoutBundle = getArguments();
-        if (null != workoutBundle) {
-            myWorkout = workoutBundle.getParcelable("Workout");
-            exerciseI = workoutBundle.getString("Exercise1");
-            exerciseII = workoutBundle.getString("Exercise2");
+        bundle = getArguments();
+        if (null != bundle) {
+            pk = bundle.getParcelable("TrainingLocation");
+            myWorkout = bundle.getParcelable("Workout");
+            exerciseI = bundle.getString("Exercise1");
+            exerciseII = bundle.getString("Exercise2");
             vidEx1 = (String) myWorkout.getExerciseI().get("video");
-            wkReference = workoutBundle.getString("WorkoutID");
-//            time = workoutBundle.getInt("Time");
+            wkReference = bundle.getString("WorkoutID");
+//            time = bundle.getInt("Time");
             //maybe here create exercise objects and set the fields?? (exerciseI = new Exercise(); exerciseI.setDescription, setIsCompleted....)
             //then add them to a list of exercise objects?
 
@@ -112,6 +119,7 @@ public class GetCustomizedHomeWorkout_ExerciseFragment extends android.support.v
         time = 10;
 
         timer = (TextView) view.findViewById(R.id.workoutTimer);
+        timerIsRunning = false;
         Button btn_startWorkout = (Button) view.findViewById(R.id.btn_workout_startWk);
         btn_startWorkout.setOnClickListener(this);
     }
@@ -126,19 +134,25 @@ public class GetCustomizedHomeWorkout_ExerciseFragment extends android.support.v
     @Override
     public void onClick(View v) {
         if (v.getId() == R.id.btn_workout_startWk) {
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    //start workout after 5 seconds = just for testing to implement a pause for 30 sec
-                    startTimer();
-                }
-            }, 1000);
+            if (!timerIsRunning) {
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        //start workout after 5 seconds = just for testing to implement a pause for 30 sec
+                        startTimer();
+                    }
+                }, 1000);
+            }
         }
 
     }
 
+    /**
+     * workout completion is measured using a timer
+     */
     public void startTimer() {
         //get workout duration from bundle information
+        timerIsRunning = true;
         CountDownTimer countDownTimer = new CountDownTimer(10000, 1000) {
 
             public void onTick(long millisUntilFinished) {
@@ -146,14 +160,20 @@ public class GetCustomizedHomeWorkout_ExerciseFragment extends android.support.v
 //                    cancel();
 //                    isCancelled = false;
 //                } else {
-                    timer.setText("0:" + checkDigit(time));
-                    time--;
+                timer.setText("0:" + checkDigit(time));
+                time--;
 //                }
             }
+
             public void onFinish() {
-                timer.setText("Warm-up completed!");
+                timer.setText("Workout completed!");
                 time = 10;
+                timerIsRunning = false;
                 addWorkouttoUserDocument();
+                //show the navigation drawer hamburger icon instead of back button to easily navigate to another section after the workout
+                ((MainActivity) getActivity()).showBackButton(false);
+
+
 //                //Enable the start button
 //                btn_startWarmup.setEnabled(false);
 ////                //Disable the pause, resume and cancel button
@@ -190,6 +210,11 @@ public class GetCustomizedHomeWorkout_ExerciseFragment extends android.support.v
                 //put the updated nr of workouts in the map that is to be uploaded to the database
                 update.put(WORKOUTSCOMPLETED, nrOfWorkouts);
                 //put a reference to the workout just completed in the map that is to be uploaded to the database
+                HashMap<String, Object> wkdetails = new HashMap<>();
+                wkdetails.put("Activity", db.collection("PredefinedWorkouts").document(wkReference));
+                String spotRef = db.collection("ParkourParks").document().getId();
+                wkdetails.put("Place", db.collection("ParkourParks").document(spotRef));
+                listOfHomeWks.add(wkdetails);
                 update.put(LISTOFHOMEWORKOUTS, listOfHomeWks);
 
                 //update the user document
@@ -198,6 +223,12 @@ public class GetCustomizedHomeWorkout_ExerciseFragment extends android.support.v
                     @Override
                     public void onSuccess(Void aVoid) {
                         Log.d(TAG, "Document has been saved");
+                        SharedPreferences sharedPrefs = getActivity().getSharedPreferences("Training", MODE_PRIVATE);
+                        sharedPrefs.edit().remove("Activity").apply();
+                        sharedPrefs.edit().remove("Setting").apply();
+                        sharedPrefs.edit().remove("Level").apply();
+                        sharedPrefs.edit().remove("TrainingFlowStarted").apply();
+
                     }
                 }).addOnFailureListener(new OnFailureListener() {
                     @Override

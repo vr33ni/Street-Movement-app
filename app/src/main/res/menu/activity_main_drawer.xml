@@ -1,48 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <group android:checkableBehavior="single">
+    <group android:id="@+id/first_group">
         <item
             android:id="@+id/home"
+            android:checkable="true"
             android:icon="@drawable/ic_home_black"
             android:title="@string/menu_cat1_item1" />
         <item
             android:id="@+id/training"
+            android:checkable="true"
             android:icon="@drawable/ic_weights"
             android:title="@string/menu_cat1_item2" />
         <item
             android:id="@+id/shop"
+            android:checkable="true"
             android:icon="@drawable/ic_shoppingcart"
-            android:title="@string/menu_cat1_item3"/>
+            android:title="@string/menu_cat1_item3" />
         <item
             android:id="@+id/contact"
+            android:checkable="true"
             android:icon="@drawable/ic_contact"
             android:title="@string/menu_cat1_item4" />
     </group>
 
-    <item android:title="@string/menu_category2">
+    <item android:title="Follow us on social media">
         <menu>
-            <!--add new item part here and in MainActivity.java to create a new navigation menu item-->
-            <item
-                android:id="@+id/fb"
-                android:icon="@drawable/ic_fb_black"
-                android:title="@string/menu_cat2_item1" />
-            <item
-                android:id="@+id/insta"
-                android:icon="@drawable/ic_insta_black"
-                android:title="@string/menu_cat2_item2" />
+            <group android:id="@+id/second_group">
+                <!--add new item part here and in MainActivity.java to create a new navigation menu item-->
+                <item
+                    android:id="@+id/fb"
+                    android:checkable="true"
+                    android:icon="@drawable/ic_fb_black"
+                    android:title="@string/menu_cat2_item1" />
+                <item
+                    android:id="@+id/insta"
+                    android:checkable="true"
+                    android:icon="@drawable/ic_insta_black"
+                    android:title="@string/menu_cat2_item2" />
 
-            <item
-                android:id="@+id/vimeo"
-                android:icon="@drawable/ic_vimeo"
-                android:title="Vimeo" />
+                <item
+                    android:id="@+id/vimeo"
+                    android:checkable="true"
+                    android:icon="@drawable/ic_vimeo"
+                    android:title="Vimeo" />
 
-            <item
-                android:id="@+id/youtube"
-                android:icon="@drawable/ic_youtube_black_smaller"
-                android:title="@string/menu_cat2_item3" />
+                <item
+                    android:id="@+id/youtube"
+                    android:checkable="true"
+                    android:icon="@drawable/ic_youtube_black_smaller"
+                    android:title="@string/menu_cat2_item3" />
 
+            </group>
         </menu>
     </item>
-
 </menu>

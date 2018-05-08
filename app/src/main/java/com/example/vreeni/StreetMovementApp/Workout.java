@@ -20,6 +20,7 @@ public class Workout implements Parcelable {
     FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     private String name;
+    private String activity;
     private String setting;
     private String level;
     private int duration;
@@ -39,7 +40,14 @@ public class Workout implements Parcelable {
 
     public Workout(String name) {
         this.name = name;
+    }
 
+    public String getActivity() {
+        return activity;
+    }
+
+    public void setActivity(String activity) {
+        this.activity = activity;
     }
 
     public HashMap<String, Object> getExerciseI() {

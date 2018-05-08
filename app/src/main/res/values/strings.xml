@@ -134,7 +134,10 @@
     <string name="geofence_transition_exited">Exited</string>
     <string name="unknown_geofence_transition">Unknown Transition</string>
 
-    <string name="geofence_transition_notification_text">
+    <string name="geofence_enter_transition_notification_text">
+        Want to check it out?
+    </string>
+    <string name="geofence_exit_transition_notification_text">
         Want to check it out?
     </string>
 
