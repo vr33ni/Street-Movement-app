@@ -82,10 +82,11 @@ public class Fragment_Training_Workout_Setting extends Fragment implements View.
     public void onClick(View v) {
         Log.d(LOG_TAG, "training info: " + activity);
 
-        Fragment fragment = null;
+
         if (v.getId() == R.id.btn_training_workout_home) {
             String setting = "Home";
-            Fragment_Training_TrainNowORCreateTraining fragment_trainNowOrCreateTraining = Fragment_Training_TrainNowORCreateTraining.newInstance(activity, setting);
+            ParkourPark pk = null;
+            Fragment_Training_TrainNowORCreateTraining fragment_trainNowOrCreateTraining = Fragment_Training_TrainNowORCreateTraining.newInstance(activity, setting, pk);
             ((AppCompatActivity) getContext()).getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, fragment_trainNowOrCreateTraining, "TrainOrCreateWk")
                     .addToBackStack(null)
@@ -101,11 +102,6 @@ public class Fragment_Training_Workout_Setting extends Fragment implements View.
                     .addToBackStack(null)
                     .commit();
         }
-//        fragment.setArguments(bundle);
-//        getActivity().getSupportFragmentManager().beginTransaction()
-//                .replace(R.id.fragment_container, fragment, "SettingsFragment")
-//                .addToBackStack(null)
-//                .commit();
 
     }
 

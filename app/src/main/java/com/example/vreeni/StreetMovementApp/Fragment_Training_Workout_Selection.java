@@ -39,17 +39,21 @@ public class Fragment_Training_Workout_Selection extends Fragment {
     private String activity;
     private String setting;
     private String level;
+    private ParkourPark pk;
+
+
 
     private TextView ex1;
     private TextView ex2;
 
 
-    public static Fragment_Training_Workout_Selection newInstance(String act, String set, String lvl) {
+    public static Fragment_Training_Workout_Selection newInstance(String act, String set, ParkourPark spot, String lvl) {
         final Bundle bundle = new Bundle();
         Fragment_Training_Workout_Selection fragment = new Fragment_Training_Workout_Selection();
         bundle.putString("Activity", act);
         bundle.putString("Setting", set);
         bundle.putString("Level", lvl);
+        bundle.putParcelable("TrainingLocation", spot);
         fragment.setArguments(bundle);
         return fragment;
     }
@@ -62,6 +66,8 @@ public class Fragment_Training_Workout_Selection extends Fragment {
             activity = getArguments().getString("Activity");
             setting = getArguments().getString("Setting");
             level = getArguments().getString("Level");
+            pk = getArguments().getParcelable("TrainingLocation");
+            Log.d(LOG_TAG, "bundle information: " + getArguments());
         }
     }
 
@@ -107,7 +113,7 @@ public class Fragment_Training_Workout_Selection extends Fragment {
                 ex2.setText(descriptionEx2);
 
                 btn_Continue.setOnClickListener(click -> {
-                    Fragment_Training_Warmup warmup = Fragment_Training_Warmup.newInstance(workout);
+                    Fragment_Training_Warmup warmup = Fragment_Training_Warmup.newInstance(workout, pk);
                     ((AppCompatActivity) getContext()).getSupportFragmentManager().beginTransaction()
                             .replace(R.id.fragment_container, warmup, "warmup")
                             .addToBackStack("warmup")

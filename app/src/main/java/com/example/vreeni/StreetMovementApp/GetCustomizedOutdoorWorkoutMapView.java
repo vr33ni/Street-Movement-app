@@ -9,11 +9,13 @@ import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationServices;
@@ -56,7 +58,6 @@ public class GetCustomizedOutdoorWorkoutMapView extends Fragment implements OnMa
     private GoogleMap mGoogleMap;
     private View mView;
 
-    private Bundle outdoorBundle; //to pass arguments to the next fragment
 
     private CheckBox chckBxPk;
     private CheckBox chckBxCali;
@@ -94,7 +95,6 @@ public class GetCustomizedOutdoorWorkoutMapView extends Fragment implements OnMa
     private static final String KEY_CAMERA_POSITION = "camera_position";
     private static final String KEY_LOCATION = "location";
 
-    private Bundle bundle;
     private String activity;
     private String setting;
 
@@ -114,7 +114,7 @@ public class GetCustomizedOutdoorWorkoutMapView extends Fragment implements OnMa
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             activity = getArguments().getString("Activity");
-            setting = getArguments().getString("Setting");
+            setting = "Outdoors";
         }
     }
 
@@ -149,6 +149,16 @@ public class GetCustomizedOutdoorWorkoutMapView extends Fragment implements OnMa
         chckBxCali = (CheckBox) mView.findViewById(R.id.showCaliParks);
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+//        TextView textView = new TextView(getContext());
+//
+//        backButton.setOnClickListener(click -> {
+//            ((AppCompatActivity)getContext()).getSupportFragmentManager().popBackStack();
+//        });
+    }
+
     /**
      * create new arrayLists for listOfPkMarkers and listOfCaliMarkers and a new HashMap to identify marker and the respective parkour park object
      * set googleMap properties (mapType, ClickListeners)
@@ -158,6 +168,7 @@ public class GetCustomizedOutdoorWorkoutMapView extends Fragment implements OnMa
      * commented out: new JSON Handler loading location data from JSON files to database
      * getting all the locations from the database to display on map
      * handling the checkboxes parkour spots / calisthenics spots to display only the specific markers
+     *
      * @param googleMap
      */
     @RequiresApi(api = Build.VERSION_CODES.N)
@@ -165,7 +176,7 @@ public class GetCustomizedOutdoorWorkoutMapView extends Fragment implements OnMa
     public void onMapReady(GoogleMap googleMap) {
         MapsInitializer.initialize(this.getContext());
 
-        listOfPkMarkers= new ArrayList<>();
+        listOfPkMarkers = new ArrayList<>();
         listOfCaliMarkers = new ArrayList<>();
         mapMarkerToPark = new HashMap<>();
 
@@ -193,14 +204,14 @@ public class GetCustomizedOutdoorWorkoutMapView extends Fragment implements OnMa
         getLocationsFromFirestoreToMap();
 
         //handle checkbox clicks
-        if (chckBxPk !=null) {
+        if (chckBxPk != null) {
             chckBxPk.setChecked(true);
             chckBxPk.setOnClickListener(v -> {
                 if (chckBxPk.isChecked()) showPkSpots();
                 else hidePkSpots();
             });
         }
-        if (chckBxCali !=null) {
+        if (chckBxCali != null) {
             chckBxCali.setChecked(true);
             chckBxCali.setOnClickListener(v -> {
                 if (chckBxCali.isChecked()) showCaliSpots();
@@ -209,7 +220,6 @@ public class GetCustomizedOutdoorWorkoutMapView extends Fragment implements OnMa
         }
 
     }
-
 
 
     @Override
@@ -265,7 +275,7 @@ public class GetCustomizedOutdoorWorkoutMapView extends Fragment implements OnMa
                     if (task.isSuccessful()) {
                         // Set the map's camera position to the current location of the device.
                         mLastKnownLocation = task.getResult();
-                          mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                        mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
                                 new LatLng(mLastKnownLocation.getLatitude(),
                                         mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
                     } else {
@@ -281,7 +291,7 @@ public class GetCustomizedOutdoorWorkoutMapView extends Fragment implements OnMa
                 mGoogleMap.moveCamera(CameraUpdateFactory
                         .newLatLngZoom(mDefaultLocation, DEFAULT_ZOOM));
             }
-        } catch (SecurityException e)  {
+        } catch (SecurityException e) {
             Log.e("Exception: %s", e.getMessage());
         }
     }
@@ -352,14 +362,16 @@ public class GetCustomizedOutdoorWorkoutMapView extends Fragment implements OnMa
                 mLastKnownLocation = null;
                 getLocationPermission();
             }
-        } catch (SecurityException e)  {
+        } catch (SecurityException e) {
             Log.e("Exception: %s", e.getMessage());
         }
     }
 
-    /** gets all the parkour park documents from the database;
-     *  then creates a parkour park object for each document, sets its description (Field description is slightly different to database and has to be set manually);
-     *  then calls the method addMarker to create a marker on the map based on the properties of this parkour park object such as coordinates, name, etc.*/
+    /**
+     * gets all the parkour park documents from the database;
+     * then creates a parkour park object for each document, sets its description (Field description is slightly different to database and has to be set manually);
+     * then calls the method addMarker to create a marker on the map based on the properties of this parkour park object such as coordinates, name, etc.
+     */
     public void getLocationsFromFirestoreToMap() {
         final FirebaseFirestore db = FirebaseFirestore.getInstance();
 //        delete specific document from the database => apparently only works form within the code, database deleltion alone doesnt do it
@@ -388,34 +400,25 @@ public class GetCustomizedOutdoorWorkoutMapView extends Fragment implements OnMa
     /**
      * handles click events on the info windows => selection of the respective parkour park to start a training;
      * passing the parkour park object as parcelable in a bundle to the next fragment
+     *
      * @param marker infoWindow is specific for each marker
      */
     @Override
     public void onInfoWindowClick(Marker marker) {
-        Fragment fragment = null;
         Log.d(LOG_TAG, "InfoWindow clicked: " + marker.getTitle());
-        //passing object as parcelable
-        //get hashmap marker - park object to get the location object
-        outdoorBundle=new Bundle();
-        outdoorBundle.putParcelable("TrainingLocation", mapMarkerToPark.get(marker));
-        //create new fragment displaying the result of either of the choices
-        fragment = new Fragment_TrainingLocation_View();
-        Log.d(LOG_TAG, "outdoor bundle content " + outdoorBundle.getParcelable("TrainingLocation"));
-
-        if (outdoorBundle != null) {
-            fragment.setArguments(outdoorBundle);
-            getActivity().getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, fragment)
-                    .addToBackStack(null)
-                    .commit();
-        }
-
+        //get hashmap marker - park object to get the location object and pass it to the detail view of the spot
+        Log.d(LOG_TAG, "passing training location: " + mapMarkerToPark.get(marker));
+        Fragment_TrainingLocation_View spot = Fragment_TrainingLocation_View.newInstance(activity, setting, mapMarkerToPark.get(marker));
+        ((AppCompatActivity) getContext()).getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, spot, "training location")
+                .addToBackStack("training location")
+                .commit();
     }
-
 
     /**
      * handles click events on markers
      * => creation of a custom info window after clicking on each marker and then displaying it incl. name, image, description
+     *
      * @param marker the respective marker that is clicked on
      * @return has to return true
      */
@@ -440,7 +443,7 @@ public class GetCustomizedOutdoorWorkoutMapView extends Fragment implements OnMa
     /**
      * is called after checkbox calisthenics is checked => shows all the markers based on parkour parks with the property calisthenics = true
      */
-    public void showCaliSpots () {
+    public void showCaliSpots() {
         //show cali spots only
         for (Marker m : listOfCaliMarkers) {
             m.setVisible(true);
@@ -470,6 +473,7 @@ public class GetCustomizedOutdoorWorkoutMapView extends Fragment implements OnMa
      * => adding parkour parks to listOfPkParks, calisthenics to listOfCalisthenics
      * => adding each marker to a hashmap of type marker, object to get a park object for a marker key later on
      * does not create custom info windows yet (performance issues)
+     *
      * @param queriedLocation = the parkour park objects from the database incl all their properties defined in the database
      */
     public void addApprovedLocationMarkersOnMap(ParkourPark queriedLocation) {
@@ -487,12 +491,12 @@ public class GetCustomizedOutdoorWorkoutMapView extends Fragment implements OnMa
         Log.d(LOG_TAG, "photo url: " + photoURL);
         //show pk spots so that everything is loaded in in on map ready
         //define marker options and set the custom info window
-            MarkerOptions markerOpt = new MarkerOptions();
-            markerOpt.position(new LatLng(gp.getLatitude(), gp.getLongitude()))
-                    .title(name + "_" +
-                            "Description: " + shortDescription)
-                    .snippet(photoURL)
-                    .icon(BitmapDescriptorFactory.defaultMarker());
+        MarkerOptions markerOpt = new MarkerOptions();
+        markerOpt.position(new LatLng(gp.getLatitude(), gp.getLongitude()))
+                .title(name + "_" +
+                        "Description: " + shortDescription)
+                .snippet(photoURL)
+                .icon(BitmapDescriptorFactory.defaultMarker());
 //        possibly milliseconds faster, but backButton pressed events are not handled correclty at the moment, so crash
 //        getActivity().runOnUiThread(new Runnable()
 //        {
@@ -501,21 +505,21 @@ public class GetCustomizedOutdoorWorkoutMapView extends Fragment implements OnMa
 //                loading everything here and creating info windows at once => bad performance, slwo
 //                GoogleMapsCustomInfoWindow adapter = new GoogleMapsCustomInfoWindow(getActivity(), photoURL);
 //                mGoogleMap.setInfoWindowAdapter(adapter);
-                Marker m = mGoogleMap.addMarker(markerOpt);
-                if (queriedLocation.isParkour()) {
-                    listOfPkMarkers.add(m);
-                    mapMarkerToPark.put(m, queriedLocation);
-                }
-                if (queriedLocation.isCalisthenics()) {
-                    listOfCaliMarkers.add(m);
-                    mapMarkerToPark.put(m, queriedLocation);
-                }
-                Log.d("marker", markerOpt.getTitle());
-                m.hideInfoWindow();
+        Marker m = mGoogleMap.addMarker(markerOpt);
+        if (queriedLocation.isParkour()) {
+            listOfPkMarkers.add(m);
+            mapMarkerToPark.put(m, queriedLocation);
+        }
+        if (queriedLocation.isCalisthenics()) {
+            listOfCaliMarkers.add(m);
+            mapMarkerToPark.put(m, queriedLocation);
+        }
+        Log.d("marker", markerOpt.getTitle());
+        m.hideInfoWindow();
 //            }
 //        });
 
-            //pass along the picture URL to the customInfoWindow
+        //pass along the picture URL to the customInfoWindow
 //            GoogleMapsCustomInfoWindow adapter = new GoogleMapsCustomInfoWindow(getActivity(), photoURL);
 //            mGoogleMap.setInfoWindowAdapter(adapter);
 //            Marker m = mGoogleMap.addMarker(markerOpt);

@@ -58,6 +58,7 @@ public class Fragment_TrainingLocation_View extends Fragment implements View.OnC
 
     private RecyclerView mRecyclerView;
     private ItemListAdapter mAdapter;
+    private ImageView iv;
     private EditText et_comment;
     private RatingBar ratingBar;
     private Button btnSubmitRating;
@@ -67,7 +68,8 @@ public class Fragment_TrainingLocation_View extends Fragment implements View.OnC
     private FirebaseStorage storage = FirebaseStorage.getInstance();
     private StorageReference storageRef = storage.getReference();
 
-    private Bundle outdoorBundle; //to pass arguments to the next fragment
+    private String activity;
+    private String setting;
     private ParkourPark pk;
     private HashMap<String, Object> rt;
 
@@ -77,58 +79,92 @@ public class Fragment_TrainingLocation_View extends Fragment implements View.OnC
     private TabLayout tabLayout;
     private ViewPager viewPager;
 
+    public static Fragment_TrainingLocation_View newInstance(String act, String set, ParkourPark spot) {
+        final Bundle bundle = new Bundle();
+        Fragment_TrainingLocation_View fragment = new Fragment_TrainingLocation_View();
+        bundle.putString("Activity", act);
+        bundle.putString("Setting", set);
+        bundle.putParcelable("TrainingLocation", spot);
+        fragment.setArguments(bundle);
+        return fragment;
+    }
+
 
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-
-        ImageView iv = (ImageView) view.findViewById(R.id.iv_parkview);
-
-        // Get the ViewPager and set it's PagerAdapter so that it can display items
-        viewPager = (ViewPager) view.findViewById(R.id.viewpager);
-        tabLayout = (TabLayout) view.findViewById(R.id.sliding_tabs);
-//        adapter = new Tab_FragmentPagerAdapter(this.getActivity().getSupportFragmentManager(), this.getActivity());
-        adapter = new Tab_FragmentPagerAdapter(this.getChildFragmentManager(), this.getActivity());
-        outdoorBundle = getArguments();
-        if (outdoorBundle != null) {
-            //set image on top of the fragment
-            pk = outdoorBundle.getParcelable("TrainingLocation");
-            if (pk.getPhoto_0() != null) {
-                HashMap<String, Object> photo = pk.getPhoto_0();
-                String photoURL = (String) photo.get("url");
-//                Uri photoURI = Uri.parse(photoURL);
-//                iv.setImageURI(photoURI);
-                loadImgWithGlide(photoURL, iv);
-            } else {
-                //default photo, but prevent that by having pictures of all spots in the map view fragment already
-                iv.setImageResource(R.drawable.img_railheaven);
-            }
-
-            //pass info to the respective tabs containing further fragments that are being displayed within this fragment
-            Tab_Ratings_Fragment ratingsTab = new Tab_Ratings_Fragment();
-            ratingsTab.setArguments(outdoorBundle);
-            Tab_Overview_Fragment overviewTab = new Tab_Overview_Fragment();
-            overviewTab.setArguments(outdoorBundle);
-            Tab_ActiveUsers_Fragment activeUsersTab = new Tab_ActiveUsers_Fragment();
-            activeUsersTab.setArguments(outdoorBundle);
-
-            adapter.addFragment(overviewTab, "Overview");
-            adapter.addFragment(ratingsTab, "Ratings");
-            adapter.addFragment(new TrainNowFragment(), "Active users");
-            viewPager.setAdapter(adapter);
-            tabLayout.setupWithViewPager(viewPager);
-
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            activity = getArguments().getString("Activity");
+            setting = getArguments().getString("Setting");
+            pk = getArguments().getParcelable("TrainingLocation");
+            Log.d(TAG, "bundle info: " + getArguments());
         }
-
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
         return inflater.inflate(R.layout.fragment_parkourpark_view, container, false);
-
     }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        iv = (ImageView) view.findViewById(R.id.iv_parkview);
+        // Get the ViewPager and set it's PagerAdapter so that it can display items
+        viewPager = (ViewPager) view.findViewById(R.id.viewpager);
+        tabLayout = (TabLayout) view.findViewById(R.id.sliding_tabs);
+        }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        //set image on top of the fragment
+        adapter = new Tab_FragmentPagerAdapter(this.getChildFragmentManager(), this.getActivity());
+
+        if (pk.getPhoto_0() != null) {
+            HashMap<String, Object> photo = pk.getPhoto_0();
+            String photoURL = (String) photo.get("url");
+            loadImgWithGlide(photoURL, iv);
+        } else {
+            //default photo, but prevent that by having pictures of all spots in the map view fragment already
+            iv.setImageResource(R.drawable.img_railheaven);
+        }
+        //pass info to the respective tabs containing further fragments that are being displayed within this fragment
+        Tab_Ratings_Fragment ratingsTab = Tab_Ratings_Fragment.newInstance(activity, setting, pk);
+        Tab_Overview_Fragment overviewTab = Tab_Overview_Fragment.newInstance(activity, setting, pk);
+        Tab_ActiveUsers_Fragment activeUsersTab = Tab_ActiveUsers_Fragment.newInstance(activity, setting, pk);
+        adapter.addFragment(overviewTab, "Overview");
+        adapter.addFragment(ratingsTab, "Ratings");
+        adapter.addFragment(new TrainNowFragment(), "Active users");
+        viewPager.setAdapter(adapter);
+        tabLayout.setupWithViewPager(viewPager);
+
+//        backButton.setOnClickListener(click -> {
+//            ((AppCompatActivity)getContext()).getSupportFragmentManager().popBackStack();
+//        });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+    }
+
 
 
     @Override

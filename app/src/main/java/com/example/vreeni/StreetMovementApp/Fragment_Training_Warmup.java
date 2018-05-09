@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -49,17 +50,18 @@ public class Fragment_Training_Warmup extends Fragment implements View.OnClickLi
     private int time;
 
     //put these to as fields in the workout class later on
-    private User currentUser;
     private long warmups_skipped;
     private long warmups_completed;
 
     private Workout wk;
+    private ParkourPark pk;
 
 
-    public static Fragment_Training_Warmup newInstance(Workout workout) {
+    public static Fragment_Training_Warmup newInstance(Workout workout, ParkourPark spot) {
         final Bundle bundle = new Bundle();
         Fragment_Training_Warmup fragment = new Fragment_Training_Warmup();
         bundle.putParcelable("Workout", workout);
+        bundle.putParcelable("TrainingLocation", spot);
         fragment.setArguments(bundle);
         return fragment;
     }
@@ -79,6 +81,7 @@ public class Fragment_Training_Warmup extends Fragment implements View.OnClickLi
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             wk = getArguments().getParcelable("Workout");
+            pk = getArguments().getParcelable("TrainingLocation");
         }
     }
 
@@ -115,7 +118,7 @@ public class Fragment_Training_Warmup extends Fragment implements View.OnClickLi
     @Override
     public void onStart() {
         super.onStart();
-        Log.d(TAG, "warmup for: " + wk);
+        Log.d(TAG, "warmup for: " + wk + " at " + pk);
     }
 
 
@@ -135,30 +138,18 @@ public class Fragment_Training_Warmup extends Fragment implements View.OnClickLi
             btn_skipWarmup.setEnabled(true);
         }
         //continue to exercises (skipping warm-up or after finishing the timer)
-        Fragment exercises = null;
         if (v.getId() == R.id.btn_workout_skipWarmup) {
         updateSkippedWarmups();
-            //bundle.putInt("Warm-ups skipped", warmups_skipped);
-            exercises = new Fragment_Training_Workout_Exercises();
-            //check which bundle obj exists, beginner, intermed, advanced? use boolean? level1= true?
-            if (bundle != null) {
-                exercises.setArguments(bundle);
-                getActivity().getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.fragment_container, exercises)
-                        .addToBackStack(null)
-                        .commit();
-            }
         }
         if (v.getId() == R.id.btn_workout_continueToExercises) {
-            exercises = new Fragment_Training_Workout_Exercises();
             //check which bundle obj exists, beginner, intermed, advanced? use boolean? level1= true?
-            if (bundle != null) {
-                exercises.setArguments(bundle);
-                getActivity().getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.fragment_container, exercises)
-                        .addToBackStack(null)
+//                exercises.setArguments(bundle);
+            Fragment_Training_Workout_Exercises exercises = Fragment_Training_Workout_Exercises.newInstance(wk, pk);
+            ((AppCompatActivity) getContext()).getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, exercises, "exercises")
+                    .addToBackStack("exercises")
                         .commit();
-            }
+
         }
     }
 
@@ -223,7 +214,12 @@ public class Fragment_Training_Warmup extends Fragment implements View.OnClickLi
                         .set(update, SetOptions.merge()).addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Log.d(TAG, "Document has been saved");
+                        Log.d(TAG, "Document has been saved, warmup skipped, continuing to workout " + wk + " at " + pk);
+                        Fragment_Training_Workout_Exercises exercises = Fragment_Training_Workout_Exercises.newInstance(wk, pk);
+                        ((AppCompatActivity) getContext()).getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.fragment_container, exercises, "exercises")
+                                .addToBackStack("exercises")
+                                .commit();
                     }
                 }).addOnFailureListener(new OnFailureListener() {
                     @Override

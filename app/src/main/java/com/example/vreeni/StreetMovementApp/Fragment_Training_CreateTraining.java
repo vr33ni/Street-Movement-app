@@ -24,13 +24,15 @@ public class Fragment_Training_CreateTraining extends Fragment implements View.O
     private static final String LOG_TAG = "CreateTraining";
     private String activity;
     private String setting;
+    private ParkourPark pk;
 
 
-    public static Fragment_Training_CreateTraining newInstance(String act, String set) {
+    public static Fragment_Training_CreateTraining newInstance(String act, String set, ParkourPark spot) {
         final Bundle bundle = new Bundle(); //to pass arguments to the next fragment
         Fragment_Training_CreateTraining fragment = new Fragment_Training_CreateTraining();
         bundle.putString("Activity", act);
         bundle.putString("Setting", set);
+        bundle.putParcelable("TrainingLocation", spot);
         fragment.setArguments(bundle);
         return fragment;
     }
@@ -41,6 +43,7 @@ public class Fragment_Training_CreateTraining extends Fragment implements View.O
         if (getArguments() != null) {
             activity = getArguments().getString("Activity");
             setting = getArguments().getString("Setting");
+            pk = getArguments().getParcelable("TrainingLocation");
         }
     }
 
@@ -95,10 +98,10 @@ public class Fragment_Training_CreateTraining extends Fragment implements View.O
         }
 //        else if (v.getId() == R.id.btn_create_your_own_workout) {
         //OR IF CASE = OUTDOORS =>
-        Fragment_Training_Workout_Level fragment_setting = Fragment_Training_Workout_Level.newInstance(activity, setting);
+        Fragment_Training_Workout_Level lvl = Fragment_Training_Workout_Level.newInstance(activity, setting, pk);
         ((AppCompatActivity) getContext()).getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container, fragment_setting, "LvlFragment")
-                .addToBackStack(null)
+                .replace(R.id.fragment_container, lvl, "LvlFragment")
+                .addToBackStack("LvlFragment")
                 .commit();
     }
 

@@ -14,6 +14,7 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.v4.content.FileProvider;
+import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
@@ -179,6 +180,29 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
     private static final int PLACE_PICKER_REQUEST = 1;
 
 
+    private String activity;
+    private String setting;
+
+
+    public static MapView_Fragment newInstance(String act, String set) {
+        final Bundle bundle = new Bundle();
+        MapView_Fragment fragment = new MapView_Fragment();
+        bundle.putString("Activity", act);
+        bundle.putString("Setting", set);
+        fragment.setArguments(bundle);
+        return fragment;
+    }
+
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            activity = getArguments().getString("Activity");
+            setting = "Outdoors";
+        }
+    }
+
 
     /**
      * inflating the fragment layout + the mapview object
@@ -235,6 +259,17 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
         btn_search = (ImageButton) mView.findViewById(R.id.btn_search);
         btn_search.setOnClickListener(this);
     }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+//        TextView textView = new TextView(getContext());
+//
+//        backButton.setOnClickListener(click -> {
+//            ((AppCompatActivity)getContext()).getSupportFragmentManager().popBackStack();
+//        });
+    }
+
 
     /**
      * create new arrayLists for listOfPkMarkers and listOfCaliMarkers and a new HashMap to identify marker and the respective parkour park object
@@ -393,36 +428,6 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
         return permissionState == PackageManager.PERMISSION_GRANTED;
     }
 
-//    /**
-//     * Callback received when a permissions request has been completed. If permission is granted, get the location.
-//     */
-//    @Override
-//    public void onRequestPermissionsResult(int requestCode,
-//                                           @NonNull String[] permissions, @NonNull int[] grantResults) {
-//        switch (requestCode) {
-//            case REQUEST_LOCATION_PERMISSION:
-//                // If the permission is granted, get the location,
-//                if (grantResults.length > 0
-//                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-//                    Log.d(LOG_TAG, "location permission granted");
-//                    locationHandler.startTrackingLocation(); //includes the update of the location UI
-//                } else {
-//                    Log.d(LOG_TAG, "location permission denied");
-//                    mLastKnownLocation.setLatitude(0);
-//                    mLastKnownLocation.setLongitude(0);
-//                    updateLocationUI(mLastKnownLocation); //updating the location UI based on a null value, which leads to the recentering around a defaultLocation (StreetMekka)
-//                }
-//                break;
-////            case REQUEST_CAMERA_PERMISSION:
-////                if (grantResults.length != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-////                    ErrorDialog.newInstance(("Requesting permission"))
-////                            .show(getChildFragmentManager(), FRAGMENT_DIALOG);
-////                } else {
-////                    super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-////                }
-//        }
-//    }
-
 
     /**
      * updates the user interface for the current location
@@ -560,38 +565,14 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
         Log.d(LOG_TAG, "InfoWindow clicked: " + marker.getTitle());
         //passing object as parcelable
         //get hashmap marker - park object to get the location object
-        Bundle outdoorBundle = new Bundle();
-        outdoorBundle.putParcelable("TrainingLocation", mapMarkerToPark.get(marker));
         //create new fragment displaying the result of either of the choices
-        fragment = new Fragment_TrainingLocation_View();
-        Log.d(LOG_TAG, "outdoor bundle content " + outdoorBundle.getParcelable("TrainingLocation"));
-        if (outdoorBundle != null) {
-            fragment.setArguments(outdoorBundle);
-            getActivity().getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, fragment)
-                    .addToBackStack(null)
-                    .commit();
-
-
-//        Fragment fragment = null;
-//        Log.d(LOG_TAG, "InfoWindow clicked: " + marker.getTitle());
-//        //passing object as parcelable
-//        //get hashmap marker - park object to get the location object
-//        outdoorBundle = new Bundle();
-//        outdoorBundle.putParcelable("OutdoorWorkout", mapMarkerToPark.get(marker));
-//        //create new fragment displaying the result of either of the choices
-//        fragment = new Fragment_Training_Workout_Level_Outdoor();
-//        Log.d(LOG_TAG, "outdoor bundle content " + outdoorBundle.getParcelable("OutdoorWorkout"));
-//        if (outdoorBundle != null) {
-//            fragment.setArguments(outdoorBundle);
-//            getActivity().getSupportFragmentManager().beginTransaction()
-//                    .replace(R.id.fragment_container, fragment)
-//                    .addToBackStack(null)
-//                    .commit();
-//        }
-
-        }
+        Fragment_TrainingLocation_View spot = Fragment_TrainingLocation_View.newInstance(activity, setting, mapMarkerToPark.get(marker));
+        ((AppCompatActivity) getContext()).getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, spot, "training location")
+                .addToBackStack("training location")
+                .commit();
     }
+
 
 
     /**

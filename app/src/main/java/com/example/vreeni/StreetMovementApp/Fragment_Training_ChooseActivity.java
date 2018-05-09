@@ -23,8 +23,7 @@ import android.widget.TextView;
  */
 public class Fragment_Training_ChooseActivity extends Fragment implements View.OnClickListener {
     private static final String LOG_TAG = "ChooseActivity";
-    private ParkourPark pk;
-    private String key;
+    private String setting;
 
     Button btnWorkout;
 
@@ -41,7 +40,7 @@ public class Fragment_Training_ChooseActivity extends Fragment implements View.O
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            key = getArguments().getString("Setting");
+            setting = getArguments().getString("Setting");
         }
     }
 
@@ -101,7 +100,7 @@ public class Fragment_Training_ChooseActivity extends Fragment implements View.O
     public void onClick(View v) {
         //if the button representing the "Workout" fragment is clicked, create this fragment
         if (v.getId() == R.id.workout_selected) {
-            if (key == null) {
+            if (setting == null) {
                 String activity = "Workout";
                 Fragment_Training_Workout_Setting fragment_setting = Fragment_Training_Workout_Setting.newInstance(activity);
                 ((AppCompatActivity) getContext()).getSupportFragmentManager().beginTransaction()
@@ -110,7 +109,7 @@ public class Fragment_Training_ChooseActivity extends Fragment implements View.O
                         .commit();
             } else {
                 // started training flow from map - setting already defined
-                Log.d(LOG_TAG, "started training flow from map - bundle: " + key);
+                Log.d(LOG_TAG, "started training flow from map - bundle: " + setting);
 //                Fragment_Training_Workout_Level fragment_level = new Fragment_Training_Workout_Level();
 //                bundle.putString("Activity", "Workout");
 //                bundle.putString("Setting", "Outdoors");

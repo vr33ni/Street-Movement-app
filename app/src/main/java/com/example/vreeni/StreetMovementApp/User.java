@@ -30,6 +30,7 @@ public class User {
 
 
     private GeoPoint position;
+    private String positionLastUpdate;
 
     private long workoutsCompleted;
     private long warmupsSkipped;
@@ -59,12 +60,20 @@ public class User {
 
     private ArrayList<Object> listOfHomeWorkouts = new ArrayList<>();
     private ArrayList<Object> listOfOutdoorWorkouts = new ArrayList<>();
-    private ArrayList<Object> listOfMovSpecChallenges = new ArrayList<>();
-    private ArrayList<Object> listOfSMChallenges = new ArrayList<>();
+    private ArrayList<Object> listOfMovementSpecificChallenges = new ArrayList<>();
+    private ArrayList<Object> listOfStreetMovementChallenges = new ArrayList<>();
 
 
 
     public User() {}
+
+    public String getPositionLastUpdate() {
+        return positionLastUpdate;
+    }
+
+    public void setPositionLastUpdate(String positionLastUpdate) {
+        this.positionLastUpdate = positionLastUpdate;
+    }
 
     public GeoPoint getPosition() {
         return position;
@@ -98,20 +107,20 @@ public class User {
         this.db = db;
     }
 
-    public ArrayList<Object> getListOfMovSpecChallenges() {
-        return listOfMovSpecChallenges;
+    public ArrayList<Object> getListOfMovementSpecificChallenges() {
+        return listOfMovementSpecificChallenges;
     }
 
-    public void setListOfMovSpecChallenges(ArrayList<Object> listOfMovSpecChallenges) {
-        this.listOfMovSpecChallenges = listOfMovSpecChallenges;
+    public void setListOfMovementSpecificChallenges(ArrayList<Object> listOfMovementSpecificChallenges) {
+        this.listOfMovementSpecificChallenges = listOfMovementSpecificChallenges;
     }
 
-    public ArrayList<Object> getListOfSMChallenges() {
-        return listOfSMChallenges;
+    public ArrayList<Object> getListOfStreetMovementChallenges() {
+        return listOfStreetMovementChallenges;
     }
 
-    public void setListOfSMChallenges(ArrayList<Object> listOfSMChallenges) {
-        this.listOfSMChallenges = listOfSMChallenges;
+    public void setListOfStreetMovementChallenges(ArrayList<Object> listOfStreetMovementChallenges) {
+        this.listOfStreetMovementChallenges = listOfStreetMovementChallenges;
     }
 
     public ArrayList<Object> getListOfOutdoorWorkouts() {

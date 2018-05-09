@@ -7,6 +7,7 @@ import android.os.CountDownTimer;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -49,53 +50,99 @@ import static com.example.vreeni.StreetMovementApp.User.WORKOUTSCOMPLETED;
  * contains webview with an embedded vimeo video
  * contains reference to the database => after timer has run out, adds Home Workout as a DocumentReference to a list of completed Home Workouts to the user profile
  */
-public class Fragment_Training_Workout_Exercises extends android.support.v4.app.Fragment implements View.OnClickListener {
-    private String TAG = "Workout in process: ";
+public class Fragment_Training_Workout_Exercises extends Fragment implements View.OnClickListener {
+    private String TAG = "Workout: ";
 
-    private Bundle bundle;
     private String exerciseI;
     private String exerciseII;
     private String imgEx1;
     private String vidEx1;
     private ImageView imageEx1;
     private ArrayList<Object> listOfHomeWks;
-    private ParkourPark pk;
 
 
     //all the information in here will be updated in the user object and then uploaded ot the database
     private Workout myWorkout;
+    private ParkourPark pk;
     private String wkReference;
     private long nrOfWorkouts;
+    String descriptionEx1;
 
+    private TextView ex1;
     private TextView timer;
     private WebView webView;
     private int time;
 
     private boolean timerIsRunning;
 
+    public static Fragment_Training_Workout_Exercises newInstance(Workout wk, ParkourPark pk) {
+        final Bundle bundle = new Bundle();
+        Fragment_Training_Workout_Exercises fragment = new Fragment_Training_Workout_Exercises();
+        bundle.putParcelable("Workout", wk);
+        bundle.putParcelable("TrainingLocation", pk);
+        fragment.setArguments(bundle);
+        return fragment;
+    }
+
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            myWorkout = getArguments().getParcelable("Workout");
+            descriptionEx1 = myWorkout.getExerciseI().get("description").toString();
+            wkReference = myWorkout.getName();
+            vidEx1 = (String) myWorkout.getExerciseI().get("video");
+            if (getArguments().containsKey("TrainingLocation")) {
+                pk = getArguments().getParcelable("TrainingLocation");
+            }
+            Log.d(TAG, "bundle info:" + getArguments());
+            Log.d(TAG, "bundle info - video:" + vidEx1);
+            Log.d(TAG, "bundle info - wkRef:" + wkReference);
+        }
+    }
+
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_get_customized_homeworkout_exercise, container, false);
+    }
+
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        bundle = getArguments();
-        if (null != bundle) {
-            pk = bundle.getParcelable("TrainingLocation");
-            myWorkout = bundle.getParcelable("Workout");
-            exerciseI = bundle.getString("Exercise1");
-            exerciseII = bundle.getString("Exercise2");
-            vidEx1 = (String) myWorkout.getExerciseI().get("video");
-            wkReference = bundle.getString("WorkoutID");
+//            pk = bundle.getParcelable("TrainingLocation");
+//            myWorkout = bundle.getParcelable("Workout");
+//            exerciseI = bundle.getString("Exercise1");
+//            exerciseII = bundle.getString("Exercise2");
+//            vidEx1 = (String) myWorkout.getExerciseI().get("video");
+//            wkReference = bundle.getString("WorkoutID");
 //            time = bundle.getInt("Time");
-            //maybe here create exercise objects and set the fields?? (exerciseI = new Exercise(); exerciseI.setDescription, setIsCompleted....)
-            //then add them to a list of exercise objects?
+        //maybe here create exercise objects and set the fields?? (exerciseI = new Exercise(); exerciseI.setDescription, setIsCompleted....)
+        //then add them to a list of exercise objects?
 
-        }
-        TextView ex1 = (TextView) view.findViewById(R.id.exercise_description);
-        ex1.setText(exerciseI);
+        ex1 = (TextView) view.findViewById(R.id.exercise_description);
 
         //including the webview - vimeo vide
         webView = (WebView) view.findViewById(R.id.webView);
+
+        time = 10;
+        timer = (TextView) view.findViewById(R.id.workoutTimer);
+        timerIsRunning = false;
+        Button btn_startWorkout = (Button) view.findViewById(R.id.btn_workout_startWk);
+        btn_startWorkout.setOnClickListener(this);
+    }
+
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        ex1.setText(descriptionEx1);
+
+        //set up the webview - vimeo vide
         webView.setInitialScale(1);
         webView.setWebChromeClient(new WebChromeClient());
         webView.getSettings().setAllowFileAccess(true);
@@ -116,18 +163,7 @@ public class Fragment_Training_Workout_Exercises extends android.support.v4.app.
         //end of webview
 
 
-        time = 10;
-
-        timer = (TextView) view.findViewById(R.id.workoutTimer);
-        timerIsRunning = false;
-        Button btn_startWorkout = (Button) view.findViewById(R.id.btn_workout_startWk);
-        btn_startWorkout.setOnClickListener(this);
-    }
-
-    @Nullable
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_get_customized_homeworkout_exercise, container, false);
+        Log.d(TAG, "training info" + myWorkout);
     }
 
 
@@ -240,4 +276,4 @@ public class Fragment_Training_Workout_Exercises extends android.support.v4.app.
             }
         });
     }
- }
+}

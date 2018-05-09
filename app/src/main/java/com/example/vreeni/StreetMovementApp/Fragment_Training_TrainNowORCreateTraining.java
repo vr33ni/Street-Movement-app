@@ -20,13 +20,15 @@ public class Fragment_Training_TrainNowORCreateTraining extends Fragment impleme
     private static final String LOG_TAG = "TrainOrCreate";
     private String activity;
     private String setting;
+    private ParkourPark pk;
 
 
-    public static Fragment_Training_TrainNowORCreateTraining newInstance(String act, String set) {
+    public static Fragment_Training_TrainNowORCreateTraining newInstance(String act, String set, ParkourPark spot) {
         final Bundle bundle = new Bundle();
         Fragment_Training_TrainNowORCreateTraining fragment = new Fragment_Training_TrainNowORCreateTraining();
         bundle.putString("Activity", act);
         bundle.putString("Setting", set);
+        bundle.putParcelable("TrainingLocation", spot);
         fragment.setArguments(bundle);
         return fragment;
     }
@@ -38,6 +40,7 @@ public class Fragment_Training_TrainNowORCreateTraining extends Fragment impleme
         if (getArguments() != null) {
             activity = getArguments().getString("Activity");
             setting = getArguments().getString("Setting");
+            pk = getArguments().getParcelable("TrainingLocation");
         }
     }
 
@@ -98,7 +101,7 @@ public class Fragment_Training_TrainNowORCreateTraining extends Fragment impleme
         if (v.getId() == R.id.btn_create_training) {
             Log.d(LOG_TAG, "training information: " + activity + ", " + setting);
 
-            Fragment_Training_CreateTraining fragment_createTraining = Fragment_Training_CreateTraining.newInstance(activity, setting);
+            Fragment_Training_CreateTraining fragment_createTraining = Fragment_Training_CreateTraining.newInstance(activity, setting, pk);
             ((AppCompatActivity) getContext()).getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, fragment_createTraining, "CreateTraining")
                     .addToBackStack("Create")
