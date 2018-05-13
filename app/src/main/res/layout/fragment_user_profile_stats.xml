@@ -1,0 +1,126 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:id="@+id/parentLayout"
+                android:layout_height="200dp"
+                android:orientation="vertical">
+
+                <!--<com.github.mikephil.charting.charts.BarChart-->
+                <!--android:id="@+id/chart"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:background="@color/grey_100"/>-->
+
+                <TextView
+                    android:id="@+id/tv_noActivities"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="No activities completed"
+                    android:textSize="16sp"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:visibility="gone" />
+
+            </FrameLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="2dp"
+                    android:weightSum="2"
+                    android:orientation="horizontal">
+
+
+                    <Button
+                        android:id="@+id/btn_activities"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="150dp"
+                        android:layout_marginRight="2dp"
+                        android:background="#16a085"
+                        android:gravity="center"
+                        android:text="Activities"
+                        android:textColor="#FFF"
+                        android:textSize="24sp" />
+
+
+                    <Button
+                        android:id="@+id/btn_places"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="match_parent"
+                        android:layout_marginLeft="2dp"
+                        android:background="#5391AE"
+                        android:gravity="center"
+                        android:text="Places"
+                        android:textColor="#FFF"
+                        android:textSize="24sp" />
+
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:weightSum="2"
+                    android:orientation="horizontal">
+
+
+                    <Button
+                        android:id="@+id/btn_goals"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="150dp"
+                        android:layout_marginRight="2dp"
+                        android:background="#5AB5C9"
+                        android:gravity="center"
+                        android:text="Goals"
+                        android:textColor="#FFF"
+                        android:textSize="24sp" />
+
+
+                    <Button
+                        android:id="@+id/btn_challenges"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="match_parent"
+                        android:layout_marginLeft="2dp"
+                        android:background="#A5B7C5"
+                        android:gravity="center"
+                        android:text="Challenges"
+                        android:textColor="#FFF"
+                        android:textSize="24sp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </ScrollView>
+
+
+</LinearLayout>
