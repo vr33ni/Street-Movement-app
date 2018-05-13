@@ -80,6 +80,8 @@ dependencies {
     implementation 'com.github.PhilJay:MPAndroidChart:v3.0.3'
 
 
+    //play services for games, eg implementing leaderboard
+    implementation 'com.google.android.gms:play-services-games:15.0.0'
 
     //firebase analytics
     compile 'com.google.firebase:firebase-core:11.8.0'

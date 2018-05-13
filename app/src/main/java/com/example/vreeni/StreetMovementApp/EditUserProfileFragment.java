@@ -47,6 +47,22 @@ public class EditUserProfileFragment extends Fragment implements View.OnClickLis
     private EditText editDisplayName;
 
 
+    public static EditUserProfileFragment newInstance() {
+        final Bundle bundle = new Bundle();
+        EditUserProfileFragment fragment = new EditUserProfileFragment();
+//        bundle.putParcelable("UserData", user);
+        fragment.setArguments(bundle);
+        return fragment;
+    }
+
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+        }
+    }
+
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);

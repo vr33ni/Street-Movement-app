@@ -136,7 +136,7 @@ public class Fragment_TrainingLocation_View extends Fragment implements View.OnC
         Tab_ActiveUsers_Fragment activeUsersTab = Tab_ActiveUsers_Fragment.newInstance(activity, setting, pk);
         adapter.addFragment(overviewTab, "Overview");
         adapter.addFragment(ratingsTab, "Ratings");
-        adapter.addFragment(new TrainNowFragment(), "Active users");
+        adapter.addFragment(activeUsersTab, "Active users");
         viewPager.setAdapter(adapter);
         tabLayout.setupWithViewPager(viewPager);
 

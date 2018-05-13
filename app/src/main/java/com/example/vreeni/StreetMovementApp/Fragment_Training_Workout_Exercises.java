@@ -7,6 +7,7 @@ import android.os.CountDownTimer;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.util.DisplayMetrics;
@@ -59,6 +60,9 @@ public class Fragment_Training_Workout_Exercises extends Fragment implements Vie
     private String vidEx1;
     private ImageView imageEx1;
     private ArrayList<Object> listOfHomeWks;
+    private HashMap<String, Object> activeUsers;
+    private final ArrayList<HashMap<String, Object>> listOfActiveUsers = new ArrayList<>();
+
 
 
     //all the information in here will be updated in the user object and then uploaded ot the database
@@ -166,6 +170,54 @@ public class Fragment_Training_Workout_Exercises extends Fragment implements Vie
         Log.d(TAG, "training info" + myWorkout);
     }
 
+    public void addAsActiveUser() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference userDocRef = db.collection("Users").document(FirebaseAuth.getInstance().getCurrentUser().getEmail());
+        DocumentReference parkRef = db.collection("ParkourParks").document(pk.getName());
+        activeUsers = new HashMap<>();
+        activeUsers.put("user", userDocRef);
+        activeUsers.put("activeSince", "add start time");
+        listOfActiveUsers.add(activeUsers);
+        pk.setListOfReferencesToActiveUsers(listOfActiveUsers);
+
+        Map<String, Object> dataUpdate = new HashMap<String, Object>();
+        dataUpdate.put("listOfActiveUsers", pk.getListOfReferencesToActiveUsers());
+        parkRef
+                .set(dataUpdate, SetOptions.merge()).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Log.d(TAG, "active user has been added ");
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.d(TAG, "active user could not be added");
+            }
+        });
+    }
+
+
+    public void removeAsActiveUser() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference parkRef = db.collection("ParkourParks").document(pk.getName());
+        listOfActiveUsers.clear();
+        pk.setListOfReferencesToActiveUsers(listOfActiveUsers);
+        Map<String, Object> dataUpdate = new HashMap<String, Object>();
+        dataUpdate.put("listOfActiveUsers", pk.getListOfReferencesToActiveUsers());
+        parkRef
+                .set(dataUpdate, SetOptions.merge()).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Log.d(TAG, "active user has been added ");
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.d(TAG, "active user could not be added");
+            }
+        });
+    }
+
 
     @Override
     public void onClick(View v) {
@@ -176,6 +228,10 @@ public class Fragment_Training_Workout_Exercises extends Fragment implements Vie
                     public void run() {
                         //start workout after 5 seconds = just for testing to implement a pause for 30 sec
                         startTimer();
+                        //add to trainingLocation document as a reference in the list of active users
+                        //if allowed , add as active user to the list of active users
+                        addAsActiveUser();
+
                     }
                 }, 1000);
             }
@@ -206,6 +262,7 @@ public class Fragment_Training_Workout_Exercises extends Fragment implements Vie
                 time = 10;
                 timerIsRunning = false;
                 addWorkouttoUserDocument();
+                removeAsActiveUser();
                 //show the navigation drawer hamburger icon instead of back button to easily navigate to another section after the workout
                 ((MainActivity) getActivity()).showBackButton(false);
 

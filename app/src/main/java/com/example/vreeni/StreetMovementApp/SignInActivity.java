@@ -586,6 +586,7 @@ public class SignInActivity extends BaseActivity implements
         if (loginWithFacebook) loginMethod = "Facebook";
         else if (loginWithEmailPassword) loginMethod = "EmailPassword";
         else loginMethod = "Google";
+        Log.d(TAG, "login method: " + loginMethod);
         newEntry.put(LOGINMETHOD, loginMethod);
         newEntry.put(FULLNAME, loginName);
         newEntry.put(EMAIL, loginEmail);

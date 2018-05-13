@@ -12,8 +12,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.util.HashMap;
-
 /**
  * Created by vreeni on 20/12/2017.
  */
@@ -101,7 +99,7 @@ public class Fragment_Training_Workout_Selection extends Fragment {
         super.onStart();
         Log.d(LOG_TAG, "training info" + activity + setting + level);
 
-        FirebaseQuery query = new FirebaseQuery(activity, setting, level);
+        FirebaseQuery_Workout query = new FirebaseQuery_Workout(activity, setting, level);
         query.query(new FirebaseCallback() {
             @Override
             public void onQuerySuccess(Workout workout) {

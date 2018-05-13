@@ -8,9 +8,22 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
+import com.facebook.AccessToken;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
+import com.facebook.HttpMethod;
+import com.facebook.login.widget.ProfilePictureView;
+import com.google.android.gms.games.Games;
+import com.google.android.gms.maps.model.Marker;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.PlayGamesAuthCredential;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -21,6 +34,8 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+
+import org.json.JSONObject;
 
 import static com.example.vreeni.StreetMovementApp.User.AGE;
 import static com.example.vreeni.StreetMovementApp.User.EMAIL;
@@ -44,9 +59,35 @@ public class UserProfileFragment extends Fragment implements View.OnClickListene
     private TextView txtProfileNationality;
     private TextView txtProfileStatus;
 
+    private static String FACEBOOK_FIELD_PROFILE_IMAGE = "picture.type(large)";
+    private static String FACEBOOK_FIELDS = "fields";
+    private static String FACEBOOK_FIELD_PICTURE = "picture";
+    private static String FACEBOOK_FIELD_DATA = "data";
+    private static String FACEBOOK_FIELD_URL = "url";
+
+    private ProfilePictureView profilePictureView;
+    private ImageView iv;
+
     //get firestore database data
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private DocumentReference usersDocRef = db.collection("Users").document(FirebaseAuth.getInstance().getCurrentUser().getEmail());
+
+
+    public static UserProfileFragment newInstance() {
+        final Bundle bundle = new Bundle();
+        UserProfileFragment fragment = new UserProfileFragment();
+        fragment.setArguments(bundle);
+        return fragment;
+    }
+
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+
+        }
+    }
 
 
     @Nullable
@@ -62,12 +103,6 @@ public class UserProfileFragment extends Fragment implements View.OnClickListene
         //DATA FROM FIRESTORE
         displayFirestoreData();
 
-        //DATA FROM REALTIME DATABASE
-        //get and set standard information of curr user, made available through firebase
-        //displayUserStandardDetails();
-        //get and set extra information that the user has entered to the firebase database
-        //displayUserExtraDetails();
-
         Button btnEditProfile = (Button) view.findViewById(R.id.edit_user_info);
         btnEditProfile.setOnClickListener(this);
 
@@ -77,8 +112,22 @@ public class UserProfileFragment extends Fragment implements View.OnClickListene
         txtProfileAge = (TextView) getView().findViewById(R.id.profile_section_age);
         txtProfileNationality = (TextView) getView().findViewById(R.id.profile_section_nationality);
         txtProfileStatus = (TextView) getView().findViewById(R.id.profile_section_status);
+
+//        profilePictureView = (ProfilePictureView) view.findViewById(R.id.friendProfilePicture);
+        iv = (ImageView) view.findViewById(R.id.IMG_UploadProfilePicture);
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        getFacebookData();
+
+        Games.getLeaderboardsClient(this.getActivity(), );
+//        backButton.setOnClickListener(click -> {
+//            ((AppCompatActivity)getContext()).getSupportFragmentManager().popBackStack();
+//        });
+    }
 
     @Override
     public void onResume() {
@@ -159,16 +208,38 @@ public class UserProfileFragment extends Fragment implements View.OnClickListene
     }
 
 
-    //retrieving data from the main activity
-    //leave this method for practice purpose, but not necessary, as the fragment can access all the firebase details itself
-    /*public void displayUserInfos(View v, Bundle b) {
-        String email = getArguments().getString("EMAIL");
-        TextView txtProfileEmail = (TextView) getView().findViewById(R.id.profile_section_email);
-        txtProfileEmail.setText(email);
-        String name = getArguments().getString("NAME");
-        TextView txtProfileName = (TextView) getView().findViewById(R.id.profile_section_fullname);
-        txtProfileName.setText(name);
-        TextView txtProfileUsername = (TextView) getView().findViewById(R.id.profile_section_nickname);
-        txtProfileUsername.setText(nickname);
-    }*/
+    private void getFacebookData() {
+        GraphRequest request = GraphRequest.newMeRequest(
+                AccessToken.getCurrentAccessToken(),
+                (JSONObject object, GraphResponse response) -> {
+//                    profilePictureView.setProfileId(getImageUrl(response));
+                    loadImageWithGlide((getImageUrl(response)), iv);
+                });
+        Bundle parameters = new Bundle();
+        parameters.putString(FACEBOOK_FIELDS, FACEBOOK_FIELD_PROFILE_IMAGE);
+        request.setParameters(parameters);
+        request.executeAsync();
+    }
+
+    private String getImageUrl(GraphResponse response) {
+        String url = null;
+        try {
+            url = response.getJSONObject()
+                    .getJSONObject(FACEBOOK_FIELD_PICTURE)
+                    .getJSONObject(FACEBOOK_FIELD_DATA)
+                    .getString(FACEBOOK_FIELD_URL);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return url;
+    }
+
+    public void loadImageWithGlide(final String id, ImageView iv) {
+
+        Glide.with(this)
+                .load(id)
+                .override(700, 400)
+                .into(iv);
+    }
+
 }

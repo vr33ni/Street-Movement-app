@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:facebook="http://schemas.android.com/tools"
     android:layout_margin="2pt"
     android:orientation="vertical">
 
@@ -57,17 +58,20 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
+            <!--<com.facebook.login.widget.ProfilePictureView-->
+            <!--android:id="@+id/friendProfilePicture"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_centerInParent="true"-->
+            <!--facebook:preset_size="small"/>-->
+
             <ImageView
                 android:id="@+id/IMG_UploadProfilePicture"
                 android:layout_width="100dp"
                 android:layout_height="106dp"
                 android:layout_gravity="center"
-                android:layout_marginLeft="8dp"
-                android:layout_marginRight="8dp"
-                android:layout_marginTop="16dp"
                 android:adjustViewBounds="true"
                 android:contentDescription="chooseWorkout"
-                android:paddingTop="0dp"
                 android:src="@drawable/ic_upload_picture"
                 app:srcCompat="@drawable/ic_upload_picture" />
 

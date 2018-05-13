@@ -7,6 +7,17 @@
     <!--  TODO(developer): REPLACE -->
     <!--<string name ="facebook_app_id">150098065766237</string>-->
 
+    <string name="app_id">746512766672</string>
 
+    <string name="achievement_prime">CgkI0K2D_dwVEAIQAw</string>
+    <string name="achievement_really_bored">CgkI0K2D_dwVEAIQBA</string>
+    <string name="achievement_bored">CgkI0K2D_dwVEAIQBQ</string>
+    <string name="achievement_humble">CgkI0K2D_dwVEAIQBg</string>
+    <string name="achievement_arrogant">CgkI0K2D_dwVEAIQBw</string>
+    <string name="achievement_leet">CgkI0K2D_dwVEAIQCA</string>
+
+    <string name="leaderboard_hall_of_fame">CgkI0K2D_dwVEAIQAA</string>
+    <string name="leaderboard_easy">CgkI0K2D_dwVEAIQAQ</string>
+    <string name="leaderboard_hard">CgkI0K2D_dwVEAIQAg</string>
 
 </resources>

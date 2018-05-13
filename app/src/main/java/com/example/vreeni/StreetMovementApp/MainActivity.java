@@ -19,6 +19,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -184,12 +185,11 @@ public class MainActivity extends BaseActivity
             public void onClick(View v) {
                 Fragment fragment = null;
                 if (v.getId() == R.id.profile_section) {
-                    fragment = new UserProfile_Account();
-                }
-                if (fragment != null) {
-                    FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-                    ft.replace(R.id.fragment_container, fragment);
-                    ft.commit();
+                    UserProfileFragment userprofile = UserProfileFragment.newInstance();
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.fragment_container, userprofile, "userprofile")
+                            .addToBackStack("userprofile")
+                            .commit();
                 }
                 DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
                 drawer.closeDrawer(GravityCompat.START);
@@ -643,7 +643,7 @@ public class MainActivity extends BaseActivity
         if (loginMethod != null) {
             if (loginMethod.equals("Facebook")) {
                 //signout via firebase + facebook
-                Log.d(TAG, "google sign out successful");
+                Log.d(TAG, "fb sign out successful");
                 FirebaseAuth.getInstance().signOut();
                 LoginManager.getInstance().logOut();
                 updateUI(null);
