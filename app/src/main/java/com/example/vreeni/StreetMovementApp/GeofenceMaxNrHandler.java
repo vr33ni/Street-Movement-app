@@ -254,6 +254,9 @@ public class GeofenceMaxNrHandler extends MainActivity implements ActivityCompat
     }
 
 
+    /**
+     * only take the spots within a certain radius and include them in the geofence list that are to be tracked
+     */
     public void filterSpotsBasedOnRadius() {
         // GeofenceConstants.MAX_100_TRAINING_LOCATIONS = new HashMap<>();
         max100TrainingLocations = new HashMap<>();
@@ -263,8 +266,10 @@ public class GeofenceMaxNrHandler extends MainActivity implements ActivityCompat
         max100TrainingLocations.put("Home", parkLoc);
         Log.d(LOG_TAG, "max 100 training locations before adding: " + max100TrainingLocations);
 
+
         for (Map.Entry<String, ParkourPark> pkPark : allSpots.entrySet()) {
-            Location trainingLocation = new Location("");//provider name is unnecessary
+            Log.d("pkpark", "coordinates: " + pkPark.getValue().getCoordinates().getLatitude());
+            Location trainingLocation = new Location("locationprovider");//provider name is unnecessary
             trainingLocation.setLatitude(pkPark.getValue().getCoordinates().getLatitude());
             trainingLocation.setLongitude(pkPark.getValue().getCoordinates().getLongitude());
             Log.d(LOG_TAG, "allSpots map: " + pkPark.getValue().getCoordinates());
@@ -538,6 +543,7 @@ public class GeofenceMaxNrHandler extends MainActivity implements ActivityCompat
                                     ParkourPark queriedLocation = document.toObject(ParkourPark.class);
                                     queriedLocation.setDescription(document.getString("description (in Danish)"));
                                     allSpots.put(queriedLocation.getName(), queriedLocation);
+
 
                                 }
                             }

@@ -127,8 +127,8 @@ public class Tab_ActiveUsers_Fragment extends Fragment implements View.OnClickLi
                     //try to get user as an object (containing an image)
                     ParkourPark thisPark = task.getResult().toObject(ParkourPark.class);
                     int latestActiveUser;
-                    if (thisPark.getListOfReferencesToActiveUsers() != null) {
-                        for (HashMap<String, Object> map : thisPark.getListOfReferencesToActiveUsers())
+                    if (thisPark.getListOfActiveUsers() != null) {
+                        for (HashMap<String, Object> map : thisPark.getListOfActiveUsers())
                             activeUserList.add(map);
                         latestActiveUser = activeUserList.lastIndexOf(activeUserList.get(activeUserList.size() - 1));
 

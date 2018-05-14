@@ -37,6 +37,7 @@ import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -416,6 +417,19 @@ public class LocationHandler extends MainActivity implements  ActivityCompat.OnR
     }
 
 
+    static final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+
+    public Date getDateFromString(String datetoSaved) {
+
+        try {
+            Date date = format.parse(datetoSaved);
+            return date;
+        } catch (ParseException e) {
+            return null;
+        }
+
+    }
+
     /**
      * updating the user's last position and the last time of update to the database
      */
@@ -426,6 +440,7 @@ public class LocationHandler extends MainActivity implements  ActivityCompat.OnR
                 mLastKnownLocation.getTime());
 //        Date date = Calendar.getInstance().getTime(); also get date?
         final String[] timeOnly = time.split("Timestamp: ");
+
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         DocumentReference userDocRef = db.collection("Users").document(FirebaseAuth.getInstance().getCurrentUser().getEmail());
         User user = new User();

@@ -20,6 +20,8 @@ import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
 import com.facebook.login.widget.ProfilePictureView;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.games.Games;
 import com.google.android.gms.maps.model.Marker;
 import com.google.firebase.auth.FirebaseAuth;
@@ -36,6 +38,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 
 import org.json.JSONObject;
+
+import java.util.Calendar;
 
 import static com.example.vreeni.StreetMovementApp.User.AGE;
 import static com.example.vreeni.StreetMovementApp.User.EMAIL;
@@ -123,10 +127,16 @@ public class UserProfileFragment extends Fragment implements View.OnClickListene
 
         getFacebookData();
 
-        Games.getLeaderboardsClient(this.getActivity(), );
+//        Games.getLeaderboardsClient(this.getActivity(), FirebaseAuth.getInstance().getCurrentUser().);
 //        backButton.setOnClickListener(click -> {
 //            ((AppCompatActivity)getContext()).getSupportFragmentManager().popBackStack();
 //        });
+    }
+
+    public void askForAccount() {
+        // initializeGoogleAccount
+        Calendar calender = Calendar.getInstance();
+        Log.d(TAG, "Current Week:" + calender.get(Calendar.WEEK_OF_YEAR));
     }
 
     @Override

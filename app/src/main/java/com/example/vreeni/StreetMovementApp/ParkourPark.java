@@ -38,7 +38,7 @@ public class ParkourPark implements Parcelable {
 
     private ArrayList<PhotoData> listOfPhotoData;
     private ArrayList<HashMap<String, Object>> listOfRatings; //instead of a list of rating objects, have a list of hashmaps with each hashmap representing a rating consisting of key value pairs such as "name"-tim, "comment"-cool spot, "Rating"-5
-    private ArrayList<HashMap<String, Object>> listOfReferencesToActiveUsers;
+    private ArrayList<HashMap<String, Object>> listOfActiveUsers;
 
     private HashMap<String, Object> photo_0;
     private HashMap<String, Object> photo_1;
@@ -55,12 +55,12 @@ public class ParkourPark implements Parcelable {
 //    }
 
 
-    public ArrayList<HashMap<String, Object>> getListOfReferencesToActiveUsers() {
-        return listOfReferencesToActiveUsers;
+    public ArrayList<HashMap<String, Object>> getListOfActiveUsers() {
+        return listOfActiveUsers;
     }
 
-    public void setListOfReferencesToActiveUsers(ArrayList<HashMap<String, Object>> listOfReferencesToActiveUsers) {
-        this.listOfReferencesToActiveUsers = listOfReferencesToActiveUsers;
+    public void setListOfActiveUsers(ArrayList<HashMap<String, Object>> listOfReferencesToActiveUsers) {
+        this.listOfActiveUsers = listOfReferencesToActiveUsers;
     }
 
     public ArrayList<HashMap<String, Object>> getListOfRatings() {

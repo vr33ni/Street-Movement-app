@@ -24,21 +24,30 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
 
+import java.lang.reflect.Field;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
 import static android.content.Context.MODE_PRIVATE;
 import static com.example.vreeni.StreetMovementApp.User.LISTOFHOMEWORKOUTS;
+import static com.example.vreeni.StreetMovementApp.User.LISTOFOUTDOORWORKOUTS;
+import static com.example.vreeni.StreetMovementApp.User.LISTOFPLACES;
 import static com.example.vreeni.StreetMovementApp.User.WORKOUTSCOMPLETED;
 
 
@@ -60,9 +69,9 @@ public class Fragment_Training_Workout_Exercises extends Fragment implements Vie
     private String vidEx1;
     private ImageView imageEx1;
     private ArrayList<Object> listOfHomeWks;
-    private HashMap<String, Object> activeUsers;
+    private ArrayList<Object> listOfOutdoorWks;
+    private ArrayList<Object> listOfPlaces;
     private final ArrayList<HashMap<String, Object>> listOfActiveUsers = new ArrayList<>();
-
 
 
     //all the information in here will be updated in the user object and then uploaded ot the database
@@ -99,6 +108,7 @@ public class Fragment_Training_Workout_Exercises extends Fragment implements Vie
             vidEx1 = (String) myWorkout.getExerciseI().get("video");
             if (getArguments().containsKey("TrainingLocation")) {
                 pk = getArguments().getParcelable("TrainingLocation");
+
             }
             Log.d(TAG, "bundle info:" + getArguments());
             Log.d(TAG, "bundle info - video:" + vidEx1);
@@ -172,50 +182,57 @@ public class Fragment_Training_Workout_Exercises extends Fragment implements Vie
 
     public void addAsActiveUser() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference parkRef;
         DocumentReference userDocRef = db.collection("Users").document(FirebaseAuth.getInstance().getCurrentUser().getEmail());
-        DocumentReference parkRef = db.collection("ParkourParks").document(pk.getName());
-        activeUsers = new HashMap<>();
-        activeUsers.put("user", userDocRef);
-        activeUsers.put("activeSince", "add start time");
-        listOfActiveUsers.add(activeUsers);
-        pk.setListOfReferencesToActiveUsers(listOfActiveUsers);
+        if (pk != null) {
+            parkRef = db.collection("ParkourParks").document(pk.getName());
+            HashMap<String, Object> activeUsers = new HashMap<>();
+            activeUsers.put("user", userDocRef);
+            activeUsers.put("activeSince", "add start time");
+            listOfActiveUsers.add(activeUsers);
+            pk.setListOfActiveUsers(listOfActiveUsers);
 
-        Map<String, Object> dataUpdate = new HashMap<String, Object>();
-        dataUpdate.put("listOfActiveUsers", pk.getListOfReferencesToActiveUsers());
-        parkRef
-                .set(dataUpdate, SetOptions.merge()).addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                Log.d(TAG, "active user has been added ");
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Log.d(TAG, "active user could not be added");
-            }
-        });
+            Map<String, Object> dataUpdate = new HashMap<String, Object>();
+            dataUpdate.put("listOfActiveUsers", pk.getListOfActiveUsers());
+            parkRef
+                    .set(dataUpdate, SetOptions.merge()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    Log.d(TAG, "active user has been added ");
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Log.d(TAG, "active user could not be added");
+                }
+            });
+        }
+
     }
 
 
     public void removeAsActiveUser() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        DocumentReference parkRef = db.collection("ParkourParks").document(pk.getName());
-        listOfActiveUsers.clear();
-        pk.setListOfReferencesToActiveUsers(listOfActiveUsers);
-        Map<String, Object> dataUpdate = new HashMap<String, Object>();
-        dataUpdate.put("listOfActiveUsers", pk.getListOfReferencesToActiveUsers());
-        parkRef
-                .set(dataUpdate, SetOptions.merge()).addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                Log.d(TAG, "active user has been added ");
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Log.d(TAG, "active user could not be added");
-            }
-        });
+        DocumentReference parkRef;
+        if (pk != null) {
+            parkRef = db.collection("ParkourParks").document(pk.getName());
+            listOfActiveUsers.clear();
+            pk.setListOfActiveUsers(listOfActiveUsers);
+            Map<String, Object> dataUpdate = new HashMap<String, Object>();
+            dataUpdate.put("listOfActiveUsers", pk.getListOfActiveUsers());
+            parkRef
+                    .set(dataUpdate, SetOptions.merge()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    Log.d(TAG, "active user has been added ");
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Log.d(TAG, "active user could not be added");
+                }
+            });
+        }
     }
 
 
@@ -284,6 +301,10 @@ public class Fragment_Training_Workout_Exercises extends Fragment implements Vie
     }
 
 
+    /**
+     * add the workout to the respective list of home or outdoorworkouts on the database and
+     * update the respective leaderboard entry
+     */
     public void addWorkouttoUserDocument() {
         //create reference?
         final FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -297,40 +318,265 @@ public class Fragment_Training_Workout_Exercises extends Fragment implements Vie
                 //initialize the field Nr Of Workouts and the list of Home Workouts
                 nrOfWorkouts = currentUser.getWorkoutsCompleted() + 1;
                 listOfHomeWks = currentUser.getListOfHomeWorkouts();
-                listOfHomeWks.add(db.collection("PredefinedWorkouts").document(wkReference));
+                listOfOutdoorWks = currentUser.getListOfOutdoorWorkouts();
+                listOfPlaces = currentUser.getListOfPlaces();
+
 
                 Map<String, Object> update = new HashMap<>();
                 //put the updated nr of workouts in the map that is to be uploaded to the database
                 update.put(WORKOUTSCOMPLETED, nrOfWorkouts);
+
                 //put a reference to the workout just completed in the map that is to be uploaded to the database
                 HashMap<String, Object> wkdetails = new HashMap<>();
-                wkdetails.put("Activity", db.collection("PredefinedWorkouts").document(wkReference));
-                String spotRef = db.collection("ParkourParks").document().getId();
-                wkdetails.put("Place", db.collection("ParkourParks").document(spotRef));
-                listOfHomeWks.add(wkdetails);
-                update.put(LISTOFHOMEWORKOUTS, listOfHomeWks);
+                wkdetails.put("activity", "Workout");
+                wkdetails.put("activityReference", db.collection("PredefinedWorkouts").document(wkReference));
+                Calendar calender = Calendar.getInstance();
+                int weekNr = calender.get(Calendar.WEEK_OF_YEAR);
+                wkdetails.put("week", weekNr);
 
-                //update the user document
-                userDocRef
-                        .set(update, SetOptions.merge()).addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Log.d(TAG, "Document has been saved");
-                        SharedPreferences sharedPrefs = getActivity().getSharedPreferences("Training", MODE_PRIVATE);
-                        sharedPrefs.edit().remove("Activity").apply();
-                        sharedPrefs.edit().remove("Setting").apply();
-                        sharedPrefs.edit().remove("Level").apply();
-                        sharedPrefs.edit().remove("TrainingFlowStarted").apply();
+                if (pk == null) {
+                    //meaning that this is a home workout with no specific training location selected
+                    wkdetails.put("place", "Home");
+                    listOfHomeWks.add(wkdetails);
+                    update.put(LISTOFHOMEWORKOUTS, listOfHomeWks);
 
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.d(TAG, "Document could not be saved" + e.toString());
-                    }
-                });
-                Log.d(TAG, "DocumentSnapshot successfully retrieved! " + nrOfWorkouts);
+                    //update the user document
+                    userDocRef
+                            .set(update, SetOptions.merge()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            Log.d(TAG, "HomeWorkout has been saved");
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Log.d(TAG, "HomeWorkout could not be saved" + e.toString());
+                        }
+                    });
+                    updateScore();
+                    Log.d(TAG, "updating score");
+
+                } else {
+                    //training location received in bundle was not null => workout was done at a specific training location
+                    DocumentReference spotref = db.collection("ParkourParks").document(pk.getName());
+                    wkdetails.put("place", spotref);
+                    listOfOutdoorWks.add(wkdetails);
+
+                    //update list of places the user has been to
+                    HashMap<String, Object> places = new HashMap<>();
+                    places.put("place", spotref);
+                    places.put("coordinates", pk.getCoordinates());
+                    places.put("week", calender.get(Calendar.WEEK_OF_YEAR));
+                    listOfPlaces.add(places);
+
+                    update.put(LISTOFOUTDOORWORKOUTS, listOfOutdoorWks);
+                    update.put(LISTOFPLACES, listOfPlaces);
+
+                    //update the user document
+                    userDocRef
+                            .set(update, SetOptions.merge()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            Log.d(TAG, "Outdoor Workout has been saved");
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Log.d(TAG, "Outdoor Workout could not be saved" + e.toString());
+                        }
+                    });
+                    updateScore();
+                    Log.d(TAG, "updating leaderboard entry - score");
+//                    updatePlaces(spotref);
+                    Log.d(TAG, "updating leaderboard entry - places");
+
+                }
             }
         });
     }
+
+    public void updateScore() {
+        final FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference scoreRef = db.collection("Scores").document(FirebaseAuth.getInstance().getCurrentUser().getEmail());
+        scoreRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                if (documentSnapshot.exists()) {
+                    LeaderboardEntry score = documentSnapshot.toObject(LeaderboardEntry.class);
+                    //initialize the field Nr Of Workouts and the list of Home Workouts
+                    int nrOfWorkouts_total = score.getNrOfWorkouts_total() + 1;
+                    int nrOfWorkouts_weekly = score.getNrOfWorkouts_weekly() + 1;
+                    int nrOfActivities_total = score.getNrOfWorkouts_total()
+                            + score.getNrOfMovementSpecificChallenges_total()
+                            + score.getNrOfStreetMovementChallenges_total()
+                            + 1;
+                    int nrOfActivities_weekly = score.getNrOfWorkouts_weekly()
+                            + score.getNrOfMovementSpecificChallenges_weekly()
+                            + score.getNrOfStreetMovementChallenges_weekly()
+                            + 1;
+
+                    Map<String, Object> update = new HashMap<>();
+                    //put the updated nr of workouts in the map that is to be uploaded to the database
+                    update.put("total activities", nrOfActivities_total);
+                    update.put("total workouts", nrOfWorkouts_total);
+                    update.put("weekly activities", nrOfActivities_weekly);
+                    update.put("weekly workouts", nrOfWorkouts_weekly);
+
+                    scoreRef.set(update, SetOptions.merge()).
+                            addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    Log.d(TAG, "Leaderboard entry has been saved");
+                                }
+                            }).
+
+                            addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    Log.d(TAG, "Leaderboard Entry could not be saved");
+                                }
+                            });
+                } else {
+
+                    int nrOfWorkouts_total = listOfHomeWks.size() + listOfOutdoorWks.size();
+                    int nrOfWorkouts_weekly = listOfHomeWks.size() + listOfOutdoorWks.size();
+                    int nrOfActivities_total = listOfHomeWks.size() + listOfOutdoorWks.size(); //add other lists
+                    int nrOfActivities_weekly = listOfHomeWks.size() + listOfOutdoorWks.size();
+
+
+                    Map<String, Object> update = new HashMap<>();
+                    //put the updated nr of workouts in the map that is to be uploaded to the database
+                    update.put("total activities", nrOfActivities_total);
+                    update.put("total workouts", nrOfWorkouts_total);
+                    update.put("weekly activities", nrOfActivities_weekly);
+                    update.put("weekly workouts", nrOfWorkouts_weekly);
+
+                    scoreRef.set(update, SetOptions.merge()).
+                            addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    Log.d(TAG, "Leaderboard Entry has been saved");
+                                }
+                            }).
+
+                            addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    Log.d(TAG, "Leaderboard Entry could not be saved");
+                                }
+                            });
+                }
+            }
+        });
+
+
+//        db.collection("Scores")
+//                .whereEqualTo("listOfPlaces.place", "Amager Strandpark")
+//                .get()
+//                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+//                    @Override
+//                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+//                        if (task.isSuccessful()) {
+//                            Log.d(TAG, "TEST 1: " + task.getResult().size());
+//
+//
+//                        }
+//
+//                    }
+//
+//
+//                });
+    }
+
+    /**
+     * after each completed activity - in case an object of a training location was passed -
+     * add the nr of places and list of places total and weekly to the user's leaderboard entry in the Scores collection
+     *
+     * @param spotref
+     */
+    public void updatePlaces(DocumentReference spotref) {
+        final FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference scoreRef = db.collection("Scores").document(FirebaseAuth.getInstance().getCurrentUser().getEmail());
+        scoreRef.get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists()) {
+                LeaderboardEntry score = documentSnapshot.toObject(LeaderboardEntry.class);
+                //initialize the field Nr Of Workouts and the list of places
+                int nrOfPlaces_total;
+                int nrOfPlaces_weekly;
+                ArrayList<Object> listOfPlaces_total;
+                ArrayList<Object> listOfPlaces_weekly;
+                if ((score.getListOfPlaces_total() != null) && (score.getListOfPlaces_weekly() != null) &&
+                        (score.getNrOfDifferentSpots_total() != 0) && (score.getNrOfDifferentSpots_weekly() != 0)) {
+                    listOfPlaces_total = score.getListOfPlaces_total();
+                    listOfPlaces_total.add(spotref);
+                    listOfPlaces_weekly = score.getListOfPlaces_weekly();
+                    listOfPlaces_weekly.add(spotref);
+                    nrOfPlaces_total = score.getNrOfDifferentSpots_total() + 1;
+                    nrOfPlaces_weekly = score.getNrOfDifferentSpots_weekly() + 1;
+                } else {
+                    listOfPlaces_total = new ArrayList<>();
+                    listOfPlaces_total.add(spotref);
+                    listOfPlaces_weekly = new ArrayList<>();
+                    listOfPlaces_weekly.add(spotref);
+                    nrOfPlaces_total = 1;
+                    nrOfPlaces_weekly = 1;
+                }
+
+                Map<String, Object> update = new HashMap<>();
+                //put the updated nr of workouts in the map that is to be uploaded to the database
+                update.put("total places", nrOfPlaces_total);
+                update.put("weekly places", nrOfPlaces_weekly);
+                update.put("total listOfPlaces", listOfPlaces_total);
+                update.put("weekly listOfPlaces", listOfPlaces_weekly);
+
+                scoreRef.set(update, SetOptions.merge()).
+                        addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                Log.d(TAG, "New User Document has been saved");
+                            }
+                        }).
+
+                        addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Log.d(TAG, "New User Document could not be saved");
+                            }
+                        });
+            } else {
+
+                int nrOfPlaces_total = 1;
+                int nrOfPlaces_weekly = 1;
+                ArrayList<Object> listOfPlaces_total = new ArrayList<>();
+                listOfPlaces_total.add(spotref);
+                ArrayList<Object> listOfPlaces_weekly = new ArrayList<>();
+                listOfPlaces_weekly.add(spotref);
+
+                Map<String, Object> update = new HashMap<>();
+                //put the updated nr of workouts in the map that is to be uploaded to the database
+                update.put("total places", nrOfPlaces_total);
+                update.put("weekly places", nrOfPlaces_weekly);
+                update.put("total listOfPlaces", listOfPlaces_total);
+                update.put("weekly listOfPlaces", listOfPlaces_weekly);
+
+                scoreRef.set(update, SetOptions.merge()).
+                        addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                Log.d(TAG, "New User Document has been saved");
+                            }
+                        }).
+
+                        addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Log.d(TAG, "New User Document could not be saved");
+                            }
+                        });
+            }
+        });
+
+    }
 }
+
+

@@ -51,6 +51,7 @@ public class User {
     static final String LISTOFOUTDOORWORKOUTS = "listOfOutdoorWorkouts";
     static final String LISTOFMOVEMENTSPECIFICCHALLENGES = "listOfMovementSpecificChallenges";
     static final String LISTOFSTREETMOVEMENTCHALLENGES = "listOfStreetMovementChallenges";
+    static final String LISTOFPLACES = "listOfPlaces";
     static final String POSITION = "position";
     static final String POSITIONLASTUPDATE = "positionLastUpdate";
 
@@ -62,6 +63,7 @@ public class User {
     private ArrayList<Object> listOfOutdoorWorkouts = new ArrayList<>();
     private ArrayList<Object> listOfMovementSpecificChallenges = new ArrayList<>();
     private ArrayList<Object> listOfStreetMovementChallenges = new ArrayList<>();
+    private ArrayList<Object> listOfPlaces = new ArrayList<>();
 
 
 
@@ -89,6 +91,14 @@ public class User {
 
     public void setLoginMethod(String loginMethod) {
         this.loginMethod = loginMethod;
+    }
+
+    public ArrayList<Object> getListOfPlaces() {
+        return listOfPlaces;
+    }
+
+    public void setListOfPlaces(ArrayList<Object> listOfPlaces) {
+        this.listOfPlaces = listOfPlaces;
     }
 
     public ArrayList<Object> getListOfHomeWorkouts() {
