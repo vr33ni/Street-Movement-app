@@ -1,9 +1,12 @@
 package com.example.vreeni.StreetMovementApp;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,6 +14,9 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import java.util.ArrayList;
 
 /**
  * Created by vreeni on 20/12/2017.
@@ -21,39 +27,45 @@ import android.widget.TextView;
  * gets arguments from bundle and displays a summary of the workout
  * passes on the bundle to the next fragment in the workout flow
  */
-public class Fragment_Training_Workout_Selection extends Fragment {
+public class Fragment_Training_Selection extends Fragment {
     private static final String LOG_TAG = "Result";
+
+    private RecyclerView recycler;
+    private RecyclerView.LayoutManager manager;
+    private ItemList_Exercises_Adapter adapter;
+    private ArrayList<Exercise> list = new ArrayList<>();
+    private ArrayList<Object> listofexercisereferences;
+
+    private Context context;
 
     private Button btn_Continue;
 
     private String exerciseI;
     private String exerciseII;
     private String imgEx1;
-//    private WebView vidEx1;
-
-    private int time;
-    private ImageView imageEx1;
+    private Exercise exercise;
 
     private String activity;
     private String setting;
     private String level;
     private ParkourPark pk;
 
+    private int time;
+    private ImageView imageEx1;
+    // private WebView vidEx1;
+    private TextView timeView;
 
 
-    private TextView ex1;
-    private TextView ex2;
-
-
-    public static Fragment_Training_Workout_Selection newInstance(String act, String set, ParkourPark spot, String lvl) {
+    public static Fragment_Training_Selection newInstance(String act, String set, ParkourPark spot, String lvl) {
         final Bundle bundle = new Bundle();
-        Fragment_Training_Workout_Selection fragment = new Fragment_Training_Workout_Selection();
+        Fragment_Training_Selection fragment = new Fragment_Training_Selection();
         bundle.putString("Activity", act);
         bundle.putString("Setting", set);
         bundle.putString("Level", lvl);
         bundle.putParcelable("TrainingLocation", spot);
         fragment.setArguments(bundle);
         return fragment;
+//        context = this.getActivity().getContext();
     }
 
 
@@ -73,7 +85,7 @@ public class Fragment_Training_Workout_Selection extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_get_customized_homeworkout_selection, container, false);
+        return inflater.inflate(R.layout.fragment_training_selection, container, false);
     }
 
 
@@ -81,16 +93,14 @@ public class Fragment_Training_Workout_Selection extends Fragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        recycler = view.findViewById(R.id.exercises_selection_recyclerView);
+        recycler.setHasFixedSize(true);
+        manager = new GridLayoutManager(this.getContext(), 1, GridLayoutManager.VERTICAL, false);
+        recycler.setLayoutManager(manager);
+
         btn_Continue = (Button) view.findViewById(R.id.btn_predef_homeworkout_SelectionContinue);
 
-            //maybe here create exercise objects and set the fields?? (exerciseI = new Exercise(); exerciseI.setDescription, setIsCompleted....)
-            //then add them to a list of exercise objects?
-
-        ex1 = (TextView) view.findViewById(R.id.ex1);
-        ex2 = (TextView) view.findViewById(R.id.ex2);
-//
-//        TextView timeView = (TextView) view.findViewById(R.id.time);
-//        timeView.setText(time + " minutes");
+        timeView = (TextView) view.findViewById(R.id.time);
     }
 
 
@@ -99,26 +109,31 @@ public class Fragment_Training_Workout_Selection extends Fragment {
         super.onStart();
         Log.d(LOG_TAG, "training info" + activity + setting + level);
 
+        context = this.getContext();
+
         FirebaseQuery_Workout query = new FirebaseQuery_Workout(activity, setting, level);
         query.query(new FirebaseCallback() {
             @Override
             public void onQuerySuccess(Workout workout) {
-                String descriptionEx1 = workout.getExerciseI().get("description").toString();
-                String descriptionEx2 = workout.getExerciseII().get("description").toString();
-                Log.d(LOG_TAG, "query details: " + descriptionEx1 + ", " + descriptionEx2);
+                if (workout.getListOfExercises() != null) {
 
-                ex1.setText(descriptionEx1);
-                ex2.setText(descriptionEx2);
+                    //getting and setting the exercises that are part of the workout in a recycler view
+                    listofexercisereferences = workout.getListOfExercises();
+                    list = getExercises(context);
+
+                    //setting the duration of the workout
+                    timeView.setText(workout.getDuration() + " minutes");
+
+                } else Log.d(LOG_TAG, "workout has no list of exercises");
 
                 btn_Continue.setOnClickListener(click -> {
                     Fragment_Training_Warmup warmup = Fragment_Training_Warmup.newInstance(workout, pk);
                     ((AppCompatActivity) getContext()).getSupportFragmentManager().beginTransaction()
-                            .replace(R.id.fragment_container, warmup, "warmup")
-                            .addToBackStack("warmup")
+                            .replace(R.id.fragment_container, warmup, "selection")
+                            .addToBackStack("selection")
                             .commit();
                 });
-                Log.d(LOG_TAG, "warmup");
-
+                Log.d(LOG_TAG, "workout selected");
             }
 
             @Override
@@ -148,10 +163,31 @@ public class Fragment_Training_Workout_Selection extends Fragment {
     public void onDestroy() {
         super.onDestroy();
     }
+
+
+    public ArrayList<Exercise> getExercises(Context c) {
+        Log.d(LOG_TAG, "getting the single exercises of a workout");
+        FirebaseQuery_Exercises query = new FirebaseQuery_Exercises(listofexercisereferences);
+        query.query(new FirebaseCallback_Exercises() {
+            @Override
+            public void onQuerySuccess(ArrayList<Exercise> exercises) {
+//                Log.d(LOG_TAG, "list of exercise references:" + listofexercisereferences);
+                list = exercises;
+
+                RecyclerViewClickListener listener = (view, position) -> {
+                    Toast.makeText(getContext(), "Position " + position, Toast.LENGTH_SHORT).show();
+                };
+
+                adapter = new ItemList_Exercises_Adapter(list, c, listener);
+                recycler.setAdapter(adapter);
+            }
+
+            @Override
+            public void onFailure() {
+            }
+        });
+        return list;
+    }
 }
-
-
-
-
 
 

@@ -23,7 +23,7 @@ import com.google.firebase.storage.StorageReference;
  * calls workout from the database
  * puts workout as parcelable object to a bundle and passes it on to the next fragment
  */
-public class Fragment_Training_Workout_Level extends Fragment implements View.OnClickListener {
+public class Fragment_Training_Level extends Fragment implements View.OnClickListener {
 
     private static final String LOG_TAG = "Level";
 
@@ -39,9 +39,9 @@ public class Fragment_Training_Workout_Level extends Fragment implements View.On
     private ParkourPark pk;
 
 
-    public static Fragment_Training_Workout_Level newInstance(String act, String set, ParkourPark spot) {
+    public static Fragment_Training_Level newInstance(String act, String set, ParkourPark spot) {
         final Bundle bundle = new Bundle();
-        Fragment_Training_Workout_Level fragment = new Fragment_Training_Workout_Level();
+        Fragment_Training_Level fragment = new Fragment_Training_Level();
         bundle.putString("Activity", act);
         bundle.putString("Setting", set);
         bundle.putParcelable("TrainingLocation", spot);
@@ -63,7 +63,7 @@ public class Fragment_Training_Workout_Level extends Fragment implements View.On
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_get_customized_homeworkout_level, container, false);
+        return inflater.inflate(R.layout.fragment_training_level, container, false);
     }
 
     @Override
@@ -122,7 +122,7 @@ public class Fragment_Training_Workout_Level extends Fragment implements View.On
             btnPredefHomeWorkoutIntermediate.setEnabled(false);
             btnPredefHomeWorkoutAdvanced.setEnabled(false);
             String level = "Beginner";
-            Fragment_Training_Workout_Selection result = Fragment_Training_Workout_Selection.newInstance(activity, setting, pk, level);
+            Fragment_Training_Selection result = Fragment_Training_Selection.newInstance(activity, setting, pk, level);
             ((AppCompatActivity) getContext()).getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, result, "Result")
                     .addToBackStack("result")
@@ -133,9 +133,10 @@ public class Fragment_Training_Workout_Level extends Fragment implements View.On
             btnPredefHomeWorkoutBeginner.setEnabled(false);
             btnPredefHomeWorkoutAdvanced.setEnabled(false);
             String level = "Intermediate";
-            Fragment_Training_Workout_Selection result = Fragment_Training_Workout_Selection.newInstance(activity, setting, pk, level);
+            Fragment_Training_Selection result = Fragment_Training_Selection.newInstance(activity, setting, pk, level);
             ((AppCompatActivity) getContext()).getSupportFragmentManager().beginTransaction()
-                    .addToBackStack(null)
+                    .replace(R.id.fragment_container, result, "Result")
+                    .addToBackStack("result")
                     .commit();
 
 
@@ -144,9 +145,9 @@ public class Fragment_Training_Workout_Level extends Fragment implements View.On
             btnPredefHomeWorkoutIntermediate.setEnabled(false);
             btnPredefHomeWorkoutBeginner.setEnabled(false);
             String level = "Advanced";
-            Fragment_Training_Workout_Selection result = Fragment_Training_Workout_Selection.newInstance(activity, setting, pk, level);
+            Fragment_Training_Selection result = Fragment_Training_Selection.newInstance(activity, setting, pk, level);
             ((AppCompatActivity) getContext()).getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, result, "result")
+                    .replace(R.id.fragment_container, result, "Result")
                     .addToBackStack("result")
                     .commit();
 

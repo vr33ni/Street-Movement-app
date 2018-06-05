@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Random;
 
 public class FirebaseQuery_Workout {
-    private static final String LOG_TAG = "FbQuery";
+    private static final String LOG_TAG = "FbQuery_Workout";
 
 
     private String activity;
@@ -45,13 +45,93 @@ public class FirebaseQuery_Workout {
 
     public void query(FirebaseCallback callback) {
 
-        //data comes back
+        if (activity.equals("Workout")) {
+            //data comes back
+            try {
+                final FirebaseFirestore db = FirebaseFirestore.getInstance();
+                final CollectionReference wkquery = db.collection("PredefinedWorkouts");
+                //query to get all documents that both home workouts and suited for beginners
+                com.google.firebase.firestore.Query query = wkquery.whereEqualTo("setting", setting)
+                        .whereEqualTo("level", level);
+
+                query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            QuerySnapshot qSnap = task.getResult();
+                            if (!qSnap.isEmpty()) {
+                                //get random document name out of list of all matching documents
+                                List<Workout> listOfWorkouts = new ArrayList<>();
+                                for (DocumentSnapshot doc : task.getResult()) {
+                                    Workout queriedWk = doc.toObject(Workout.class);
+                                    queriedWk.setName(doc.getId());
+                                    listOfWorkouts.add(queriedWk);
+                                }
+                                Random ranGen = new Random();
+                                int index = ranGen.nextInt(listOfWorkouts.size());
+                                Log.d(LOG_TAG, "randome wk generator based on: " + listOfWorkouts);
+                                final Workout ranWk = listOfWorkouts.get(index);
+                                //random workout object selected and its ID is set as its name
+
+                                //after that, a document reference is created by calling the randomly selected doc name
+                                DocumentReference queriedWkRef = wkquery.document(ranWk.getName());
+                                queriedWkRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                        if (task.isSuccessful()) {
+                                            //access all the information in the document
+                                            DocumentSnapshot document = task.getResult();
+                                            if (document != null) {
+                                                //try to get workout as an object (containing an image)
+                                                workout = task.getResult().toObject(Workout.class);
+                                                String id = document.getId();
+                                                workout.setName(id);
+                                                callback.onQuerySuccess(workout);
+
+                                                Log.d(LOG_TAG, "DocumentSnapshot data: " + task.getResult().getData());
+
+                                            } else {
+                                                Log.d(LOG_TAG, "No such document");
+                                            }
+                                        } else {
+                                            Log.d(LOG_TAG, "get failed with ", task.getException());
+                                        }
+                                    }
+                                });
+                            } else {
+                                Log.d("Query Data", "Data is not valid");
+                            }
+                        }
+                    }
+                });
+//            String x = "Returned data";
+                if (workout == null) {
+                    throw new FirebaseException("Query could not be executed");
+                }
+            } catch (FirebaseException ex) {
+                callback.onFailure();
+            }
+            Log.d(activity, "executed");
+        } else if (activity.equals("Movement specific challenge")) {
+            //query movement specific challenges
+            Log.d(LOG_TAG, "movement specific challenge selected");
+            queryMovementSpecificChallenge(callback);
+        } else {
+            //show list of streetmovement locations
+        }
+    }
+
+//    void querySecond(){}
+
+
+    public void queryMovementSpecificChallenge(FirebaseCallback callback) {
         try {
             final FirebaseFirestore db = FirebaseFirestore.getInstance();
-            final CollectionReference wkquery = db.collection("PredefinedWorkouts");
+            final CollectionReference wkquery = db.collection("MovementSpecificChallenge");
             //query to get all documents that both home workouts and suited for beginners
             com.google.firebase.firestore.Query query = wkquery.whereEqualTo("setting", setting)
                     .whereEqualTo("level", level);
+
             query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -67,6 +147,7 @@ public class FirebaseQuery_Workout {
                             }
                             Random ranGen = new Random();
                             int index = ranGen.nextInt(listOfWorkouts.size());
+                            Log.d(LOG_TAG, "randome wk generator based on: " + listOfWorkouts);
                             final Workout ranWk = listOfWorkouts.get(index);
                             //random workout object selected and its ID is set as its name
 
@@ -110,6 +191,4 @@ public class FirebaseQuery_Workout {
         }
         Log.d(activity, "executed");
     }
-
-//    void querySecond(){}
 }

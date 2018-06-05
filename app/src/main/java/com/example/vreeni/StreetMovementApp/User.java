@@ -22,6 +22,7 @@ public class User {
 
     private String name;
     private String email;
+    private String profilePicture;
     private String nationality;
     private String nickname;
     private String status;
@@ -40,6 +41,7 @@ public class User {
     static final String LOGINMETHOD = "loginMethod";
     static final String AGE = "age";
     static final String EMAIL = "email";
+    static final String PROFILE_PICTURE = "profilePicture";
     static final String FULLNAME = "name";
     static final String NATIONALITY = "nationality";
     static final String NICKNAME = "nickname";
@@ -75,6 +77,14 @@ public class User {
 
     public void setPositionLastUpdate(String positionLastUpdate) {
         this.positionLastUpdate = positionLastUpdate;
+    }
+
+    public String getProfilePicture() {
+        return profilePicture;
+    }
+
+    public void setProfilePicture(String profilePicture) {
+        this.profilePicture = profilePicture;
     }
 
     public GeoPoint getPosition() {

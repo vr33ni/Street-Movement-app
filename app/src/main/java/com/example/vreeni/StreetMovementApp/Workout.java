@@ -5,6 +5,7 @@ import android.os.Parcelable;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -25,17 +26,20 @@ public class Workout implements Parcelable {
     private String level;
     private int duration;
 
-    //each pre-defined workout consists of 5 exercises that can be defined using HashMaps
-    //==> workout.getExerciseI() will be the set as a new HashMap<String, Object> exI
-    private HashMap<String, Object> exerciseI;
-    private HashMap<String, Object> exerciseII;
-    private HashMap<String, Object> exerciseIII;
-    private HashMap<String, Object> exerciseIV;
-    private HashMap<String, Object> exerciseV;
+    private ArrayList<Object> listOfExercises = new ArrayList<>();
+
 
 
 
     public Workout() {
+    }
+
+    public ArrayList<Object> getListOfExercises() {
+        return listOfExercises;
+    }
+
+    public void setListOfExercises(ArrayList<Object> listOfExercises) {
+        this.listOfExercises = listOfExercises;
     }
 
     public Workout(String name) {
@@ -50,45 +54,45 @@ public class Workout implements Parcelable {
         this.activity = activity;
     }
 
-    public HashMap<String, Object> getExerciseI() {
-        return exerciseI;
-    }
-
-    public void setExerciseI(HashMap<String, Object> exerciseI) {
-        this.exerciseI = exerciseI;
-    }
-
-    public HashMap<String, Object> getExerciseII() {
-        return exerciseII;
-    }
-
-    public void setExerciseII(HashMap<String, Object> exerciseII) {
-        this.exerciseII = exerciseII;
-    }
-
-    public HashMap<String, Object> getExerciseIII() {
-        return exerciseIII;
-    }
-
-    public void setExerciseIII(HashMap<String, Object> exerciseIII) {
-        this.exerciseIII = exerciseIII;
-    }
-
-    public HashMap<String, Object> getExerciseIV() {
-        return exerciseIV;
-    }
-
-    public void setExerciseIV(HashMap<String, Object> exerciseIV) {
-        this.exerciseIV = exerciseIV;
-    }
-
-    public HashMap<String, Object> getExerciseV() {
-        return exerciseV;
-    }
-
-    public void setExerciseV(HashMap<String, Object> exerciseV) {
-        this.exerciseV = exerciseV;
-    }
+//    public HashMap<String, Object> getExerciseI() {
+//        return exerciseI;
+//    }
+//
+//    public void setExerciseI(HashMap<String, Object> exerciseI) {
+//        this.exerciseI = exerciseI;
+//    }
+//
+//    public HashMap<String, Object> getExerciseII() {
+//        return exerciseII;
+//    }
+//
+//    public void setExerciseII(HashMap<String, Object> exerciseII) {
+//        this.exerciseII = exerciseII;
+//    }
+//
+//    public HashMap<String, Object> getExerciseIII() {
+//        return exerciseIII;
+//    }
+//
+//    public void setExerciseIII(HashMap<String, Object> exerciseIII) {
+//        this.exerciseIII = exerciseIII;
+//    }
+//
+//    public HashMap<String, Object> getExerciseIV() {
+//        return exerciseIV;
+//    }
+//
+//    public void setExerciseIV(HashMap<String, Object> exerciseIV) {
+//        this.exerciseIV = exerciseIV;
+//    }
+//
+//    public HashMap<String, Object> getExerciseV() {
+//        return exerciseV;
+//    }
+//
+//    public void setExerciseV(HashMap<String, Object> exerciseV) {
+//        this.exerciseV = exerciseV;
+//    }
 
     public String getSetting() {
         return setting;
@@ -128,11 +132,11 @@ public class Workout implements Parcelable {
         setting = in.readString();
         level = in.readString();
         duration = in.readInt();
-        exerciseI = (HashMap) in.readValue(HashMap.class.getClassLoader());
-        exerciseII = (HashMap) in.readValue(HashMap.class.getClassLoader());
-        exerciseIII = (HashMap) in.readValue(HashMap.class.getClassLoader());
-        exerciseIV = (HashMap) in.readValue(HashMap.class.getClassLoader());
-        exerciseV = (HashMap) in.readValue(HashMap.class.getClassLoader());
+//        exerciseI = (HashMap) in.readValue(HashMap.class.getClassLoader());
+//        exerciseII = (HashMap) in.readValue(HashMap.class.getClassLoader());
+//        exerciseIII = (HashMap) in.readValue(HashMap.class.getClassLoader());
+//        exerciseIV = (HashMap) in.readValue(HashMap.class.getClassLoader());
+//        exerciseV = (HashMap) in.readValue(HashMap.class.getClassLoader());
     }
 
     @Override
@@ -146,11 +150,11 @@ public class Workout implements Parcelable {
         dest.writeString(setting);
         dest.writeString(level);
         dest.writeInt(duration);
-        dest.writeValue(exerciseI);
-        dest.writeValue(exerciseII);
-        dest.writeValue(exerciseIII);
-        dest.writeValue(exerciseIV);
-        dest.writeValue(exerciseV);
+//        dest.writeValue(exerciseI);
+//        dest.writeValue(exerciseII);
+//        dest.writeValue(exerciseIII);
+//        dest.writeValue(exerciseIV);
+//        dest.writeValue(exerciseV);
     }
 
     @SuppressWarnings("unused")

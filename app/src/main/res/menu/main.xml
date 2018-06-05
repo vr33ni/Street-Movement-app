@@ -2,6 +2,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <item
+        android:id="@+id/leaderboard"
+        android:icon="@drawable/ic_leaderboard_simple"
+        android:title="maps"
+        app:showAsAction="always" />
+
 
     <item
         android:id="@+id/showMap"

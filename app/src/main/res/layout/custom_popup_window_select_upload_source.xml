@@ -3,20 +3,44 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:paddingBottom="8dp"
     android:layout_gravity="center"
     android:background="@color/grey_100"
     android:orientation="vertical">
 
 
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:text="Select image"
-        android:textColor="#58C1E8"
-        android:textSize="20sp"
-        android:textStyle="bold" />
+        android:orientation="horizontal"
+        android:weightSum="6">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="5"
+            android:gravity="center_vertical"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:text="Select image"
+            android:textColor="#58C1E8"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btn_cancelProfilePictureChanges_step2"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_marginRight="8dp"
+            android:layout_marginLeft="8dp"
+            android:text="x"
+            android:textSize="16sp"
+            android:textAlignment="center"
+            android:backgroundTint="@color/grey_100" />
+
+    </LinearLayout>
+
 
     <View
         android:layout_width="match_parent"
@@ -50,16 +74,14 @@
         android:textAlignment="viewStart" />
 
 
-
-    <Button
-        android:id="@+id/btn_cancel_selectImg_process"
+    <View
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="start"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:backgroundTint="@color/grey_100"
-        android:text="Cancel"
-        android:textAlignment="viewStart" />
+        android:layout_height="1pt"
+        android:layout_margin="8dp"
+        android:background="#58C1E8">
+
+    </View>
+
+
 </LinearLayout>
 

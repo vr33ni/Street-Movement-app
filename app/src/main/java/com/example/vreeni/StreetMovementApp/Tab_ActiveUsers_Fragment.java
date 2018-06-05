@@ -1,8 +1,8 @@
 package com.example.vreeni.StreetMovementApp;
 
+import android.location.Location;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -10,42 +10,35 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ScrollView;
-import android.widget.TextView;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
-import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
 
 public class Tab_ActiveUsers_Fragment extends Fragment implements View.OnClickListener {
     private String TAG = "Active Users Tab ";
     private long mLastClickTime = 0;
     private ArrayList<GeoPoint> activeUsers;
     private RecyclerView mRecyclerView;
-    private ItemListAdapter mAdapter;
+    private ItemList_Ratings_Adapter mAdapter;
     private final ArrayList<HashMap<String, Object>> activeUserList = new ArrayList<>();
     private String activity;
     private String setting;
     private ParkourPark pk;
+    private Location mLastKnownLocation;
 
 
-    public static Tab_ActiveUsers_Fragment newInstance(String act, String set, ParkourPark spot) {
+    public static Tab_ActiveUsers_Fragment newInstance(String act, String set, ParkourPark spot, Location mLastKnownLocation) {
         final Bundle bundle = new Bundle();
         Tab_ActiveUsers_Fragment fragment = new Tab_ActiveUsers_Fragment();
         bundle.putString("Activity", act);
         bundle.putString("Setting", set);
         bundle.putParcelable("TrainingLocation", spot);
+        bundle.putParcelable("UserLocation", mLastKnownLocation);
         fragment.setArguments(bundle);
         return fragment;
     }
@@ -58,6 +51,7 @@ public class Tab_ActiveUsers_Fragment extends Fragment implements View.OnClickLi
             activity = getArguments().getString("Activity");
             setting = "Outdoors";
             pk = getArguments().getParcelable("TrainingLocation");
+            mLastKnownLocation = getArguments().getParcelable("UserLocation");
         }
     }
 
@@ -82,7 +76,7 @@ public class Tab_ActiveUsers_Fragment extends Fragment implements View.OnClickLi
     public void onStart() {
         super.onStart();
         // Create an adapter and supply the data to be displayed.
-        mAdapter = new ItemListAdapter(this.getActivity(), activeUserList);
+        mAdapter = new ItemList_Ratings_Adapter(this.getActivity(), activeUserList);
         int height = 400; //get height
         ViewGroup.LayoutParams params_new = mRecyclerView.getLayoutParams();
         params_new.height = height;
@@ -130,7 +124,9 @@ public class Tab_ActiveUsers_Fragment extends Fragment implements View.OnClickLi
                     if (thisPark.getListOfActiveUsers() != null) {
                         for (HashMap<String, Object> map : thisPark.getListOfActiveUsers())
                             activeUserList.add(map);
-                        latestActiveUser = activeUserList.lastIndexOf(activeUserList.get(activeUserList.size() - 1));
+                        if (activeUserList.size() != 0) {
+                            latestActiveUser = activeUserList.lastIndexOf(activeUserList.get(activeUserList.size() - 1));
+                        } else latestActiveUser = 0;
 
                         Log.d(TAG, "position of last active user in list: " + latestActiveUser);
                         Log.d(TAG, "activeUserList: " + activeUserList);
@@ -147,77 +143,6 @@ public class Tab_ActiveUsers_Fragment extends Fragment implements View.OnClickLi
         });
     }
 
-
-    public List<GeoPoint> checkForActiveUsers() {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        final CollectionReference activeUsersQuery = db.collection("Users");
-        //define based on which parameters the query should be done
-        GeoPoint lastPos;
-        String posLastUpdate;
-        long radius;
-        // assign active users to parkour par? and then just get list? or actively track location
-//        if (lastPos);
-        //query to get all documents that both home workouts and suited for beginners
-        Query query = activeUsersQuery.whereEqualTo("position", "position + - radius")
-                .whereEqualTo("positionLastUpdate", "active within the last hour?");
-        query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if (task.isSuccessful()) {
-                    QuerySnapshot qSnap = task.getResult();
-                    if (!qSnap.isEmpty()) {
-                        //get random document name out of list of all matching documents
-                        List<Workout> listOfWorkouts = new ArrayList<>();
-                        for (DocumentSnapshot doc : task.getResult()) {
-                            Workout queriedWk = doc.toObject(Workout.class);
-                            queriedWk.setName(doc.getId());
-                            listOfWorkouts.add(queriedWk);
-                        }
-                        Random ranGen = new Random();
-                        int index = ranGen.nextInt(listOfWorkouts.size());
-                        final Workout ranWk = listOfWorkouts.get(index);
-                        //random workout object selected and its ID is set as its name
-
-                        //after that, a document reference is created by calling the randomly selected doc name
-                        DocumentReference queriedWkRef = activeUsersQuery.document(ranWk.getName());
-                        queriedWkRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                            @Override
-                            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                if (task.isSuccessful()) {
-                                    //access all the information in the document
-                                    DocumentSnapshot document = task.getResult();
-                                    if (document != null) {
-                                        //try to get workout as an object (containing an image)
-                                        Workout workout = task.getResult().toObject(Workout.class);
-                                        String wkCategory = task.getResult().getString("setting");
-                                        String ex1 = workout.getLevel();
-                                        int time = task.getResult().getLong("duration").intValue();
-
-                                        //access the object exercise 1 as hashmap and get its key-values
-                                        HashMap<String, Object> exI = workout.getExerciseI();
-                                        String descriptionEx1 = (String) exI.get("description");
-                                        String urlImgEx1 = (String) exI.get("image");
-                                        String urlVidEx1 = (String) exI.get("video");
-
-                                        Log.d(TAG, "DocumentSnapshot data: " + task.getResult().getData().get("exerciseI"));
-                                    } else {
-                                        Log.d(TAG, "No such document");
-                                    }
-                                } else {
-                                    Log.d(TAG, "get failed with ", task.getException());
-                                }
-                            }
-                        });
-                    } else {
-                        Log.d("Query Data", "Data is not valid");
-                    }
-                }
-            }
-        });
-
-
-        return activeUsers;
-    }
 
     @Override
     public void onClick(View v) {

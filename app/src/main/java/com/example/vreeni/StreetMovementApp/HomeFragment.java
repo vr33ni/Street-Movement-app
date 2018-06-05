@@ -20,17 +20,26 @@ import android.view.ViewGroup;
 public class HomeFragment extends Fragment implements View.OnClickListener {
     private Context context;
 
+    public static HomeFragment newInstance() {
+        final Bundle bundle = new Bundle(); //to pass arguments to the next fragment
+        HomeFragment fragment = new HomeFragment();
+        fragment.setArguments(bundle);
+        return fragment;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+        }
+    }
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         this.context = context;
     }
 
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
 
 
     @Nullable
@@ -43,13 +52,14 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        ((MainActivity) getActivity()).showBackButton(false);
     }
 
 
     @Override
     public void onStart() {
         super.onStart();
+        ((MainActivity) getActivity()).showBackButton(false);
+
 //        backButton.setOnClickListener(click -> {
 //            ((AppCompatActivity)getContext()).getSupportFragmentManager().popBackStack();
 //        });

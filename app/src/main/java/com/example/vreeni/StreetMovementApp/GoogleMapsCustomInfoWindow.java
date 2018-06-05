@@ -53,7 +53,7 @@ public class GoogleMapsCustomInfoWindow implements GoogleMap.InfoWindowAdapter{
         String str=marker.getTitle();
         final String[] str2=str.split("_");
 
-        ivPark.setImageResource(R.drawable.img_railheaven);
+        ivPark.setImageResource(R.drawable.noimgavailable);
         tvTitle.setText(str2[0]);
         tvSubTitle.setText(str2[1]);
         tvSubTitle.setMaxLines(3);

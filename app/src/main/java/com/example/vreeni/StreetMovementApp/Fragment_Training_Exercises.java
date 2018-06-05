@@ -1,17 +1,17 @@
 package com.example.vreeni.StreetMovementApp;
 
 import android.content.Context;
-import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
+import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,33 +22,30 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
 
-import java.lang.reflect.Field;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
-import static android.content.Context.MODE_PRIVATE;
 import static com.example.vreeni.StreetMovementApp.User.LISTOFHOMEWORKOUTS;
+import static com.example.vreeni.StreetMovementApp.User.LISTOFMOVEMENTSPECIFICCHALLENGES;
 import static com.example.vreeni.StreetMovementApp.User.LISTOFOUTDOORWORKOUTS;
 import static com.example.vreeni.StreetMovementApp.User.LISTOFPLACES;
-import static com.example.vreeni.StreetMovementApp.User.WORKOUTSCOMPLETED;
+import static com.example.vreeni.StreetMovementApp.User.LISTOFSTREETMOVEMENTCHALLENGES;
 
 
 /**
@@ -60,26 +57,43 @@ import static com.example.vreeni.StreetMovementApp.User.WORKOUTSCOMPLETED;
  * contains webview with an embedded vimeo video
  * contains reference to the database => after timer has run out, adds Home Workout as a DocumentReference to a list of completed Home Workouts to the user profile
  */
-public class Fragment_Training_Workout_Exercises extends Fragment implements View.OnClickListener {
+public class Fragment_Training_Exercises extends Fragment implements View.OnClickListener {
     private String TAG = "Workout: ";
 
-    private String exerciseI;
-    private String exerciseII;
+    //popup window views
+    private PopupWindow popupWindow_activityCompleted;
+    private ImageView iv_activityCompleted;
+    //extra awards based on nr of activities/places etc.
+//    private ImageView iv_explorerStatus; //after having trained at 10 + different locations
+//    private ImageView iv_ninja; //after having completed 5+ movement specific challenges
+
     private String imgEx1;
-    private String vidEx1;
     private ImageView imageEx1;
     private ArrayList<Object> listOfHomeWks;
     private ArrayList<Object> listOfOutdoorWks;
     private ArrayList<Object> listOfPlaces;
+
+    private int nrOfWorkouts_total;
+    private int nrOfWorkouts_weekly;
+    private int nrOfActivities_weekly;
+    private int nrOfActivities_total;
+    private int nrOfMovSpecChallenges_total;
+    private int nrOfMovSpecChallenges_weekly;
+    private int nrOfSMChallenges_total;
+    private int nrOfSMChallenges_weekly;
+
+
+
     private final ArrayList<HashMap<String, Object>> listOfActiveUsers = new ArrayList<>();
 
 
     //all the information in here will be updated in the user object and then uploaded ot the database
     private Workout myWorkout;
     private ParkourPark pk;
+    private Exercise exercise;
     private String wkReference;
     private long nrOfWorkouts;
-    String descriptionEx1;
+    private String activityType;
 
     private TextView ex1;
     private TextView timer;
@@ -88,9 +102,9 @@ public class Fragment_Training_Workout_Exercises extends Fragment implements Vie
 
     private boolean timerIsRunning;
 
-    public static Fragment_Training_Workout_Exercises newInstance(Workout wk, ParkourPark pk) {
+    public static Fragment_Training_Exercises newInstance(Workout wk, ParkourPark pk) {
         final Bundle bundle = new Bundle();
-        Fragment_Training_Workout_Exercises fragment = new Fragment_Training_Workout_Exercises();
+        Fragment_Training_Exercises fragment = new Fragment_Training_Exercises();
         bundle.putParcelable("Workout", wk);
         bundle.putParcelable("TrainingLocation", pk);
         fragment.setArguments(bundle);
@@ -103,16 +117,12 @@ public class Fragment_Training_Workout_Exercises extends Fragment implements Vie
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             myWorkout = getArguments().getParcelable("Workout");
-            descriptionEx1 = myWorkout.getExerciseI().get("description").toString();
             wkReference = myWorkout.getName();
-            vidEx1 = (String) myWorkout.getExerciseI().get("video");
             if (getArguments().containsKey("TrainingLocation")) {
                 pk = getArguments().getParcelable("TrainingLocation");
-
             }
-            Log.d(TAG, "bundle info:" + getArguments());
-            Log.d(TAG, "bundle info - video:" + vidEx1);
-            Log.d(TAG, "bundle info - wkRef:" + wkReference);
+            activityType = myWorkout.getActivity();
+            Log.d(TAG, "bundle info:" + activityType);
         }
     }
 
@@ -120,23 +130,13 @@ public class Fragment_Training_Workout_Exercises extends Fragment implements Vie
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_get_customized_homeworkout_exercise, container, false);
+        return inflater.inflate(R.layout.fragment_training_exercise, container, false);
     }
 
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-//            pk = bundle.getParcelable("TrainingLocation");
-//            myWorkout = bundle.getParcelable("Workout");
-//            exerciseI = bundle.getString("Exercise1");
-//            exerciseII = bundle.getString("Exercise2");
-//            vidEx1 = (String) myWorkout.getExerciseI().get("video");
-//            wkReference = bundle.getString("WorkoutID");
-//            time = bundle.getInt("Time");
-        //maybe here create exercise objects and set the fields?? (exerciseI = new Exercise(); exerciseI.setDescription, setIsCompleted....)
-        //then add them to a list of exercise objects?
 
         ex1 = (TextView) view.findViewById(R.id.exercise_description);
 
@@ -154,28 +154,8 @@ public class Fragment_Training_Workout_Exercises extends Fragment implements Vie
     @Override
     public void onStart() {
         super.onStart();
-        ex1.setText(descriptionEx1);
 
-        //set up the webview - vimeo vide
-        webView.setInitialScale(1);
-        webView.setWebChromeClient(new WebChromeClient());
-        webView.getSettings().setAllowFileAccess(true);
-        webView.getSettings().setPluginState(WebSettings.PluginState.ON);
-        webView.getSettings().setPluginState(WebSettings.PluginState.ON_DEMAND);
-        webView.setWebViewClient(new WebViewClient());
-        webView.getSettings().setJavaScriptEnabled(true);
-        webView.getSettings().setLoadWithOverviewMode(true);
-        webView.getSettings().setUseWideViewPort(true);
-        DisplayMetrics displaymetrics = new DisplayMetrics();
-        ((WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(displaymetrics);
-        int height = displaymetrics.heightPixels;
-        int width = displaymetrics.widthPixels;
-        Log.e("WebView Log", width + "-" + height);
-        String data_html = "<!DOCTYPE html><html> <head> <meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"target-densitydpi=high-dpi\" /> <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"> <link rel=\"stylesheet\" media=\"screen and (-webkit-device-pixel-ratio:1.5)\" href=\"hdpi.css\" /></head> <body style=\"background:white;margin:0 0 0 0; padding:0 0 0 0;\"> <iframe style=\"background:white;\" width=' " + width + "' height='" + height / 2 + "' src=\"" + vidEx1 + "\" frameborder=\"0\"></iframe> </body> </html> ";
-        webView.loadDataWithBaseURL("http://vimeo.com", data_html, "text/html", "UTF-8", null);
-
-        //end of webview
-
+        getExerciseReferencesFromFirebase(myWorkout);
 
         Log.d(TAG, "training info" + myWorkout);
     }
@@ -253,6 +233,33 @@ public class Fragment_Training_Workout_Exercises extends Fragment implements Vie
                 }, 1000);
             }
         }
+        if (v.getId() == R.id.btn_activityCompleted_continue) {
+            //continue to home screen
+            HomeFragment home = HomeFragment.newInstance();
+            ((AppCompatActivity) getContext()).getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, home, "home")
+                    .addToBackStack(null)
+                    .commit();
+            popupWindow_activityCompleted.dismiss();
+        }
+        if (v.getId() == R.id.btn_activityCompleted_goToProfile) {
+            //go to personal stats section
+            UserProfile_Account fragment_setting = UserProfile_Account.newInstance();
+            ((AppCompatActivity) getContext()).getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, fragment_setting, "Personal Stats")
+                    .addToBackStack("personalStats")
+                    .commit();
+            popupWindow_activityCompleted.dismiss();
+        }
+        if (v.getId() == R.id.btn_activityCompleted_leaderboard) {
+            //go to leaderboard
+            Fragment_Leaderboard fragment_leaderboard = Fragment_Leaderboard.newInstance(this.getContext());
+            (this.getActivity().getSupportFragmentManager().beginTransaction())
+                    .replace(R.id.fragment_container, fragment_leaderboard, "Leaderboard")
+                    .addToBackStack("leaderboard")
+                    .commit();
+            popupWindow_activityCompleted.dismiss();
+        }
 
     }
 
@@ -275,7 +282,7 @@ public class Fragment_Training_Workout_Exercises extends Fragment implements Vie
             }
 
             public void onFinish() {
-                timer.setText("Workout completed!");
+                timer.setText("Activity completed!");
                 time = 10;
                 timerIsRunning = false;
                 addWorkouttoUserDocument();
@@ -315,20 +322,44 @@ public class Fragment_Training_Workout_Exercises extends Fragment implements Vie
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
                 User currentUser = documentSnapshot.toObject(User.class);
-                //initialize the field Nr Of Workouts and the list of Home Workouts
-                nrOfWorkouts = currentUser.getWorkoutsCompleted() + 1;
-                listOfHomeWks = currentUser.getListOfHomeWorkouts();
-                listOfOutdoorWks = currentUser.getListOfOutdoorWorkouts();
-                listOfPlaces = currentUser.getListOfPlaces();
 
-
+                String fieldname_list;
+                ArrayList<Object> fieldValue_list;
                 Map<String, Object> update = new HashMap<>();
-                //put the updated nr of workouts in the map that is to be uploaded to the database
-                update.put(WORKOUTSCOMPLETED, nrOfWorkouts);
+
+                //check what to query by checking what type of activity
+                if (activityType.equals("Workout")) {
+                    Log.d(TAG, "activity = workout");
+                    if (pk == null) {
+                        fieldname_list = LISTOFHOMEWORKOUTS;
+                        fieldValue_list = currentUser.getListOfHomeWorkouts();
+                        listOfPlaces = currentUser.getListOfPlaces();
+                    } else {
+                        fieldname_list = LISTOFOUTDOORWORKOUTS;
+                        fieldValue_list = currentUser.getListOfOutdoorWorkouts();
+                        listOfPlaces = currentUser.getListOfPlaces();
+                    }
+                } else if (activityType.equals("Movement specific challenge")) {
+                    Log.d(TAG, "activity = move specific");
+
+                    fieldname_list = LISTOFMOVEMENTSPECIFICCHALLENGES;
+                    fieldValue_list = currentUser.getListOfStreetMovementChallenges();
+                    listOfPlaces = currentUser.getListOfPlaces();
+                } else if (activityType.equals("Street Movement challenge")) {
+                    Log.d(TAG, "activity = sm challenge");
+
+                    fieldname_list = LISTOFSTREETMOVEMENTCHALLENGES;
+                    fieldValue_list = currentUser.getListOfStreetMovementChallenges();
+                    listOfPlaces = currentUser.getListOfPlaces();
+                } else {
+                    fieldname_list = "";
+                    fieldValue_list = new ArrayList<>();
+                    listOfPlaces = currentUser.getListOfPlaces();
+                }
 
                 //put a reference to the workout just completed in the map that is to be uploaded to the database
                 HashMap<String, Object> wkdetails = new HashMap<>();
-                wkdetails.put("activity", "Workout");
+                wkdetails.put("activity", activityType);
                 wkdetails.put("activityReference", db.collection("PredefinedWorkouts").document(wkReference));
                 Calendar calender = Calendar.getInstance();
                 int weekNr = calender.get(Calendar.WEEK_OF_YEAR);
@@ -337,8 +368,8 @@ public class Fragment_Training_Workout_Exercises extends Fragment implements Vie
                 if (pk == null) {
                     //meaning that this is a home workout with no specific training location selected
                     wkdetails.put("place", "Home");
-                    listOfHomeWks.add(wkdetails);
-                    update.put(LISTOFHOMEWORKOUTS, listOfHomeWks);
+                    fieldValue_list.add(wkdetails);
+                    update.put(fieldname_list, fieldValue_list);
 
                     //update the user document
                     userDocRef
@@ -346,6 +377,9 @@ public class Fragment_Training_Workout_Exercises extends Fragment implements Vie
                         @Override
                         public void onSuccess(Void aVoid) {
                             Log.d(TAG, "HomeWorkout has been saved");
+                            //do this asynchronously??
+                            updateScore(db, userDocRef);
+                            Log.d(TAG, "updating score");
                         }
                     }).addOnFailureListener(new OnFailureListener() {
                         @Override
@@ -353,14 +387,13 @@ public class Fragment_Training_Workout_Exercises extends Fragment implements Vie
                             Log.d(TAG, "HomeWorkout could not be saved" + e.toString());
                         }
                     });
-                    updateScore();
-                    Log.d(TAG, "updating score");
+
 
                 } else {
                     //training location received in bundle was not null => workout was done at a specific training location
                     DocumentReference spotref = db.collection("ParkourParks").document(pk.getName());
                     wkdetails.put("place", spotref);
-                    listOfOutdoorWks.add(wkdetails);
+                    fieldValue_list.add(wkdetails);
 
                     //update list of places the user has been to
                     HashMap<String, Object> places = new HashMap<>();
@@ -369,7 +402,9 @@ public class Fragment_Training_Workout_Exercises extends Fragment implements Vie
                     places.put("week", calender.get(Calendar.WEEK_OF_YEAR));
                     listOfPlaces.add(places);
 
-                    update.put(LISTOFOUTDOORWORKOUTS, listOfOutdoorWks);
+                    Log.d(TAG, "fieldname list" + fieldname_list + " fieldvalue list: " + fieldValue_list);
+
+                    update.put(fieldname_list, fieldValue_list);
                     update.put(LISTOFPLACES, listOfPlaces);
 
                     //update the user document
@@ -377,56 +412,84 @@ public class Fragment_Training_Workout_Exercises extends Fragment implements Vie
                             .set(update, SetOptions.merge()).addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
-                            Log.d(TAG, "Outdoor Workout has been saved");
+                            //do these tasks asynchronously??
+                            updateScore(db, userDocRef);
+                            Log.d(TAG, "updating leaderboard entry - score");
+                            updatePlaces(spotref);
+                            Log.d(TAG, "updating leaderboard entry - places");
                         }
                     }).addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-                            Log.d(TAG, "Outdoor Workout could not be saved" + e.toString());
+                            Log.d(TAG, "Outdoor Activity could not be saved" + e.toString());
                         }
                     });
-                    updateScore();
-                    Log.d(TAG, "updating leaderboard entry - score");
-//                    updatePlaces(spotref);
-                    Log.d(TAG, "updating leaderboard entry - places");
 
                 }
             }
         });
     }
 
-    public void updateScore() {
-        final FirebaseFirestore db = FirebaseFirestore.getInstance();
+    //include parameter specifying the type of activity to update
+    public void updateScore(FirebaseFirestore db, DocumentReference userdocRef) {
         DocumentReference scoreRef = db.collection("Scores").document(FirebaseAuth.getInstance().getCurrentUser().getEmail());
         scoreRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
                 if (documentSnapshot.exists()) {
                     LeaderboardEntry score = documentSnapshot.toObject(LeaderboardEntry.class);
-                    //initialize the field Nr Of Workouts and the list of Home Workouts
-                    int nrOfWorkouts_total = score.getNrOfWorkouts_total() + 1;
-                    int nrOfWorkouts_weekly = score.getNrOfWorkouts_weekly() + 1;
-                    int nrOfActivities_total = score.getNrOfWorkouts_total()
-                            + score.getNrOfMovementSpecificChallenges_total()
-                            + score.getNrOfStreetMovementChallenges_total()
-                            + 1;
-                    int nrOfActivities_weekly = score.getNrOfWorkouts_weekly()
-                            + score.getNrOfMovementSpecificChallenges_weekly()
-                            + score.getNrOfStreetMovementChallenges_weekly()
-                            + 1;
+                    Log.d(TAG, "leaderboard entry exists already, updating it...");
 
                     Map<String, Object> update = new HashMap<>();
-                    //put the updated nr of workouts in the map that is to be uploaded to the database
-                    update.put("total activities", nrOfActivities_total);
-                    update.put("total workouts", nrOfWorkouts_total);
-                    update.put("weekly activities", nrOfActivities_weekly);
-                    update.put("weekly workouts", nrOfWorkouts_weekly);
 
+                    if (activityType.equals("Workout")) {
+                        //initialize the field Nr Of Workouts and the list of Home Workouts
+                        //put the updated nr of workouts in the map that is to be uploaded to the database
+                        update.put("nrOfActivities_total", score.getNrOfWorkouts_total()
+                                + score.getNrOfMovementSpecificChallenges_total()
+                                + score.getNrOfStreetMovementChallenges_total()
+                                + 1);
+                        update.put("nrOfWorkouts_total", score.getNrOfWorkouts_total() + 1);
+                        update.put("nrOfActivities_weekly", score.getNrOfWorkouts_weekly()
+                                + score.getNrOfMovementSpecificChallenges_weekly()
+                                + score.getNrOfStreetMovementChallenges_weekly()
+                                + 1);
+                        update.put("nrOfWorkouts_weekly", score.getNrOfWorkouts_weekly() + 1);
+
+                    } else if (activityType.equals("Movement specific challenge")) {
+                        //put the updated nr of workouts in the map that is to be uploaded to the database
+                        update.put("nrOfActivities_total", score.getNrOfWorkouts_total()
+                                + score.getNrOfMovementSpecificChallenges_total()
+                                + score.getNrOfStreetMovementChallenges_total()
+                                + 1);
+                        update.put("nrOfMovementSpecificChallenges_total", score.getNrOfMovementSpecificChallenges_total() + 1);
+                        update.put("nrOfActivities_weekly",
+                                score.getNrOfWorkouts_weekly()
+                                        + score.getNrOfMovementSpecificChallenges_weekly()
+                                        + score.getNrOfStreetMovementChallenges_weekly()
+                                        + 1);
+                        update.put("nrOfMovementSpecificChallenges_weekly", score.getNrOfMovementSpecificChallenges_weekly() + 1);
+                    }
+//                    else if (activityType.equals("Street Movement challenge")) {
+                    else {
+                        update.put("nrOfActivities_total", score.getNrOfWorkouts_total()
+                                + score.getNrOfMovementSpecificChallenges_total()
+                                + score.getNrOfStreetMovementChallenges_total()
+                                + 1);
+                        update.put("nrOfStreetMovementChallenges_total", score.getNrOfStreetMovementChallenges_total() + 1 + 1);
+                        update.put("nrOfActivities_weekly",
+                                score.getNrOfWorkouts_weekly()
+                                        + score.getNrOfMovementSpecificChallenges_weekly()
+                                        + score.getNrOfStreetMovementChallenges_weekly()
+                                        + 1);
+                        update.put("nrOfStreetMovementChallenges_weekly", score.getNrOfStreetMovementChallenges_weekly() + 1 + 1);
+                    }
                     scoreRef.set(update, SetOptions.merge()).
                             addOnSuccessListener(new OnSuccessListener<Void>() {
                                 @Override
                                 public void onSuccess(Void aVoid) {
                                     Log.d(TAG, "Leaderboard entry has been saved");
+                                    openActivityCompletedPopupWindow();
                                 }
                             }).
 
@@ -437,25 +500,45 @@ public class Fragment_Training_Workout_Exercises extends Fragment implements Vie
                                 }
                             });
                 } else {
-
-                    int nrOfWorkouts_total = listOfHomeWks.size() + listOfOutdoorWks.size();
-                    int nrOfWorkouts_weekly = listOfHomeWks.size() + listOfOutdoorWks.size();
-                    int nrOfActivities_total = listOfHomeWks.size() + listOfOutdoorWks.size(); //add other lists
-                    int nrOfActivities_weekly = listOfHomeWks.size() + listOfOutdoorWks.size();
-
+                    //creating new leader board entry
 
                     Map<String, Object> update = new HashMap<>();
+
+                    if (activityType.equals("Workout")) {
+                        update.put("nrOfWorkouts_total", 1);
+                        update.put("nrOfWorkouts_weekly", 1);
+                    } else if (activityType.equals("Movement specific challenge")) {
+                        update.put("nrOfMovementSpecificChallenges_total", 1);
+                        update.put("nrOfMovementSpecificChallenges_weekly", 1);
+                    } else {
+                        update.put("nrOfStreetMovementChallenges_total", 1);
+                        update.put("nrOfStreetMovementChallenges_weekly", 1);
+                    }
+
+                    //add empty fields for outdoor activities as well, so the leaderboard object can be parcelable
+                    int nrOfPlaces_total = 0;
+                    int nrOfPlaces_weekly = 0;
+                    ArrayList<Object> listOfPlaces_total = new ArrayList<>();
+                    ArrayList<Object> listOfPlaces_weekly = new ArrayList<>();
+
+
                     //put the updated nr of workouts in the map that is to be uploaded to the database
-                    update.put("total activities", nrOfActivities_total);
-                    update.put("total workouts", nrOfWorkouts_total);
-                    update.put("weekly activities", nrOfActivities_weekly);
-                    update.put("weekly workouts", nrOfWorkouts_weekly);
+                    update.put("nrOfActivities_total", 1);
+                    update.put("nrOfActivities_weekly", 1);
+                    update.put("userReference", userdocRef);
+                    //add empty fields for outdoor activities as well, so the leaderboard object can be parcelable
+                    update.put("total places", nrOfPlaces_total);
+                    update.put("weekly places", nrOfPlaces_weekly);
+                    update.put("total listOfPlaces", listOfPlaces_total);
+                    update.put("weekly listOfPlaces", listOfPlaces_weekly);
+
 
                     scoreRef.set(update, SetOptions.merge()).
                             addOnSuccessListener(new OnSuccessListener<Void>() {
                                 @Override
                                 public void onSuccess(Void aVoid) {
                                     Log.d(TAG, "Leaderboard Entry has been saved");
+                                    openActivityCompletedPopupWindow();
                                 }
                             }).
 
@@ -468,24 +551,6 @@ public class Fragment_Training_Workout_Exercises extends Fragment implements Vie
                 }
             }
         });
-
-
-//        db.collection("Scores")
-//                .whereEqualTo("listOfPlaces.place", "Amager Strandpark")
-//                .get()
-//                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-//                    @Override
-//                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-//                        if (task.isSuccessful()) {
-//                            Log.d(TAG, "TEST 1: " + task.getResult().size());
-//
-//
-//                        }
-//
-//                    }
-//
-//
-//                });
     }
 
     /**
@@ -506,13 +571,13 @@ public class Fragment_Training_Workout_Exercises extends Fragment implements Vie
                 ArrayList<Object> listOfPlaces_total;
                 ArrayList<Object> listOfPlaces_weekly;
                 if ((score.getListOfPlaces_total() != null) && (score.getListOfPlaces_weekly() != null) &&
-                        (score.getNrOfDifferentSpots_total() != 0) && (score.getNrOfDifferentSpots_weekly() != 0)) {
+                        (score.getNrOfPlaces_total() != 0) && (score.getNrOfPlaces_weekly() != 0)) {
                     listOfPlaces_total = score.getListOfPlaces_total();
                     listOfPlaces_total.add(spotref);
                     listOfPlaces_weekly = score.getListOfPlaces_weekly();
                     listOfPlaces_weekly.add(spotref);
-                    nrOfPlaces_total = score.getNrOfDifferentSpots_total() + 1;
-                    nrOfPlaces_weekly = score.getNrOfDifferentSpots_weekly() + 1;
+                    nrOfPlaces_total = score.getNrOfPlaces_total() + 1;
+                    nrOfPlaces_weekly = score.getNrOfPlaces_weekly() + 1;
                 } else {
                     listOfPlaces_total = new ArrayList<>();
                     listOfPlaces_total.add(spotref);
@@ -524,10 +589,10 @@ public class Fragment_Training_Workout_Exercises extends Fragment implements Vie
 
                 Map<String, Object> update = new HashMap<>();
                 //put the updated nr of workouts in the map that is to be uploaded to the database
-                update.put("total places", nrOfPlaces_total);
-                update.put("weekly places", nrOfPlaces_weekly);
-                update.put("total listOfPlaces", listOfPlaces_total);
-                update.put("weekly listOfPlaces", listOfPlaces_weekly);
+                update.put("nrOfPlaces_total", nrOfPlaces_total);
+                update.put("nrOfPlaces_weekly", nrOfPlaces_weekly);
+                update.put("listOfPlaces_total", listOfPlaces_total);
+                update.put("listOfPlaces_weekly", listOfPlaces_weekly);
 
                 scoreRef.set(update, SetOptions.merge()).
                         addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -576,6 +641,109 @@ public class Fragment_Training_Workout_Exercises extends Fragment implements Vie
             }
         });
 
+    }
+
+    public void openActivityCompletedPopupWindow() {
+        View layout = getLayoutInflater().inflate(R.layout.custom_popup_window_activity_completed, null);
+        popupWindow_activityCompleted = new PopupWindow(
+                layout,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT, true);
+        iv_activityCompleted = (ImageView) layout.findViewById(R.id.iv_activityCompleted_badge);
+
+        Button btn_continue = (Button) layout.findViewById(R.id.btn_activityCompleted_continue);
+        btn_continue.setOnClickListener(this);
+
+        Button btn_goToLeaderboard = (Button) layout.findViewById(R.id.btn_activityCompleted_leaderboard);
+        btn_goToLeaderboard.setOnClickListener(this);
+        btn_goToLeaderboard.setEnabled(true);
+
+        Button btn_goToPersonalStats;
+        btn_goToPersonalStats = (Button) layout.findViewById(R.id.btn_activityCompleted_goToProfile);
+        btn_goToPersonalStats.setOnClickListener(this);
+        btn_goToPersonalStats.setEnabled(true);
+//        int x = Resources.getSystem().getDisplayMetrics().widthPixels/2-150;
+//        int y = Resources.getSystem().getDisplayMetrics().heightPixels/2-100;
+        popupWindow_activityCompleted.showAtLocation(this.getView(), Gravity.CENTER, 0, 0);
+        dimBehind(popupWindow_activityCompleted);
+        Log.d(TAG, "opening a popup window");
+    }
+
+
+    /**
+     * once popup window is open, dim everything behind it for the time it is opened
+     *
+     * @param popupWindow based on which popup window is set as a parameter, it is taken as reference point and everything behind is dimmed
+     */
+    private void dimBehind(PopupWindow popupWindow) {
+        View container;
+        if (popupWindow.getBackground() == null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                container = (View) popupWindow.getContentView().getParent();
+            } else {
+                container = popupWindow.getContentView();
+            }
+        } else {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                container = (View) popupWindow.getContentView().getParent().getParent();
+            } else {
+                container = (View) popupWindow.getContentView().getParent();
+            }
+        }
+        Context context = popupWindow.getContentView().getContext();
+        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        WindowManager.LayoutParams p = (WindowManager.LayoutParams) container.getLayoutParams();
+        p.flags = WindowManager.LayoutParams.FLAG_DIM_BEHIND;
+        p.dimAmount = 0.7f;
+        wm.updateViewLayout(container, p);
+    }
+
+    public void getExerciseReferencesFromFirebase(Workout workout) {
+        final FirebaseFirestore db = FirebaseFirestore.getInstance();
+        final CollectionReference wkquery = db.collection("Exercises");
+        DocumentReference eRef = (DocumentReference) workout.getListOfExercises().get(0);
+        eRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                if (documentSnapshot.exists()) {
+                    exercise = documentSnapshot.toObject(Exercise.class);
+                    Log.d(TAG, "recyclerview_item_exercise: " + exercise.toString());
+
+                    String nameEx1 = exercise.getName();
+                    ex1.setText(nameEx1);
+
+                    if (exercise.getVideo() != null) {
+                        String vidEx1 = exercise.getVideo();
+                        setupVideo(vidEx1);
+                    }
+
+
+                } else {
+                }
+            }
+        });
+    }
+
+    public void setupVideo(String vidEx1) {
+        //set up the webview - vimeo vide
+        webView.setInitialScale(1);
+        webView.setWebChromeClient(new WebChromeClient());
+        webView.getSettings().setAllowFileAccess(true);
+        webView.getSettings().setPluginState(WebSettings.PluginState.ON);
+        webView.getSettings().setPluginState(WebSettings.PluginState.ON_DEMAND);
+        webView.setWebViewClient(new WebViewClient());
+        webView.getSettings().setJavaScriptEnabled(true);
+        webView.getSettings().setLoadWithOverviewMode(true);
+        webView.getSettings().setUseWideViewPort(true);
+        DisplayMetrics displaymetrics = new DisplayMetrics();
+        ((WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(displaymetrics);
+        int height = displaymetrics.heightPixels;
+        int width = displaymetrics.widthPixels;
+        Log.e("WebView Log", width + "-" + height);
+        String data_html = "<!DOCTYPE html><html> <head> <meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"target-densitydpi=high-dpi\" /> <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"> <link rel=\"stylesheet\" media=\"screen and (-webkit-device-pixel-ratio:1.5)\" href=\"hdpi.css\" /></head> <body style=\"background:white;margin:0 0 0 0; padding:0 0 0 0;\"> <iframe style=\"background:white;\" width=' " + width + "' height='" + height / 2 + "' src=\"" + vidEx1 + "\" frameborder=\"0\"></iframe> </body> </html> ";
+        webView.loadDataWithBaseURL("http://vimeo.com", data_html, "text/html", "UTF-8", null);
+
+        //end of webview
     }
 }
 

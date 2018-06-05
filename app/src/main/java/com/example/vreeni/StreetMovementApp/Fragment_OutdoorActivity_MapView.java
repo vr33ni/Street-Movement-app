@@ -50,7 +50,7 @@ import java.util.Map;
 /**
  * Fragment containing a google map with user location + locations to train, which the user can select as his/her training location by clicking on it
  */
-public class GetCustomizedOutdoorWorkoutMapView extends Fragment implements OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener, GoogleMap.OnMarkerClickListener {
+public class Fragment_OutdoorActivity_MapView extends Fragment implements OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener, GoogleMap.OnMarkerClickListener {
 
     private static final String LOG_TAG = "OutdoorWorkout MapView";
 
@@ -99,9 +99,9 @@ public class GetCustomizedOutdoorWorkoutMapView extends Fragment implements OnMa
     private String setting;
 
 
-    public static GetCustomizedOutdoorWorkoutMapView newInstance(String act, String set) {
+    public static Fragment_OutdoorActivity_MapView newInstance(String act, String set) {
         final Bundle bundle = new Bundle();
-        GetCustomizedOutdoorWorkoutMapView fragment = new GetCustomizedOutdoorWorkoutMapView();
+        Fragment_OutdoorActivity_MapView fragment = new Fragment_OutdoorActivity_MapView();
         bundle.putString("Activity", act);
         bundle.putString("Setting", set);
         fragment.setArguments(bundle);
@@ -408,7 +408,7 @@ public class GetCustomizedOutdoorWorkoutMapView extends Fragment implements OnMa
         Log.d(LOG_TAG, "InfoWindow clicked: " + marker.getTitle());
         //get hashmap marker - park object to get the location object and pass it to the detail view of the spot
         Log.d(LOG_TAG, "passing training location: " + mapMarkerToPark.get(marker));
-        Fragment_TrainingLocation_View spot = Fragment_TrainingLocation_View.newInstance(activity, setting, mapMarkerToPark.get(marker));
+        Fragment_TrainingLocation_View spot = Fragment_TrainingLocation_View.newInstance(activity, setting, mapMarkerToPark.get(marker), mLastKnownLocation);
         ((AppCompatActivity) getContext()).getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, spot, "training location")
                 .addToBackStack("training location")
@@ -486,7 +486,8 @@ public class GetCustomizedOutdoorWorkoutMapView extends Fragment implements OnMa
             photoURL = (String) photoI.get("url");
         } else {
             //default photo
-            photoURL = "http://map.gadeidraet.dk/content/uploads/2016/06/068eb118452253193acfc9a00cb5b8f9_frederiksbergroskildevej300x300.jpg";
+            photoURL = "https://image.ibb.co/cwRyDT/noimgavailable.png";
+//            photoURL = "http://map.gadeidraet.dk/content/uploads/2016/06/068eb118452253193acfc9a00cb5b8f9_frederiksbergroskildevej300x300.jpg";
         }
         Log.d(LOG_TAG, "photo url: " + photoURL);
         //show pk spots so that everything is loaded in in on map ready

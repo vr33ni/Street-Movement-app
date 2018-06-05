@@ -56,27 +56,25 @@
                     <Button
                         android:id="@+id/btn_activities"
                         android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:layout_height="150dp"
+                        android:layout_height="125dp"
                         android:layout_marginRight="2dp"
+                        android:layout_weight="1"
                         android:background="#16a085"
                         android:gravity="center"
-                        android:text="Activities"
-                        android:textColor="#FFF"
-                        android:textSize="24sp" />
+                        android:text="My Activities"
+                        android:textColor="#FFF" />
 
 
                     <Button
                         android:id="@+id/btn_places"
                         android:layout_width="0dp"
+                        android:layout_height="125dp"
+                        android:layout_marginRight="2dp"
                         android:layout_weight="1"
-                        android:layout_height="match_parent"
-                        android:layout_marginLeft="2dp"
                         android:background="#5391AE"
                         android:gravity="center"
-                        android:text="Places"
-                        android:textColor="#FFF"
-                        android:textSize="24sp" />
+                        android:text="My Places"
+                        android:textColor="#FFF" />
 
                 </LinearLayout>
 
@@ -92,14 +90,13 @@
                     <Button
                         android:id="@+id/btn_goals"
                         android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:layout_height="150dp"
+                        android:layout_height="125dp"
                         android:layout_marginRight="2dp"
+                        android:layout_weight="1"
                         android:background="#5AB5C9"
                         android:gravity="center"
-                        android:text="Goals"
-                        android:textColor="#FFF"
-                        android:textSize="24sp" />
+                        android:text="My Goals"
+                        android:textColor="#FFF" />
 
 
                     <Button
@@ -110,9 +107,8 @@
                         android:layout_marginLeft="2dp"
                         android:background="#A5B7C5"
                         android:gravity="center"
-                        android:text="Challenges"
-                        android:textColor="#FFF"
-                        android:textSize="24sp" />
+                        android:text="My Challenges"
+                        android:textColor="#FFF" />
 
                 </LinearLayout>
 

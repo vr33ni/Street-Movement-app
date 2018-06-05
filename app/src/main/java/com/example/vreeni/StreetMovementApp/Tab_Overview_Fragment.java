@@ -1,9 +1,11 @@
 package com.example.vreeni.StreetMovementApp;
 
-import android.content.SharedPreferences;
+import android.app.Activity;
+import android.location.Location;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
@@ -15,6 +17,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -30,6 +33,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static android.content.Context.MODE_PRIVATE;
+import static android.view.View.getDefaultSize;
 import static com.example.vreeni.StreetMovementApp.User.LISTOFHOMEWORKOUTS;
 import static com.example.vreeni.StreetMovementApp.User.WORKOUTSCOMPLETED;
 import static com.github.mikephil.charting.charts.Chart.LOG_TAG;
@@ -45,14 +49,16 @@ public class Tab_Overview_Fragment extends Fragment implements View.OnClickListe
     private String activity;
     private String setting;
     private ParkourPark pk;
+    private Location mLastKnownLocation;
 
 
-    public static Tab_Overview_Fragment newInstance(String act, String set, ParkourPark spot) {
+    public static Tab_Overview_Fragment newInstance(String act, String set, ParkourPark spot, Location mLastKnownLocation) {
         final Bundle bundle = new Bundle();
         Tab_Overview_Fragment fragment = new Tab_Overview_Fragment();
         bundle.putString("Activity", act);
         bundle.putString("Setting", set);
         bundle.putParcelable("TrainingLocation", spot);
+        bundle.putParcelable("UserLocation", mLastKnownLocation);
         fragment.setArguments(bundle);
         return fragment;
     }
@@ -65,7 +71,8 @@ public class Tab_Overview_Fragment extends Fragment implements View.OnClickListe
             activity = getArguments().getString("Activity");
             setting = getArguments().getString("Setting");
             pk = getArguments().getParcelable("TrainingLocation");
-            Log.d(LOG_TAG, "bundle info: " + getArguments());
+            mLastKnownLocation = getArguments().getParcelable("UserLocation");
+            Log.d(TAG, "bundle info: " + getArguments());
         }
     }
 
@@ -125,21 +132,53 @@ public class Tab_Overview_Fragment extends Fragment implements View.OnClickListe
         }
         mLastClickTime = SystemClock.elapsedRealtime();
         if (v.getId() == R.id.btn_inSpotViewTabTrainHere) {
+            //convert the parkour park's geolocation to a location object
+            Location trainingLocation = new Location("provider");
+            trainingLocation.setLatitude(pk.getCoordinates().getLatitude());
+            trainingLocation.setLongitude(pk.getCoordinates().getLongitude());
+
+            //if user is in a radius of 250m from the spot, then he can start a training
             //start outdoor training cycle => setting first, then type of activity, then details on that, level etc.
             if (activity != null) { //training flow already started from nav. drawer => training => choooseactivity etc
                 // continue the normal training flow
-                Fragment_Training_TrainNowORCreateTraining trainNowOrCreate = Fragment_Training_TrainNowORCreateTraining.newInstance(activity, setting, pk);
-                ((AppCompatActivity) getContext()).getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.fragment_container, trainNowOrCreate, "trainNowOrCreate")
-                        .addToBackStack("trainNowOrCreate")
-                        .commit();
+                //if user is in a radius of 250m from the spot, then he can start a training
+                if (mLastKnownLocation.distanceTo(trainingLocation) < 750) {
+                    if (activity.equals("Street Movement Challenge")) {
+                        //see the street movement challenge connected to the specific spot
+
+                    } else {
+                        //get a workout or movement specific challenge
+                        Fragment_Training_TrainNowORCreateTraining trainNowOrCreate = Fragment_Training_TrainNowORCreateTraining.newInstance(activity, setting, pk);
+                        ((AppCompatActivity) getContext()).getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.fragment_container, trainNowOrCreate, "trainNowOrCreate")
+                                .addToBackStack("trainNowOrCreate")
+                                .commit();
+                    }
+                } else {
+                    //else: navigate to the spot
+                    Toast.makeText(getActivity().getApplicationContext(), "Go to the spot to start training", Toast.LENGTH_LONG).show();
+                    Log.d(TAG, "go to the spot first" + mLastKnownLocation + ", " + mLastKnownLocation.distanceTo(trainingLocation));
+                }
 
             } else {
-                Fragment_Training_ChooseActivity chooseAct = Fragment_Training_ChooseActivity.newInstance(setting);
-                ((AppCompatActivity) getContext()).getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.fragment_container, chooseAct, "chooseAct")
-                        .addToBackStack("chooseAct")
-                        .commit();
+                //no training flow initiated yet
+                Log.d(TAG, "location infos " + mLastKnownLocation + ", " + trainingLocation);
+                //if user is in a radius of 500m from the spot, then he can start a training
+                if (mLastKnownLocation.distanceTo(trainingLocation) < 1000) {
+                    Fragment_Training_ChooseActivity chooseAct = Fragment_Training_ChooseActivity.newInstance(setting, pk);
+                    ((AppCompatActivity) getContext()).getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.fragment_container, chooseAct, "chooseAct")
+                            .addToBackStack("chooseAct")
+                            .commit();
+                }
+                //else: navigate to the spot
+                else {
+                    //Do you want to use navigation services to get there?
+//                    POPUP? DIAGLOG?
+                    Toast.makeText(getActivity().getApplicationContext(), "Go to the spot to start training", Toast.LENGTH_LONG).show();
+
+                    Log.d(TAG, "go to the spot first" + mLastKnownLocation + ", " + mLastKnownLocation.distanceTo(trainingLocation));
+                }
             }
 
         }

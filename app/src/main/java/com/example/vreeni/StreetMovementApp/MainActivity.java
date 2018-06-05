@@ -19,7 +19,6 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -38,6 +37,7 @@ import com.google.android.gms.location.GeofencingClient;
 import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -45,9 +45,10 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 
-import java.io.File;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -125,6 +126,7 @@ public class MainActivity extends BaseActivity
         /*
          * Geofencing setup
          */
+
         geofenceMax = new GeofenceMaxNrHandler(this, this.getBaseContext(), null);
         // Get the UI widgets.
         mAddGeofencesButton = (Button) findViewById(R.id.add_geofences_button);
@@ -203,7 +205,7 @@ public class MainActivity extends BaseActivity
             String geofenceID = this.getIntent().getExtras().getString("GeofenceDetails");
             Log.d(TAG, "get extras - Geofence IDs: " + geofenceID);
             //open map view fragment
-            Fragment fragment = new MapView_Fragment();
+            Fragment fragment = new Fragment_OutdoorActivity_MapView();
             if (fragment != null) {
                 //add bundle with last location, so new callback isnt neccessary when clicking on the map fragment?
                 FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
@@ -219,6 +221,9 @@ public class MainActivity extends BaseActivity
     public void onStart() {
         super.onStart();
 
+        //check the week of the year for the weekly highschore list
+        checkWeek();
+
         if (!checkPermissions()) {
             requestPermissions();
             Log.d(TAG, "on start - requesting permssions");
@@ -229,6 +234,98 @@ public class MainActivity extends BaseActivity
             Log.d(TAG, "performing pending geofence task");
         }
     }
+
+    //CREATE A BACKGROUND SERVICE CHECKING THIS TASK ONCE A DAY
+
+    /**
+     * compare the week that is currently stored in the shared preferences (basically the last stored week nr) with the
+     * one received from a the calendar during the check
+     * => if it differs, update it in the shared preferences + reset the weekly high score counters
+     */
+    public void checkWeek() {
+        Calendar calender = Calendar.getInstance();
+        int week = calender.get(Calendar.WEEK_OF_YEAR);
+        if (PreferenceManager.getDefaultSharedPreferences(this).getInt("week", week) == week) {
+            //weekly high scores don't need to be set to 0
+            Log.d(TAG, "week: " + PreferenceManager.getDefaultSharedPreferences(this).getInt("week", week));
+        } else {
+            PreferenceManager.getDefaultSharedPreferences(this)
+                    .edit()
+                    .putInt("week", week)
+                    .apply();
+            //put weekly high score counter to 0 at the start of a new week
+            resetWeeklyHighscores();
+            Log.d(TAG, "week: " + PreferenceManager.getDefaultSharedPreferences(this).getInt("week", week));
+        }
+    }
+
+    public void resetWeeklyHighscores() {
+        final FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference scoreRef = db.collection("Scores").document(FirebaseAuth.getInstance().getCurrentUser().getEmail());
+        scoreRef.get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists()) {
+                //initialize the field Nr Of Workouts and the list of places
+                int nrOfPlaces_weekly = 0;
+                ArrayList<Object> listOfPlaces_weekly = new ArrayList<>();
+                int nrOfWorkouts_weekly = 0;
+                int nrOfMuvChallenges_weekly = 0;
+                int nrOfSMChallenges_weekly = 0;
+
+                Map<String, Object> update = new HashMap<>();
+                //put the updated nr of workouts in the map that is to be uploaded to the database
+                update.put("nrOfPlaces_weekly", nrOfPlaces_weekly);
+                update.put("listOfPlaces_weekly", listOfPlaces_weekly);
+                update.put("nrOfWorkouts_weekly", nrOfWorkouts_weekly);
+                update.put("nrOfMovementSpecificChallenges_weekly", nrOfMuvChallenges_weekly);
+                update.put("nrOfStreetMovementChallenges_weekly", nrOfSMChallenges_weekly);
+
+                scoreRef.set(update, SetOptions.merge()).
+                        addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                Log.d(TAG, "New User Document has been saved");
+                            }
+                        }).
+                        addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Log.d(TAG, "New User Document could not be saved");
+                            }
+                        });
+            } else {
+                //initialize the field Nr Of Workouts and the list of places
+                int nrOfPlaces_weekly = 0;
+                ArrayList<Object> listOfPlaces_weekly = new ArrayList<>();
+                int nrOfWorkouts_weekly = 0;
+                int nrOfMuvChallenges_weekly = 0;
+                int nrOfSMChallenges_weekly = 0;
+
+                Map<String, Object> update = new HashMap<>();
+                //put the updated nr of workouts in the map that is to be uploaded to the database
+                update.put("nrOfPlaces_weekly", nrOfPlaces_weekly);
+                update.put("listOfPlaces_weekly", listOfPlaces_weekly);
+                update.put("nrOfWorkouts_weekly", nrOfWorkouts_weekly);
+                update.put("nrOfMovementSpecificChallenges_weekly", nrOfMuvChallenges_weekly);
+                update.put("nrOfStreetMovementChallenges_weekly", nrOfSMChallenges_weekly);
+
+                scoreRef.set(update, SetOptions.merge()).
+                        addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                Log.d(TAG, "Leaderboard Entry has been saved");
+                            }
+                        }).
+
+                        addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Log.d(TAG, "Leaderboard Entry could not be saved");
+                            }
+                        });
+            }
+        });
+    }
+
 
     /**
      * Builds and returns a GeofencingRequest. Specifies the list of geofences to be monitored.
@@ -615,21 +712,34 @@ public class MainActivity extends BaseActivity
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
         switch (item.getItemId()) {
+            case R.id.leaderboard:
+                Fragment_Leaderboard fragment_leaderboard = Fragment_Leaderboard.newInstance(this.getBaseContext());
+                (this.getSupportFragmentManager().beginTransaction())
+                        .replace(R.id.fragment_container, fragment_leaderboard, "Leaderboard")
+                        .addToBackStack("setting")
+                        .commit();
+
+                break;
             case R.id.showMap:
-                Fragment fragment = new MapView_Fragment();
-                if (fragment != null) {
-                    //add bundle with last location, so new callback isnt neccessary when clicking on the map fragment?
-                    FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-                    ft.replace(R.id.fragment_container, fragment).replace(R.id.fragment_container, fragment).addToBackStack(null);
-                    ft.commit();
-                    ft.addToBackStack(null);
-                }
+                String setting = "Outdoors";
+                String activity = null;
+                Fragment_OutdoorActivity_MapView fragment_trainNowOrCreateTraining = Fragment_OutdoorActivity_MapView.newInstance(activity, setting);
+                (getSupportFragmentManager()).beginTransaction()
+                        .replace(R.id.fragment_container, fragment_trainNowOrCreateTraining, "TrainOrCreateWk")
+                        .addToBackStack(null)
+                        .commit();
                 break;
             case R.id.log_out_button:
                 logout();
                 break;
             case R.id.action_settings:
                 System.out.print("SETTINGS");
+                Fragment_Settings fragment_settings = Fragment_Settings.newInstance();
+                (getSupportFragmentManager()).beginTransaction()
+                        .replace(R.id.fragment_container, fragment_settings, "settings")
+                        .addToBackStack(null)
+                        .commit();
+
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

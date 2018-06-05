@@ -162,24 +162,6 @@ public class EditUserProfileFragment extends Fragment implements View.OnClickLis
                 });
         }
 
-
-//            userDocRef
-//                    .update("name", displayname)
-//                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-//                        @Override
-//                        public void onSuccess(Void aVoid) {
-//                            Log.d(TAG, "DocumentSnapshot successfully updated!");
-//                        }
-//                    })
-//                    .addOnFailureListener(new OnFailureListener() {
-//                        @Override
-//                        public void onFailure(@NonNull Exception e) {
-//                            Log.w(TAG, "Error updating document", e);
-//                        }
-//                    });
-//        }
-
-
         //NOTE: Both .set(.., SetOptions.merge()) and .update perform the same action
         if (!nicknameUpdate.matches("")) {
             Map<String, Object> dataUpdate = new HashMap<String, Object>();
@@ -254,40 +236,3 @@ public class EditUserProfileFragment extends Fragment implements View.OnClickLis
 //            });
 //
 //        }
-
-
-
-
-
-/*
-REALTIME DATABASE
-    public void updateUserExtras(String username, String age, String nationality) {
-        //get information from the two fields that the user can edit: nickname and age
-        String nickname = username;
-        String user_age = age;
-        String user_nationality = nationality;
-        mDatabase = FirebaseDatabase.getInstance().getReference();
-        FirebaseUser currUser = FirebaseAuth.getInstance().getCurrentUser();
-        //if user has entered a new value, update information
-        if (!nickname.matches("")) {
-            Map<String, Object> nicknameVal = new HashMap<String, Object>();
-            nicknameVal.put("Nickname", nickname);
-            mDatabase.child("Users").child(currUser.getDisplayName())
-                    .updateChildren(nicknameVal);
-        }
-        //if user has entered a new value, update information
-        if (!user_age.matches("")) {
-            Map<String, Object> ageVal = new HashMap<String, Object>();
-            ageVal.put("Age", user_age);
-            mDatabase.child("Users").child(currUser.getDisplayName())
-                    .updateChildren(ageVal);
-        }
-        //if user has entered a new value, update information
-        if(!user_nationality.matches("")) {
-            Map<String, Object> nationalityVal = new HashMap<String, Object>();
-            nationalityVal.put("Nationality", user_nationality);
-            mDatabase.child("Users").child(currUser.getDisplayName())
-                    .updateChildren(nationalityVal);
-        }
-    }
-*/

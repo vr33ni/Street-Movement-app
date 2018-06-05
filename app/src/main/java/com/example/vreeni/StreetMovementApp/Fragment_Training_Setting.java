@@ -9,7 +9,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.TextView;
 
 
 /**
@@ -21,15 +20,15 @@ import android.widget.TextView;
  * => home, redirecting to the next fragment (Selection of level) and initiating the Home Workout flow
  * => outdoors, redirecting to the next fragment (Selection of level) and initiating the Outdoor Workout flow
  */
-public class Fragment_Training_Workout_Setting extends Fragment implements View.OnClickListener {
+public class Fragment_Training_Setting extends Fragment implements View.OnClickListener {
     private static final String LOG_TAG = "TrainingWorkoutSetting";
     private Bundle bundle;
     private String activity;
 
 
-    public static Fragment_Training_Workout_Setting newInstance(String string) {
+    public static Fragment_Training_Setting newInstance(String string) {
         final Bundle bundle = new Bundle();
-        Fragment_Training_Workout_Setting fragment = new Fragment_Training_Workout_Setting();
+        Fragment_Training_Setting fragment = new Fragment_Training_Setting();
         bundle.putString("Activity", string);
         fragment.setArguments(bundle);
         return fragment;
@@ -48,7 +47,7 @@ public class Fragment_Training_Workout_Setting extends Fragment implements View.
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_get_customized_workout_setting, container, false);
+        return inflater.inflate(R.layout.fragment_training_setting, container, false);
     }
 
 
@@ -96,7 +95,7 @@ public class Fragment_Training_Workout_Setting extends Fragment implements View.
             //write setting to bundle
             String setting = "Outdoors";
             //new fragment for choosing where you wana train
-            GetCustomizedOutdoorWorkoutMapView fragment_mapView = GetCustomizedOutdoorWorkoutMapView.newInstance(activity, setting);
+            Fragment_OutdoorActivity_MapView fragment_mapView = Fragment_OutdoorActivity_MapView.newInstance(activity, setting);
             ((AppCompatActivity) getContext()).getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, fragment_mapView, "MapView")
                     .addToBackStack(null)

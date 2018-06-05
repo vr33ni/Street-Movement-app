@@ -1,6 +1,5 @@
 package com.example.vreeni.StreetMovementApp;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -10,7 +9,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.TextView;
 
 
 /**
@@ -24,14 +22,26 @@ import android.widget.TextView;
 public class Fragment_Training_ChooseActivity extends Fragment implements View.OnClickListener {
     private static final String LOG_TAG = "ChooseActivity";
     private String setting;
+    private ParkourPark pk;
 
-    Button btnWorkout;
+    private Button btnWorkout;
+    private Button btnMovSpecChallenge;
+    private Button btnSMChallenge;
 
 
-    public static Fragment_Training_ChooseActivity newInstance(String string) {
+    /**
+     * Constructor that can hold an activity's setting and specific training location, when the training flow was initiated from the map
+     * setting and specific location will be null if started from the training function in the navigation drawer
+     *
+     * @param setting
+     * @param pk
+     * @return
+     */
+    public static Fragment_Training_ChooseActivity newInstance(String setting, ParkourPark pk) {
         final Bundle bundle = new Bundle(); //to pass arguments to the next fragment
         Fragment_Training_ChooseActivity fragment = new Fragment_Training_ChooseActivity();
-        bundle.putString("Setting", string);
+        bundle.putString("Setting", setting);
+        bundle.putParcelable("TrainingLocation", pk);
         fragment.setArguments(bundle);
         return fragment;
     }
@@ -41,13 +51,14 @@ public class Fragment_Training_ChooseActivity extends Fragment implements View.O
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             setting = getArguments().getString("Setting");
+            pk = getArguments().getParcelable("TrainingLocation");
         }
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_training_choose_workout, container, false);
+        return inflater.inflate(R.layout.fragment_training_choose_activity, container, false);
     }
 
 
@@ -56,7 +67,10 @@ public class Fragment_Training_ChooseActivity extends Fragment implements View.O
         super.onViewCreated(view, savedInstanceState);
 
         btnWorkout = (Button) view.findViewById(R.id.workout_selected);
-        btnWorkout.setOnClickListener(this);
+
+        btnMovSpecChallenge = (Button) view.findViewById(R.id.movementChallenge_selected);
+
+        btnSMChallenge = (Button) view.findViewById(R.id.smChallenge_selected);
 
     }
 
@@ -65,6 +79,9 @@ public class Fragment_Training_ChooseActivity extends Fragment implements View.O
     public void onStart() {
         super.onStart();
         btnWorkout.setOnClickListener(this);
+        btnMovSpecChallenge.setOnClickListener(this);
+        btnSMChallenge.setOnClickListener(this);
+
 //        TextView textView = new TextView(getContext());
 //        ((MainActivity)getActivity()).showBackButton(true);
 //        OR
@@ -102,7 +119,7 @@ public class Fragment_Training_ChooseActivity extends Fragment implements View.O
         if (v.getId() == R.id.workout_selected) {
             if (setting == null) {
                 String activity = "Workout";
-                Fragment_Training_Workout_Setting fragment_setting = Fragment_Training_Workout_Setting.newInstance(activity);
+                Fragment_Training_Setting fragment_setting = Fragment_Training_Setting.newInstance(activity);
                 ((AppCompatActivity) getContext()).getSupportFragmentManager().beginTransaction()
                         .replace(R.id.fragment_container, fragment_setting, "SettingsFragment")
                         .addToBackStack("setting")
@@ -110,19 +127,58 @@ public class Fragment_Training_ChooseActivity extends Fragment implements View.O
             } else {
                 // started training flow from map - setting already defined
                 Log.d(LOG_TAG, "started training flow from map - bundle: " + setting);
-//                Fragment_Training_Workout_Level fragment_level = new Fragment_Training_Workout_Level();
-//                bundle.putString("Activity", "Workout");
-//                bundle.putString("Setting", "Outdoors");
+                String activity = "Workout";
+                Fragment_Training_Level fragment_setting = Fragment_Training_Level.newInstance(activity, setting, pk);
+                ((AppCompatActivity) getContext()).getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, fragment_setting, "LevelFragment")
+                        .addToBackStack("lvl")
+                        .commit();
 
             }
         }
         //if the button representing the "Movement Specific Challenge" fragment is clicked, create this fragment
         if (v.getId() == R.id.movementChallenge_selected) {
-//          fragment = new Fragment_Training_TrainNowORCreateTraining();
+            if (setting == null) {
+                String activity = "Movement specific challenge";
+                String setting = "Outdoors";
+                Fragment_OutdoorActivity_MapView fragment_setting = Fragment_OutdoorActivity_MapView.newInstance(activity, setting);
+                ((AppCompatActivity) getContext()).getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, fragment_setting, "SettingsFragment")
+                        .addToBackStack("setting")
+                        .commit();
+            } else {
+                // started training flow from map - setting already defined
+                Log.d(LOG_TAG, "started training flow from map - bundle: " + setting);
+                String activity = "Movement specific challenge";
+                Fragment_Training_Level fragment_setting = Fragment_Training_Level.newInstance(activity, setting, pk);
+                ((AppCompatActivity) getContext()).getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, fragment_setting, "LevelFragment")
+                        .addToBackStack("lvl")
+                        .commit();
+
+            }
         }
         //if the button representing the "Street Movement Challenge" fragment is clicked, create this fragment
         if (v.getId() == R.id.smChallenge_selected) {
-//          fragment = new Fragment_Training_TrainNowORCreateTraining();
+//            if (setting == null) {
+//                String activity = "Street Movement challenge";
+//                String setting = "Outdoors";
+//                Fragment_OutdoorActivity_MapView fragment_setting = Fragment_OutdoorActivity_MapView.newInstance(activity,setting);
+//                ((AppCompatActivity) getContext()).getSupportFragmentManager().beginTransaction()
+//                        .replace(R.id.fragment_container, fragment_setting, "SettingsFragment")
+//                        .addToBackStack("setting")
+//                        .commit();
+//            } else {
+            // started training flow from map - setting already defined
+            Log.d(LOG_TAG, "Street mvmnt challenge + setting: " + setting);
+            String activity = "Street Movement challenge";
+            Fragment_Training_StreetMovementChallenge fragment_setting = Fragment_Training_StreetMovementChallenge.newInstance(activity, setting);
+            ((AppCompatActivity) getContext()).getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, fragment_setting, "smChallenge")
+                    .addToBackStack("smChallenge")
+                    .commit();
+
+//            }
         }
 
         //how to handle clicks that leave the training flow? bakc buttons?

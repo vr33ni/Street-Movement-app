@@ -1,6 +1,5 @@
 package com.example.vreeni.StreetMovementApp;
 
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -10,8 +9,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-
-import static android.content.Context.MODE_PRIVATE;
 
 /**
  * Created by vreeni on 20/12/2017.
@@ -51,7 +48,7 @@ public class Fragment_Training_CreateTraining extends Fragment implements View.O
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_create_workout, container, false);
+        return inflater.inflate(R.layout.fragment_create_training, container, false);
     }
 
 
@@ -94,15 +91,19 @@ public class Fragment_Training_CreateTraining extends Fragment implements View.O
         Log.d(LOG_TAG, "training information: " + activity + ", " + setting);
 
         if (v.getId() == R.id.btn_get_predef_workout) {
-//            fragment = new Fragment_Training_Workout_Level();
-        }
+//            fragment = new Fragment_Training_Level();
+
 //        else if (v.getId() == R.id.btn_create_your_own_workout) {
-        //OR IF CASE = OUTDOORS =>
-        Fragment_Training_Workout_Level lvl = Fragment_Training_Workout_Level.newInstance(activity, setting, pk);
-        ((AppCompatActivity) getContext()).getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container, lvl, "LvlFragment")
-                .addToBackStack("LvlFragment")
-                .commit();
+            //OR IF CASE = OUTDOORS =>
+            Fragment_Training_Level lvl = Fragment_Training_Level.newInstance(activity, setting, pk);
+            ((AppCompatActivity) getContext()).getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, lvl, "LvlFragment")
+                    .addToBackStack("LvlFragment")
+                    .commit();
+        }
+        if (v.getId() == R.id.btn_create_your_own_workout) {
+
+        }
     }
 
 }

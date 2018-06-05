@@ -107,10 +107,9 @@ public class Fragment_Training_TrainNowORCreateTraining extends Fragment impleme
                     .addToBackStack("Create")
                     .commit();
         }
-//        else if (v.getId()==R.id.btn_train_now) {
+        if (v.getId() == R.id.btn_train_now) {
 //                fragment = new TrainNowFragment();
-
-
+        }
     }
 }
 

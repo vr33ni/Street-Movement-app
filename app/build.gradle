@@ -20,6 +20,8 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
+
     }
     buildTypes {
         release {
@@ -47,6 +49,8 @@ configurations.all {
 }
 
 dependencies {
+    implementation 'com.android.support:multidex:1.0.3'
+
     implementation 'com.android.support.constraint:constraint-layout:1.0.2'
     implementation "com.google.firebase:firebase-messaging:11.8.0"
     implementation fileTree(include: ['*.jar'], dir: 'libs')
@@ -73,7 +77,6 @@ dependencies {
     implementation 'com.github.bumptech.glide:glide:3.7.0'
     //google maps location
     implementation "com.google.android.gms:play-services-location:11.8.0"
-    implementation "com.google.android.gms:play-services-places:11.8.0"
     implementation "com.google.android.gms:play-services-maps:11.8.0"
 
     //mp android charts library

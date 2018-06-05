@@ -1,49 +1,28 @@
 package com.example.vreeni.StreetMovementApp;
 
-import android.media.JetPlayer;
+import android.location.Location;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RatingBar;
-import android.widget.ScrollView;
-import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
-import org.w3c.dom.Text;
-
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
 
 
 /**
@@ -57,7 +36,7 @@ public class Fragment_TrainingLocation_View extends Fragment implements View.OnC
     private String TAG = "PkParkView_Fragment: ";
 
     private RecyclerView mRecyclerView;
-    private ItemListAdapter mAdapter;
+    private ItemList_Ratings_Adapter mAdapter;
     private ImageView iv;
     private EditText et_comment;
     private RatingBar ratingBar;
@@ -71,6 +50,7 @@ public class Fragment_TrainingLocation_View extends Fragment implements View.OnC
     private String activity;
     private String setting;
     private ParkourPark pk;
+    private Location mLastKnownLocation;
     private HashMap<String, Object> rt;
 
     private final ArrayList<HashMap<String, Object>> ratinglist = new ArrayList<>();
@@ -79,12 +59,13 @@ public class Fragment_TrainingLocation_View extends Fragment implements View.OnC
     private TabLayout tabLayout;
     private ViewPager viewPager;
 
-    public static Fragment_TrainingLocation_View newInstance(String act, String set, ParkourPark spot) {
+    public static Fragment_TrainingLocation_View newInstance(String act, String set, ParkourPark spot, Location mLastKnownLocation) {
         final Bundle bundle = new Bundle();
         Fragment_TrainingLocation_View fragment = new Fragment_TrainingLocation_View();
         bundle.putString("Activity", act);
         bundle.putString("Setting", set);
         bundle.putParcelable("TrainingLocation", spot);
+        bundle.putParcelable("UserLocation", mLastKnownLocation);
         fragment.setArguments(bundle);
         return fragment;
     }
@@ -97,6 +78,7 @@ public class Fragment_TrainingLocation_View extends Fragment implements View.OnC
             activity = getArguments().getString("Activity");
             setting = getArguments().getString("Setting");
             pk = getArguments().getParcelable("TrainingLocation");
+            mLastKnownLocation = getArguments().getParcelable("UserLocation");
             Log.d(TAG, "bundle info: " + getArguments());
         }
     }
@@ -128,12 +110,12 @@ public class Fragment_TrainingLocation_View extends Fragment implements View.OnC
             loadImgWithGlide(photoURL, iv);
         } else {
             //default photo, but prevent that by having pictures of all spots in the map view fragment already
-            iv.setImageResource(R.drawable.img_railheaven);
+            iv.setImageResource(R.drawable.noimgavailable);
         }
         //pass info to the respective tabs containing further fragments that are being displayed within this fragment
-        Tab_Ratings_Fragment ratingsTab = Tab_Ratings_Fragment.newInstance(activity, setting, pk);
-        Tab_Overview_Fragment overviewTab = Tab_Overview_Fragment.newInstance(activity, setting, pk);
-        Tab_ActiveUsers_Fragment activeUsersTab = Tab_ActiveUsers_Fragment.newInstance(activity, setting, pk);
+        Tab_Ratings_Fragment ratingsTab = Tab_Ratings_Fragment.newInstance(activity, setting, pk, mLastKnownLocation);
+        Tab_Overview_Fragment overviewTab = Tab_Overview_Fragment.newInstance(activity, setting, pk, mLastKnownLocation);
+        Tab_ActiveUsers_Fragment activeUsersTab = Tab_ActiveUsers_Fragment.newInstance(activity, setting, pk, mLastKnownLocation);
         adapter.addFragment(overviewTab, "Overview");
         adapter.addFragment(ratingsTab, "Ratings");
         adapter.addFragment(activeUsersTab, "Active users");

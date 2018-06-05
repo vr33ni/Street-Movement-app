@@ -82,6 +82,7 @@ public class UserProfile_Account extends Fragment implements OnChartGestureListe
     int nrOfMovSpecChallenges;
     int nrOfStreetMovementChallenges;
 
+
     public static UserProfile_Account newInstance() {
         final Bundle bundle = new Bundle();
         UserProfile_Account fragment = new UserProfile_Account();

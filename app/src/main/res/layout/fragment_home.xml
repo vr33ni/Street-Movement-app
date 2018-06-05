@@ -2,14 +2,10 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_margin="2pt"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_margin="4dp"
     android:orientation="vertical">
 
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="5pt">
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -20,15 +16,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
 
-                android:text="Home"
+                android:text="Welcome"
                 android:textAppearance="?android:attr/textAppearanceMedium" />
-
-        </LinearLayout>
-
-        <View
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
 
 
     </LinearLayout>
@@ -36,79 +25,210 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1pt"
-        android:layout_margin="8pt"
-        android:background="#a7a9ef"></View>
+        android:background="#a7a9ef">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:text="News" />
+    </View>
 
-    <ScrollView
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1">
+        android:layout_height="match_parent"
+        android:layout_gravity="center_vertical"
+        android:orientation="vertical">
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Enable training location reminders"
+            android:onClick="addGeofencesButtonHandler"
+            android:id="@+id/add_geofences_button" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Disable training location reminders"
+            android:onClick="removeGeofencesButtonHandler"
+            android:id="@+id/remove_geofences_button" />
+
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:src="@drawable/streetmovement_text_nobg"
+            app:srcCompat="@drawable/streetmovement_text_nobg" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:textSize="16sp"
+            android:text="Welcome to our training app!
+The training we provide is based on following learning process" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="horizontal"
+            android:layout_margin="4dp"
+            android:weightSum="4">
 
-            <Button
-                android:layout_width="match_parent"
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:background="#16a085"
                 android:layout_height="match_parent"
-                android:text="GFNCS ADD"
-                android:onClick="addGeofencesButtonHandler"
-                android:id="@+id/add_geofences_button"/>
+                android:textSize="20sp"
+                android:padding="4dp"
+                android:text="Level 1:" />
 
-            <Button
-                android:layout_width="match_parent"
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="3"
                 android:layout_height="match_parent"
-                android:text="GFNCS REMOVE"
-                android:onClick="removeGeofencesButtonHandler"
-                android:id="@+id/remove_geofences_button"/>
+                android:background="#16a085"
+                android:textSize="12sp"
+                android:padding="4dp"
+                android:text="Imitation:
+Look carefully at how hands and feet are placed, where the center of gravity is, how speed affects the moment etc. -
+and then try to copy!" />
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="150dp"
-                android:layout_marginBottom="5dp"
-                android:layout_marginLeft="8dp"
-                android:layout_marginRight="8dp"
-                android:gravity="center"
-                android:background="@drawable/xploring_the_city"
-                android:text=""
-                android:textColor="#FFF"
-                android:textSize="30sp" />
-
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="150dp"
-                android:layout_marginBottom="5dp"
-                android:layout_marginLeft="8dp"
-                android:layout_marginRight="8dp"
-                android:background="@drawable/background_streetcamp"
-                android:gravity="center"
-                android:text="Streetcamp 2016"
-                android:textColor="#FFF"
-                android:textSize="30sp" />
-
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="150dp"
-                android:layout_marginBottom="5dp"
-                android:layout_marginLeft="8dp"
-                android:layout_marginRight="8dp"
-                android:background="#80deea"
-                android:gravity="center"
-                android:text="Exit"
-                android:textColor="#FFF"
-                android:textSize="30sp" />
         </LinearLayout>
-    </ScrollView>
+
+
+        <LinearLayout
+                android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_margin="4dp"
+            android:weightSum="4">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:layout_height="match_parent"
+                android:background="#5391AE"
+                android:textSize="12sp"
+                android:padding="4dp"
+                android:text="Understanding:
+When you succeed at a movement or challenge ask yourself:
+What did I do differently than before? This is very useful for progression!" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:background="#5391AE"
+                android:layout_height="match_parent"
+                android:textSize="20sp"
+                android:padding="4dp"
+                android:text="Level 2:" />
+
+
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_margin="4dp"
+            android:weightSum="4">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:background="#A5B7C5"
+                android:layout_height="match_parent"
+                android:textSize="20sp"
+                android:padding="4dp"
+                android:text="Level 3:" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:layout_height="match_parent"
+                android:background="#A5B7C5"
+                android:textSize="12sp"
+                android:padding="4dp"
+                android:text="Variation, creativity and improvisation
+Once you feel you truly understand a technique, try to challenge it. Make it harder, do it backwards, without hands etc. This will boost your creativty and can lead to completely new movements" />
+
+        </LinearLayout>
+
+
+        <!--<LinearLayout-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_marginBottom="2dp"-->
+        <!--android:orientation="horizontal"-->
+        <!--android:weightSum="2">-->
+
+
+        <!--<Button-->
+        <!--android:id="@+id/btn_home_goToTraining"-->
+        <!--android:layout_width="0dp"-->
+        <!--android:layout_height="150dp"-->
+        <!--android:layout_marginRight="2dp"-->
+        <!--android:layout_weight="1"-->
+        <!--android:background="#16a085"-->
+        <!--android:gravity="center"-->
+        <!--android:text="Training"-->
+        <!--android:textColor="#FFF"-->
+        <!--android:textSize="24sp" />-->
+
+
+        <!--<Button-->
+        <!--android:id="@+id/btn_home_GotoPlaces"-->
+        <!--android:layout_width="0dp"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:layout_marginLeft="2dp"-->
+        <!--android:layout_weight="1"-->
+        <!--android:background="#5391AE"-->
+        <!--android:gravity="center"-->
+        <!--android:text="Places"-->
+        <!--android:textColor="#FFF"-->
+        <!--android:textSize="24sp" />-->
+
+        <!--</LinearLayout>-->
+
+
+        <!--<LinearLayout-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_marginTop="2dp"-->
+        <!--android:orientation="horizontal"-->
+        <!--android:weightSum="2">-->
+
+
+        <!--<Button-->
+        <!--android:id="@+id/btn_home_goToNews"-->
+        <!--android:layout_width="0dp"-->
+        <!--android:layout_height="150dp"-->
+        <!--android:layout_marginRight="2dp"-->
+        <!--android:layout_weight="1"-->
+        <!--android:background="#5AB5C9"-->
+        <!--android:gravity="center"-->
+        <!--android:text="News"-->
+        <!--android:textColor="#FFF"-->
+        <!--android:textSize="24sp" />-->
+
+
+        <!--<Button-->
+        <!--android:id="@+id/btn_home_goToAboutUs"-->
+        <!--android:layout_width="0dp"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:layout_marginLeft="2dp"-->
+        <!--android:layout_weight="1"-->
+        <!--android:background="#A5B7C5"-->
+        <!--android:gravity="center"-->
+        <!--android:text="Street Movement"-->
+        <!--android:textColor="#FFF"-->
+        <!--android:textSize="24sp" />-->
+
+        <!--</LinearLayout>-->
+
+
+    </LinearLayout>
 
 
     <!--Horizontal scroll bar with buttons, placed in the bottom-->
@@ -166,4 +286,5 @@
         </LinearLayout>
     </HorizontalScrollView>
     -->
+
 </LinearLayout>

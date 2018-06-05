@@ -89,7 +89,7 @@ public class Fragment_Training_Warmup extends Fragment implements View.OnClickLi
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_get_customized_homeworkout_warmup, container, false);
+        return inflater.inflate(R.layout.fragment_training_warmup, container, false);
     }
 
 
@@ -144,7 +144,7 @@ public class Fragment_Training_Warmup extends Fragment implements View.OnClickLi
         if (v.getId() == R.id.btn_workout_continueToExercises) {
             //check which bundle obj exists, beginner, intermed, advanced? use boolean? level1= true?
 //                exercises.setArguments(bundle);
-            Fragment_Training_Workout_Exercises exercises = Fragment_Training_Workout_Exercises.newInstance(wk, pk);
+            Fragment_Training_Exercises exercises = Fragment_Training_Exercises.newInstance(wk, pk);
             ((AppCompatActivity) getContext()).getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, exercises, "exercises")
                     .addToBackStack("exercises")
@@ -215,7 +215,7 @@ public class Fragment_Training_Warmup extends Fragment implements View.OnClickLi
                     @Override
                     public void onSuccess(Void aVoid) {
                         Log.d(TAG, "Document has been saved, warmup skipped, continuing to workout " + wk + " at " + pk);
-                        Fragment_Training_Workout_Exercises exercises = Fragment_Training_Workout_Exercises.newInstance(wk, pk);
+                        Fragment_Training_Exercises exercises = Fragment_Training_Exercises.newInstance(wk, pk);
                         ((AppCompatActivity) getContext()).getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.fragment_container, exercises, "exercises")
                                 .addToBackStack("exercises")

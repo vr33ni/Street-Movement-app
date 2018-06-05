@@ -562,11 +562,11 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
     @Override
     public void onInfoWindowClick(Marker marker) {
         Fragment fragment = null;
-        Log.d(LOG_TAG, "InfoWindow clicked: " + marker.getTitle());
+        Log.d(LOG_TAG, "InfoWindow clicked: " + marker.getTitle() + "my location" + locationHandler.getmLastKnownLocation());
         //passing object as parcelable
         //get hashmap marker - park object to get the location object
         //create new fragment displaying the result of either of the choices
-        Fragment_TrainingLocation_View spot = Fragment_TrainingLocation_View.newInstance(activity, setting, mapMarkerToPark.get(marker));
+        Fragment_TrainingLocation_View spot = Fragment_TrainingLocation_View.newInstance(activity, setting, mapMarkerToPark.get(marker), locationHandler.getmLastKnownLocation());
         ((AppCompatActivity) getContext()).getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, spot, "training location")
                 .addToBackStack("training location")
@@ -739,7 +739,7 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
         Button btn_chooseFromGallery = (Button) layout.findViewById(R.id.btn_chooseFromGallery);
         btn_chooseFromGallery.setOnClickListener(this);
         btn_chooseFromGallery.setEnabled(true);
-        Button btn_cancel = (Button) layout.findViewById(R.id.btn_cancel_selectImg_process);
+        Button btn_cancel = (Button) layout.findViewById(R.id.btn_cancelProfilePictureChanges_step1);
         btn_cancel.setOnClickListener(this);
         popupWindowSelectUploadSource.showAtLocation(this.getView(), Gravity.CENTER, 0, 0);
         dimBehind(popupWindowSelectUploadSource);
@@ -1014,7 +1014,7 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
      */
     @Override
     public void onClick(View v) {
-        if (SystemClock.elapsedRealtime() - mLastClickTime < 1000){
+        if (SystemClock.elapsedRealtime() - mLastClickTime < 2000) {
             return;
         }
         mLastClickTime = SystemClock.elapsedRealtime();
@@ -1031,8 +1031,9 @@ public class MapView_Fragment extends Fragment implements ActivityCompat.OnReque
         if (v.getId() == R.id.btn_takePicture) {
             takePicture();
         }
-        if (v.getId() == R.id.btn_cancel_selectImg_process) {
+        if (v.getId() == R.id.btn_cancelProfilePictureChanges_step2) {
             //return to first popup window
+            popupWindowSelectUploadSource.dismiss();
         }
         if (v.getId() == R.id.btn_submitForApproval) {
             submitNewLocationForApprovalToFirestore();

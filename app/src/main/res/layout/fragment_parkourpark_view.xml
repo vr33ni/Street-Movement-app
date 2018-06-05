@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_margin="4dp"
     android:orientation="vertical"
     android:weightSum="3">
 
@@ -11,18 +12,16 @@
         android:id="@+id/iv_parkview"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
         android:adjustViewBounds="true"
-        android:paddingTop="0dp"
         android:src="@drawable/noimgavailable"
         app:srcCompat="@drawable/noimgavailable"
-        android:layout_weight="1.5" />
+        android:layout_weight="1.15" />
 
     <android.support.design.widget.TabLayout
         android:id="@+id/sliding_tabs"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="0.25"
         app:tabGravity="fill"
         app:tabMaxWidth="0dp"
         app:tabMode="fixed" />
@@ -32,7 +31,7 @@
         android:id="@+id/viewpager"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1.5"
+        android:layout_weight="1.6"
         android:background="@android:color/white" />
 
 

@@ -45,7 +45,6 @@ public class ParkourPark implements Parcelable {
     private HashMap<String, Object> photo_2;
     private HashMap<String, Object> photo_3;
     private HashMap<String, Object> photo_4;
-    private HashMap<String, Object> photo_5;
 
 
     public ParkourPark() {}
@@ -119,13 +118,6 @@ public class ParkourPark implements Parcelable {
         this.photo_4 = photo_4;
     }
 
-    public HashMap<String, Object> getPhoto_5() {
-        return photo_5;
-    }
-
-    public void setPhoto_5(HashMap<String, Object> photo_5) {
-        this.photo_5 = photo_5;
-    }
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
@@ -231,7 +223,6 @@ public class ParkourPark implements Parcelable {
         photo_2 = (HashMap) in.readValue(HashMap.class.getClassLoader());
         photo_3 = (HashMap) in.readValue(HashMap.class.getClassLoader());
         photo_4 = (HashMap) in.readValue(HashMap.class.getClassLoader());
-        photo_5 = (HashMap) in.readValue(HashMap.class.getClassLoader());
     }
 
     @Override
@@ -254,7 +245,6 @@ public class ParkourPark implements Parcelable {
         dest.writeValue(photo_2);
         dest.writeValue(photo_3);
         dest.writeValue(photo_4);
-        dest.writeValue(photo_5);
     }
 
     @SuppressWarnings("unused")

@@ -53,7 +53,7 @@ import java.util.Map;
  * Created by vreee on 20/03/2018.
  */
 
-public class GeofenceMaxNrHandler extends MainActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
+public class GeofenceMaxNrHandler extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
     private static final String LOG_TAG = "GeofenceMaxNrHandler";
 
     private boolean firstRun;
@@ -199,6 +199,7 @@ public class GeofenceMaxNrHandler extends MainActivity implements ActivityCompat
      * based on what is declared in the locationRequest and the locationCallback, looper = null so the dialog window only pops up once and not repeatedly due to a permission check denied
      */
     public void startTrackingLocation() {
+        Log.d(LOG_TAG, "starting startTrackingLocation");
         if (ActivityCompat.checkSelfPermission(mActivity,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -207,12 +208,13 @@ public class GeofenceMaxNrHandler extends MainActivity implements ActivityCompat
 
         } else {
             mTrackingLocation = true;
+            Log.d(LOG_TAG, "creating location callback");
+
             createLocationCallback();
             Log.d(LOG_TAG, "checking permission: permission granted");
             //somehow put pending intent in here
             mFusedLocationProviderClient.requestLocationUpdates
                     (getLocationRequest(), mLocationCallback, Looper.myLooper() /* Looper */);
-            Log.d(LOG_TAG, "requesting location updates");
         }
     }
 
@@ -259,13 +261,13 @@ public class GeofenceMaxNrHandler extends MainActivity implements ActivityCompat
      */
     public void filterSpotsBasedOnRadius() {
         // GeofenceConstants.MAX_100_TRAINING_LOCATIONS = new HashMap<>();
+        Log.d(LOG_TAG, "all spots: " + allSpots);
         max100TrainingLocations = new HashMap<>();
         ParkourPark parkLoc = new ParkourPark();
         parkLoc.setName("Default - Home");
         parkLoc.setCoordinates(calculateGeoPoint(55.647531, 12.527550));
         max100TrainingLocations.put("Home", parkLoc);
-        Log.d(LOG_TAG, "max 100 training locations before adding: " + max100TrainingLocations);
-
+        Log.d("max100", "max100 before adding stuff: " + max100TrainingLocations);
 
         for (Map.Entry<String, ParkourPark> pkPark : allSpots.entrySet()) {
             Log.d("pkpark", "coordinates: " + pkPark.getValue().getCoordinates().getLatitude());
@@ -543,8 +545,6 @@ public class GeofenceMaxNrHandler extends MainActivity implements ActivityCompat
                                     ParkourPark queriedLocation = document.toObject(ParkourPark.class);
                                     queriedLocation.setDescription(document.getString("description (in Danish)"));
                                     allSpots.put(queriedLocation.getName(), queriedLocation);
-
-
                                 }
                             }
                             Log.d(LOG_TAG, "all spots: " + allSpots.size());

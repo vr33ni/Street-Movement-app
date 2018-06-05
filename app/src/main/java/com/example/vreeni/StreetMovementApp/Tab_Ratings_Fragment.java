@@ -1,10 +1,10 @@
 package com.example.vreeni.StreetMovementApp;
 
+import android.location.Location;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
-import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -18,7 +18,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.ScrollView;
-import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -28,8 +27,6 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,7 +36,7 @@ public class Tab_Ratings_Fragment extends Fragment implements View.OnClickListen
     private String TAG = "Rating Tab ";
 
     private RecyclerView mRecyclerView;
-    private ItemListAdapter mAdapter;
+    private ItemList_Ratings_Adapter mAdapter;
     private EditText et_comment;
     private RatingBar ratingBar;
     private Button btnSubmitRating;
@@ -48,17 +45,19 @@ public class Tab_Ratings_Fragment extends Fragment implements View.OnClickListen
     private String activity;
     private String setting;
     private ParkourPark pk;
+    private Location mLastKnownLocation;
     private HashMap<String, Object> rt;
     private final ArrayList<HashMap<String, Object>> ratinglist = new ArrayList<>();
     private ScrollView scrollview;
 
 
-    public static Tab_Ratings_Fragment newInstance(String act, String set, ParkourPark spot) {
+    public static Tab_Ratings_Fragment newInstance(String act, String set, ParkourPark spot, Location mLastKnownLocation) {
         final Bundle bundle = new Bundle();
         Tab_Ratings_Fragment fragment = new Tab_Ratings_Fragment();
         bundle.putString("Activity", act);
         bundle.putString("Setting", set);
         bundle.putParcelable("TrainingLocation", spot);
+        bundle.putParcelable("UserLocation", mLastKnownLocation);
         fragment.setArguments(bundle);
         return fragment;
     }
@@ -71,6 +70,7 @@ public class Tab_Ratings_Fragment extends Fragment implements View.OnClickListen
             activity = getArguments().getString("Activity");
             setting = getArguments().getString("Setting");
             pk = getArguments().getParcelable("TrainingLocation");
+            mLastKnownLocation = getArguments().getParcelable("UserLocation");
         }
     }
 
@@ -116,7 +116,7 @@ public class Tab_Ratings_Fragment extends Fragment implements View.OnClickListen
         // Get a handle to the RecyclerView.
         mRecyclerView = (RecyclerView) view.findViewById(R.id.recyclerView);
         // Create an adapter and supply the data to be displayed.
-        mAdapter = new ItemListAdapter(this.getActivity(), ratinglist);
+        mAdapter = new ItemList_Ratings_Adapter(this.getActivity(), ratinglist);
 //        // Connect the adapter with the RecyclerView.
 //        mRecyclerView.setAdapter(mAdapter);
 //        // Give the RecyclerView a default layout manager.
