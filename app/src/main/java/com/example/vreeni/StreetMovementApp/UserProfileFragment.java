@@ -201,7 +201,6 @@ public class UserProfileFragment extends Fragment implements View.OnClickListene
 //        Fragment fragment = null;
         //if the button representing the "train now or create workout" fragment is clicked, create this fragment
         if (v.getId() == R.id.edit_user_info) {
-//            fragment = new EditUserProfileFragment();
             openEditProfilePopupWindow();
 
         }
@@ -236,7 +235,7 @@ public class UserProfileFragment extends Fragment implements View.OnClickListene
             changeFirebaseUserPicture();
         }
         if (v.getId() == R.id.btn_myactivities) {
-            UserProfile_Account fragment_setting = UserProfile_Account.newInstance();
+            UserProfile_Stats fragment_setting = UserProfile_Stats.newInstance();
             ((AppCompatActivity) getContext()).getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, fragment_setting, "Personal Stats")
                     .addToBackStack("personalStats")

@@ -32,6 +32,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Tab displaying the ratings of the current trianing location
+ */
 public class Tab_Ratings_Fragment extends Fragment implements View.OnClickListener {
     private String TAG = "Rating Tab ";
 

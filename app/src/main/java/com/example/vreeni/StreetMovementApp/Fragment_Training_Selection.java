@@ -17,9 +17,6 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
-/**
- * Created by vreeni on 20/12/2017.
- */
 
 /**
  * Fragment displaying a randomly selected training activity such as a workout from the database

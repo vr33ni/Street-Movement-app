@@ -28,7 +28,6 @@ public class Fragment_Training_Level extends Fragment implements View.OnClickLis
     private static final String LOG_TAG = "Level";
 
     private FirebaseStorage storage = FirebaseStorage.getInstance();
-    private StorageReference storageRef = storage.getReference();
 
     Button btnPredefHomeWorkoutBeginner;
     Button btnPredefHomeWorkoutIntermediate;

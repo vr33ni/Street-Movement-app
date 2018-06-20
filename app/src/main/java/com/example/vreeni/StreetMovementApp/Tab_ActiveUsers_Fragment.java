@@ -19,6 +19,10 @@ import com.google.firebase.firestore.GeoPoint;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * Fragment that is displayed in a tab in the fragment providing information on a specific training location
+ * this tab shows the currently active users training at the specific location
+ */
 public class Tab_ActiveUsers_Fragment extends Fragment implements View.OnClickListener {
     private String TAG = "Active Users Tab ";
     private long mLastClickTime = 0;

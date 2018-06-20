@@ -8,6 +8,7 @@ import android.app.ProgressDialog;
 import android.support.annotation.VisibleForTesting;
 import android.support.v7.app.AppCompatActivity;
 
+
 public class BaseActivity extends AppCompatActivity {
 
     @VisibleForTesting

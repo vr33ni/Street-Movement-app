@@ -25,9 +25,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 
-/**
- * Created by vreee on 13/03/2018.
- */
 
 /**
  * displays more information on a specific training location after clicking on a marker's infowindow on the map

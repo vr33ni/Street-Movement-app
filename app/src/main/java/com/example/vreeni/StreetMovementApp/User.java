@@ -6,9 +6,6 @@ import com.google.firebase.firestore.GeoPoint;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-/**
- * Created by vreeni on 30/12/2017.
- */
 
 /**
  * Class representing a user document in the database

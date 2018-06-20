@@ -329,7 +329,7 @@ public class Fragment_Training_Exercises extends Fragment implements View.OnClic
         }
         if (v.getId() == R.id.btn_activityCompleted_goToProfile) {
             //go to personal stats section
-            UserProfile_Account fragment_setting = UserProfile_Account.newInstance();
+            UserProfile_Stats fragment_setting = UserProfile_Stats.newInstance();
             ((AppCompatActivity) getContext()).getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, fragment_setting, "Personal Stats")
                     .addToBackStack("personalStats")

@@ -1,34 +1,21 @@
 package com.example.vreeni.StreetMovementApp;
 
-import android.animation.ObjectAnimator;
-import android.animation.ValueAnimator;
 import android.graphics.Color;
 import android.graphics.LightingColorFilter;
-import android.graphics.PorterDuff;
 import android.graphics.Rect;
-import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.text.SpannableString;
-import android.text.style.ForegroundColorSpan;
-import android.text.style.RelativeSizeSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.BarChart;
-import com.github.mikephil.charting.charts.LineChart;
-import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
@@ -36,18 +23,9 @@ import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
-import com.github.mikephil.charting.data.Entry;
-import com.github.mikephil.charting.data.LineData;
-import com.github.mikephil.charting.data.LineDataSet;
-import com.github.mikephil.charting.data.PieData;
-import com.github.mikephil.charting.data.PieDataSet;
-import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
-import com.github.mikephil.charting.formatter.LargeValueFormatter;
-import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 import com.github.mikephil.charting.listener.ChartTouchListener;
 import com.github.mikephil.charting.listener.OnChartGestureListener;
-import com.github.mikephil.charting.utils.ColorTemplate;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
@@ -56,24 +34,20 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.List;
 
-import static com.example.vreeni.StreetMovementApp.User.AGE;
-import static com.example.vreeni.StreetMovementApp.User.EMAIL;
-import static com.example.vreeni.StreetMovementApp.User.FULLNAME;
 import static com.example.vreeni.StreetMovementApp.User.LISTOFHOMEWORKOUTS;
 import static com.example.vreeni.StreetMovementApp.User.LISTOFMOVEMENTSPECIFICCHALLENGES;
 import static com.example.vreeni.StreetMovementApp.User.LISTOFOUTDOORWORKOUTS;
 import static com.example.vreeni.StreetMovementApp.User.LISTOFSTREETMOVEMENTCHALLENGES;
-import static com.example.vreeni.StreetMovementApp.User.NATIONALITY;
-import static com.example.vreeni.StreetMovementApp.User.NICKNAME;
-import static com.example.vreeni.StreetMovementApp.User.STATUS;
 
-public class UserProfile_Account extends Fragment implements OnChartGestureListener, View.OnTouchListener, View.OnClickListener {
 
-    private static final String TAG = UserProfile_Account.class.getSimpleName();
+/**
+ * User profile section displaying the user's stats and personal bests
+ */
+public class UserProfile_Stats extends Fragment implements OnChartGestureListener, View.OnTouchListener, View.OnClickListener {
+
+    private static final String TAG = UserProfile_Stats.class.getSimpleName();
 
     private BarChart mChart;
 
@@ -83,9 +57,9 @@ public class UserProfile_Account extends Fragment implements OnChartGestureListe
     int nrOfStreetMovementChallenges;
 
 
-    public static UserProfile_Account newInstance() {
+    public static UserProfile_Stats newInstance() {
         final Bundle bundle = new Bundle();
-        UserProfile_Account fragment = new UserProfile_Account();
+        UserProfile_Stats fragment = new UserProfile_Stats();
 //        bundle.putString("Activity", act);
         fragment.setArguments(bundle);
         return fragment;

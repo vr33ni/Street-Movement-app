@@ -14,6 +14,9 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Class enabling the integration of tabs into the fragment that displays the location details of a specific training location
+ */
 public class Tab_FragmentPagerAdapter extends FragmentStatePagerAdapter {
     //    final int PAGE_COUNT = 3;
 //    private final String tabTitles[] = new String[] { "Overview", "Active users", "Ratings" };

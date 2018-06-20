@@ -29,12 +29,11 @@ import java.util.List;
 
 import static com.facebook.FacebookSdk.getApplicationContext;
 
-/**
- * Created by vreeni on 17/02/2018.
- */
 
 /**
  * Class handling the reading of JSON files and the writing of the desired data to the database
+ * in this case: not used right now, as all training locations were extracted from the JSON file to the database
+ * can be used for edits / deletions regarding the training locations on the database
  */
 public class JasonHandler {
     private static final String LOG_TAG = "JsonParser";

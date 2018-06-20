@@ -1,8 +1,5 @@
 package com.example.vreeni.StreetMovementApp;
 
-/**
- * Created by vreee on 11/03/2018.
- */
 
 import android.content.Intent;
 import android.os.Bundle;

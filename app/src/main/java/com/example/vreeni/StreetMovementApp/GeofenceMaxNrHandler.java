@@ -2,11 +2,7 @@ package com.example.vreeni.StreetMovementApp;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.Fragment;
-import android.app.PendingIntent;
 import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Looper;
@@ -16,7 +12,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.Manifest;
-import android.widget.TextView;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.Geofence;
@@ -40,19 +35,19 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by vreee on 20/03/2018.
- */
 
+/**
+ * Java class called when the application is started and the user has allowed the tracking of his location
+ * loads all the available training locations in a certain radius around the users as Google's API do not allow the tracking of more than 100 geofences
+ * (training locations for Denmark = 171)
+ */
 public class GeofenceMaxNrHandler extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
     private static final String LOG_TAG = "GeofenceMaxNrHandler";
 
@@ -60,8 +55,6 @@ public class GeofenceMaxNrHandler extends AppCompatActivity implements ActivityC
 
     //Constants used in the location settings dialog.
     private static final int REQUEST_LOCATION_PERMISSION = 1;
-
-    private static final String TRACKING_LOCATION_KEY = "tracking_location";
 
     //The entry point to the Fused Location Provider.
     private FusedLocationProviderClient mFusedLocationProviderClient;

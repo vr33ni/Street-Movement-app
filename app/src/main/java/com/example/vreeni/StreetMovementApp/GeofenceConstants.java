@@ -1,8 +1,5 @@
 package com.example.vreeni.StreetMovementApp;
 
-/**
- * Created by vreee on 1/04/2018.
- */
 
 import android.media.midi.MidiDeviceService;
 import android.support.annotation.NonNull;

@@ -8,9 +8,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-/**
- * Created by vreeni on 4/01/2018.
- */
 
 /**
  * Class representing a workout document in the database

@@ -11,9 +11,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 
-/**
- * Created by vreeni on 20/12/2017.
- */
 
 /**
  * Fragment displaying two buttons offering the possibility to choose the setting of the training

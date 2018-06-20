@@ -39,6 +39,10 @@ import static com.example.vreeni.StreetMovementApp.User.WORKOUTSCOMPLETED;
 import static com.github.mikephil.charting.charts.Chart.LOG_TAG;
 
 
+/**
+ * Tab displayed in the fragment that shows information on a specific location
+ * shows an overview of the training location
+ */
 public class Tab_Overview_Fragment extends Fragment implements View.OnClickListener {
     private String TAG = "Overview Tab ";
     private long mLastClickTime = 0;

@@ -47,10 +47,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
-/**
- * Created by vreee on 20/03/2018.
- */
 
+/**
+ * class handling the regular updates of the user location
+ */
 public class LocationHandler extends MainActivity implements  ActivityCompat.OnRequestPermissionsResultCallback {
     private static final String LOG_TAG = "LocationHandler";
 

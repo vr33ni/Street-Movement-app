@@ -11,9 +11,6 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-/**
- * Created by vreee on 13/03/2018.
- */
 
 /**
  * sets the rating based on the recyclerview_item_rating layout, will then be included in the fragment, where the ratings are displayed
