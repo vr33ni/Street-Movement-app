@@ -267,23 +267,25 @@ public class GeofenceMaxNrHandler extends AppCompatActivity implements ActivityC
         parkLoc.setName("Default - Home");
         parkLoc.setCoordinates(calculateGeoPoint(55.647531, 12.527550));
         max100TrainingLocations.put("Home", parkLoc);
-        Log.d("max100", "max100 before adding stuff: " + max100TrainingLocations);
+        Log.d("max100", "max100 before adding stuff: " + parkLoc.getName());
 
         for (Map.Entry<String, ParkourPark> pkPark : allSpots.entrySet()) {
             Log.d("pkpark", "coordinates: " + pkPark.getValue().getCoordinates().getLatitude());
             Location trainingLocation = new Location("locationprovider");//provider name is unnecessary
-            trainingLocation.setLatitude(pkPark.getValue().getCoordinates().getLatitude());
-            trainingLocation.setLongitude(pkPark.getValue().getCoordinates().getLongitude());
-            Log.d(LOG_TAG, "allSpots map: " + pkPark.getValue().getCoordinates());
+            if (pkPark.getValue().getCoordinates().getLatitude() != 0) {
+                trainingLocation.setLatitude(pkPark.getValue().getCoordinates().getLatitude());
+                trainingLocation.setLongitude(pkPark.getValue().getCoordinates().getLongitude());
+                Log.d(LOG_TAG, "allSpots map: " + pkPark.getValue().getCoordinates());
 
-            if ((mLastKnownLocation != null)) {
-                if (mLastKnownLocation.distanceTo(trainingLocation) < GeofenceConstants.GEOFENCE_TRACKING_RADIUS_IN_METERS) {
-                    Log.d(LOG_TAG, "in predef radius around user location: " + mLastKnownLocation + ", training loc: " + trainingLocation);
-                    max100TrainingLocations.put(pkPark.getValue().getName(), pkPark.getValue());
+                if ((mLastKnownLocation != null)) {
+                    if (mLastKnownLocation.distanceTo(trainingLocation) < GeofenceConstants.GEOFENCE_TRACKING_RADIUS_IN_METERS) {
+                        Log.d(LOG_TAG, "in predef radius around user location: " + mLastKnownLocation + ", training loc: " + trainingLocation);
+                        max100TrainingLocations.put(pkPark.getValue().getName(), pkPark.getValue());
 //                  GeofenceConstants.MAX_100_TRAINING_LOCATIONS.put(pkPark.getKey(), pkPark.getValue());
-                    Log.d(LOG_TAG, "updated map of locations to a max of 100: " + max100TrainingLocations.size());
-                } else
-                    Log.d(LOG_TAG, "distance: " + mLastKnownLocation.distanceTo(trainingLocation));
+                        Log.d(LOG_TAG, "updated map of locations to a max of 100: " + max100TrainingLocations.size());
+                    } else
+                        Log.d(LOG_TAG, "distance: " + mLastKnownLocation.distanceTo(trainingLocation));
+                }
             }
         }
         GeofenceConstants.MAX_100_TRAINING_LOCATIONS = max100TrainingLocations;

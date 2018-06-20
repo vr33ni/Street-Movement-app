@@ -1,10 +1,12 @@
 package com.example.vreeni.StreetMovementApp;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -25,6 +27,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -46,6 +49,7 @@ import static com.example.vreeni.StreetMovementApp.User.LISTOFMOVEMENTSPECIFICCH
 import static com.example.vreeni.StreetMovementApp.User.LISTOFOUTDOORWORKOUTS;
 import static com.example.vreeni.StreetMovementApp.User.LISTOFPLACES;
 import static com.example.vreeni.StreetMovementApp.User.LISTOFSTREETMOVEMENTCHALLENGES;
+import static com.facebook.FacebookSdk.getApplicationContext;
 
 
 /**
@@ -62,26 +66,16 @@ public class Fragment_Training_Exercises extends Fragment implements View.OnClic
 
     //popup window views
     private PopupWindow popupWindow_activityCompleted;
+    private PopupWindow popupWindow_cancelTimer;
     private ImageView iv_activityCompleted;
     //extra awards based on nr of activities/places etc.
 //    private ImageView iv_explorerStatus; //after having trained at 10 + different locations
 //    private ImageView iv_ninja; //after having completed 5+ movement specific challenges
 
-    private String imgEx1;
-    private ImageView imageEx1;
+
     private ArrayList<Object> listOfHomeWks;
     private ArrayList<Object> listOfOutdoorWks;
     private ArrayList<Object> listOfPlaces;
-
-    private int nrOfWorkouts_total;
-    private int nrOfWorkouts_weekly;
-    private int nrOfActivities_weekly;
-    private int nrOfActivities_total;
-    private int nrOfMovSpecChallenges_total;
-    private int nrOfMovSpecChallenges_weekly;
-    private int nrOfSMChallenges_total;
-    private int nrOfSMChallenges_weekly;
-
 
 
     private final ArrayList<HashMap<String, Object>> listOfActiveUsers = new ArrayList<>();
@@ -92,15 +86,25 @@ public class Fragment_Training_Exercises extends Fragment implements View.OnClic
     private ParkourPark pk;
     private Exercise exercise;
     private String wkReference;
-    private long nrOfWorkouts;
     private String activityType;
 
     private TextView ex1;
-    private TextView timer;
     private WebView webView;
     private int time;
 
     private boolean timerIsRunning;
+    private PrefUtilsActivityTimer prefUtilsActivityTimer;
+    private TextView timer;
+    private TextView noticeText;
+    private Button btn_startWorkout;
+    private Button btn_stopWorkout;
+    private CountDownTimer countDownTimer;
+    private int timeToStart;
+    private TimerState timerState;
+    private static final int MAX_TIME = 12; //Time length is 12 seconds
+
+
+
 
     public static Fragment_Training_Exercises newInstance(Workout wk, ParkourPark pk) {
         final Bundle bundle = new Bundle();
@@ -146,8 +150,9 @@ public class Fragment_Training_Exercises extends Fragment implements View.OnClic
         time = 10;
         timer = (TextView) view.findViewById(R.id.workoutTimer);
         timerIsRunning = false;
-        Button btn_startWorkout = (Button) view.findViewById(R.id.btn_workout_startWk);
-        btn_startWorkout.setOnClickListener(this);
+        noticeText = (TextView) view.findViewById(R.id.tv_timer_noticetext);
+        btn_startWorkout = (Button) view.findViewById(R.id.btn_workout_startWk);
+        btn_stopWorkout = (Button) view.findViewById(R.id.btn_workout_stopWk);
     }
 
 
@@ -157,8 +162,82 @@ public class Fragment_Training_Exercises extends Fragment implements View.OnClic
 
         getExerciseReferencesFromFirebase(myWorkout);
 
-        Log.d(TAG, "training info" + myWorkout);
+
+        prefUtilsActivityTimer = new PrefUtilsActivityTimer(getApplicationContext());
+        btn_startWorkout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (timerState == TimerState.STOPPED) {
+                    prefUtilsActivityTimer.setStartedTime((int) getNow());
+                    startTimer();
+                    timerState = TimerState.RUNNING;
+                }
+            }
+        });
+        btn_stopWorkout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openCancelTimerYesNoPopupWindow();
+
+            }
+        });
     }
+
+    public void cancelTimer() {
+        countDownTimer.cancel();
+        timerState = TimerState.STOPPED;
+        prefUtilsActivityTimer.setStartedTime(0);
+        timeToStart = MAX_TIME;
+    }
+
+    public void showTimerStoppedToast() {
+        Toast.makeText(this.getActivity(), "Activity cancelled!", Toast.LENGTH_SHORT).show();
+    }
+
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        //initializing a countdown timer
+        initTimer();
+        updatingUI();
+        removeAlarmManager();
+    }
+
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (timerState == TimerState.RUNNING) {
+            countDownTimer.cancel();
+            setAlarmManager();
+        }
+    }
+
+
+    @Override
+    public void onStop() {
+        super.onStop();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (timerState == TimerState.RUNNING) {
+            cancelTimer();
+            updatingUI();
+        } else {
+
+        }
+//        cancelTimer();
+//        updatingUI();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+    }
+
 
     public void addAsActiveUser() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -218,21 +297,27 @@ public class Fragment_Training_Exercises extends Fragment implements View.OnClic
 
     @Override
     public void onClick(View v) {
-        if (v.getId() == R.id.btn_workout_startWk) {
-            if (!timerIsRunning) {
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        //start workout after 5 seconds = just for testing to implement a pause for 30 sec
-                        startTimer();
-                        //add to trainingLocation document as a reference in the list of active users
-                        //if allowed , add as active user to the list of active users
-                        addAsActiveUser();
 
-                    }
-                }, 1000);
-            }
+        if (v.getId() == R.id.btn_cancel_timer_cancel) {
+            popupWindow_cancelTimer.dismiss();
         }
+        if (v.getId() == R.id.btn_cancel_timer_yes) {
+            cancelTimer();
+            showTimerStoppedToast();
+//            updatingUI();
+            //redirect to home screen
+            HomeFragment home = HomeFragment.newInstance();
+            ((AppCompatActivity) getContext()).getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, home, "home")
+                    .addToBackStack(null)
+                    .commit();
+            popupWindow_cancelTimer.dismiss();
+        }
+        if (v.getId() == R.id.btn_cancel_timer_no) {
+            popupWindow_cancelTimer.dismiss();
+        }
+
+
         if (v.getId() == R.id.btn_activityCompleted_continue) {
             //continue to home screen
             HomeFragment home = HomeFragment.newInstance();
@@ -266,41 +351,41 @@ public class Fragment_Training_Exercises extends Fragment implements View.OnClic
     /**
      * workout completion is measured using a timer
      */
-    public void startTimer() {
-        //get workout duration from bundle information
-        timerIsRunning = true;
-        CountDownTimer countDownTimer = new CountDownTimer(10000, 1000) {
-
-            public void onTick(long millisUntilFinished) {
-//                if (isCancelled) {
-//                    cancel();
-//                    isCancelled = false;
-//                } else {
-                timer.setText("0:" + checkDigit(time));
-                time--;
-//                }
-            }
-
-            public void onFinish() {
-                timer.setText("Activity completed!");
-                time = 10;
-                timerIsRunning = false;
-                addWorkouttoUserDocument();
-                removeAsActiveUser();
-                //show the navigation drawer hamburger icon instead of back button to easily navigate to another section after the workout
-                ((MainActivity) getActivity()).showBackButton(false);
-
-
-//                //Enable the start button
-//                btn_startWarmup.setEnabled(false);
-////                //Disable the pause, resume and cancel button
-//                btn_cancelWarmup.setEnabled(false);
-//                btn_startWarmup.setVisibility(View.GONE);
-//                btn_cancelWarmup.setVisibility(View.GONE);
-//                btn_continueToExercises.setVisibility(View.VISIBLE);
-            }
-        }.start();
-    }
+//    public void startTimer() {
+//        //get workout duration from bundle information
+//        timerIsRunning = true;
+//        CountDownTimer countDownTimer = new CountDownTimer(10000, 1000) {
+//
+//            public void onTick(long millisUntilFinished) {
+////                if (isCancelled) {
+////                    cancel();
+////                    isCancelled = false;
+////                } else {
+//                timer.setText("0:" + checkDigit(time));
+//                time--;
+////                }
+//            }
+//
+//            public void onFinish() {
+//                timer.setText("Activity completed!");
+//                time = 10;
+//                timerIsRunning = false;
+//                addWorkouttoUserDocument();
+//                removeAsActiveUser();
+//                //show the navigation drawer hamburger icon instead of back button to easily navigate to another section after the workout
+//                ((MainActivity) getActivity()).showBackButton(false);
+//
+//
+////                //Enable the start button
+////                btn_startWarmup.setEnabled(false);
+//////                //Disable the pause, resume and cancel button
+////                btn_cancelWarmup.setEnabled(false);
+////                btn_startWarmup.setVisibility(View.GONE);
+////                btn_cancelWarmup.setVisibility(View.GONE);
+////                btn_continueToExercises.setVisibility(View.VISIBLE);
+//            }
+//        }.start();
+//    }
 
 
     public String checkDigit(int number) {
@@ -643,8 +728,31 @@ public class Fragment_Training_Exercises extends Fragment implements View.OnClic
 
     }
 
+    public void openCancelTimerYesNoPopupWindow() {
+        View layout = getLayoutInflater().inflate(R.layout.popup_window_workout_cancel_timer, null);
+        popupWindow_cancelTimer = new PopupWindow(
+                layout,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT, true);
+
+        Button btn_cancel = (Button) layout.findViewById(R.id.btn_cancel_timer_cancel);
+        btn_cancel.setOnClickListener(this);
+
+        Button btn_yes = (Button) layout.findViewById(R.id.btn_cancel_timer_yes);
+        btn_yes.setOnClickListener(this);
+        btn_yes.setEnabled(true);
+
+        Button btn_no;
+        btn_no = (Button) layout.findViewById(R.id.btn_cancel_timer_no);
+        btn_no.setOnClickListener(this);
+        btn_no.setEnabled(true);
+        popupWindow_cancelTimer.showAtLocation(this.getView(), Gravity.CENTER, 0, 0);
+        dimBehind(popupWindow_cancelTimer);
+    }
+
+
     public void openActivityCompletedPopupWindow() {
-        View layout = getLayoutInflater().inflate(R.layout.custom_popup_window_activity_completed, null);
+        View layout = getLayoutInflater().inflate(R.layout.popup_window_activity_completed, null);
         popupWindow_activityCompleted = new PopupWindow(
                 layout,
                 LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -745,6 +853,95 @@ public class Fragment_Training_Exercises extends Fragment implements View.OnClic
 
         //end of webview
     }
+
+    private long getNow() {
+        Calendar rightNow = Calendar.getInstance();
+        return rightNow.getTimeInMillis() / 1000;
+    }
+
+    private void initTimer() {
+        long startTime = prefUtilsActivityTimer.getStartedTime();
+        if (startTime > 0) {
+            timeToStart = (int) (MAX_TIME - (getNow() - startTime));
+            if (timeToStart <= 0) {
+                // TIMER EXPIRED
+                timeToStart = MAX_TIME;
+                timerState = TimerState.STOPPED;
+                onTimerFinish();
+            } else {
+                startTimer();
+                timerState = TimerState.RUNNING;
+            }
+        } else {
+            timeToStart = MAX_TIME;
+            timerState = TimerState.STOPPED;
+        }
+    }
+
+    private void onTimerFinish() {
+        Toast.makeText(this.getActivity(), "Countdown timer finished!", Toast.LENGTH_SHORT).show();
+        prefUtilsActivityTimer.setStartedTime(0);
+        timeToStart = MAX_TIME;
+        updatingUI();
+        addWorkouttoUserDocument();
+        removeAsActiveUser();
+    }
+
+
+    private void updatingUI() {
+        if (timerState == TimerState.RUNNING) {
+            btn_startWorkout.setEnabled(false);
+            noticeText.setText("Countdown Timer is running...");
+        } else {
+//            btn_startWorkout.setEnabled(true);
+            noticeText.setText("Countdown Timer stopped!");
+        }
+
+        timer.setText(String.valueOf(timeToStart));
+    }
+
+    private void startTimer() {
+        countDownTimer = new CountDownTimer(timeToStart * 1000, 1000) {
+
+            @Override
+            public void onTick(long millisUntilFinished) {
+                timeToStart -= 1;
+                updatingUI();
+            }
+
+            @Override
+            public void onFinish() {
+                timerState = TimerState.STOPPED;
+                onTimerFinish();
+                updatingUI();
+            }
+        }.start();
+    }
+
+    public void setAlarmManager() {
+        int wakeUpTime = (prefUtilsActivityTimer.getStartedTime() + MAX_TIME) * 1000;
+        AlarmManager am = (AlarmManager) this.getActivity().getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(this.getActivity(), TimeReceiver.class);
+        PendingIntent sender = PendingIntent.getBroadcast(this.getActivity(), 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            am.setAlarmClock(new AlarmManager.AlarmClockInfo(wakeUpTime, sender), sender);
+        } else {
+            am.set(AlarmManager.RTC_WAKEUP, wakeUpTime, sender);
+        }
+    }
+
+    public void removeAlarmManager() {
+        Intent intent = new Intent(this.getActivity(), TimeReceiver.class);
+        PendingIntent sender = PendingIntent.getBroadcast(this.getActivity(), 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        AlarmManager am = (AlarmManager) this.getActivity().getSystemService(Context.ALARM_SERVICE);
+        am.cancel(sender);
+    }
+
+    private enum TimerState {
+        STOPPED,
+        RUNNING
+    }
 }
+
 
 

@@ -142,10 +142,14 @@ public class Tab_Overview_Fragment extends Fragment implements View.OnClickListe
             if (activity != null) { //training flow already started from nav. drawer => training => choooseactivity etc
                 // continue the normal training flow
                 //if user is in a radius of 250m from the spot, then he can start a training
-                if (mLastKnownLocation.distanceTo(trainingLocation) < 750) {
-                    if (activity.equals("Street Movement Challenge")) {
+                if (mLastKnownLocation.distanceTo(trainingLocation) < 750) { //for testing just make it bigger or the other way round
+                    if (activity.equals("Street Movement challenge")) {
                         //see the street movement challenge connected to the specific spot
-
+                        Fragment_Training_VejstrupLevelGame vejstrup = Fragment_Training_VejstrupLevelGame.newInstance(activity, setting, pk);
+                        ((AppCompatActivity) getContext()).getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.fragment_container, vejstrup, "vejstrup")
+                                .addToBackStack("vejstrup")
+                                .commit();
                     } else {
                         //get a workout or movement specific challenge
                         Fragment_Training_TrainNowORCreateTraining trainNowOrCreate = Fragment_Training_TrainNowORCreateTraining.newInstance(activity, setting, pk);
@@ -156,15 +160,16 @@ public class Tab_Overview_Fragment extends Fragment implements View.OnClickListe
                     }
                 } else {
                     //else: navigate to the spot
-                    Toast.makeText(getActivity().getApplicationContext(), "Go to the spot to start training", Toast.LENGTH_LONG).show();
                     Log.d(TAG, "go to the spot first" + mLastKnownLocation + ", " + mLastKnownLocation.distanceTo(trainingLocation));
+
+                    Toast.makeText(getActivity().getApplicationContext(), "Go to the spot to start training", Toast.LENGTH_LONG).show();
                 }
 
             } else {
                 //no training flow initiated yet
                 Log.d(TAG, "location infos " + mLastKnownLocation + ", " + trainingLocation);
                 //if user is in a radius of 500m from the spot, then he can start a training
-                if (mLastKnownLocation.distanceTo(trainingLocation) < 1000) {
+                if (mLastKnownLocation.distanceTo(trainingLocation) < 750) {
                     Fragment_Training_ChooseActivity chooseAct = Fragment_Training_ChooseActivity.newInstance(setting, pk);
                     ((AppCompatActivity) getContext()).getSupportFragmentManager().beginTransaction()
                             .replace(R.id.fragment_container, chooseAct, "chooseAct")
@@ -177,7 +182,7 @@ public class Tab_Overview_Fragment extends Fragment implements View.OnClickListe
 //                    POPUP? DIAGLOG?
                     Toast.makeText(getActivity().getApplicationContext(), "Go to the spot to start training", Toast.LENGTH_LONG).show();
 
-                    Log.d(TAG, "go to the spot first" + mLastKnownLocation + ", " + mLastKnownLocation.distanceTo(trainingLocation));
+                    Log.d(TAG, "actvitiy: " + activity + "go to the spot first" + mLastKnownLocation + ", " + mLastKnownLocation.distanceTo(trainingLocation));
                 }
             }
 

@@ -21,18 +21,13 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
     private Context context;
 
     public static HomeFragment newInstance() {
-        final Bundle bundle = new Bundle(); //to pass arguments to the next fragment
+        final Bundle bundle = new Bundle();
         HomeFragment fragment = new HomeFragment();
         fragment.setArguments(bundle);
         return fragment;
     }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-        }
-    }
+
 
     @Override
     public void onAttach(Context context) {
@@ -41,6 +36,12 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
     }
 
 
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+        }
+    }
 
     @Nullable
     @Override
@@ -59,10 +60,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
     public void onStart() {
         super.onStart();
         ((MainActivity) getActivity()).showBackButton(false);
-
-//        backButton.setOnClickListener(click -> {
-//            ((AppCompatActivity)getContext()).getSupportFragmentManager().popBackStack();
-//        });
     }
 
     @Override
@@ -88,12 +85,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
-//        if (v.getId() == R.id....) {
-//            FragmentB b = FragmentB.newInstance(info);
-//            ((AppCompatActivity) context).getSupportFragmentManager().beginTransaction()
-//                    .addToBackStack("something")
-//                    .commit();
-//        }
     }
 
 }

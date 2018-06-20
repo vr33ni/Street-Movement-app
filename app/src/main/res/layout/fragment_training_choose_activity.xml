@@ -90,7 +90,7 @@
                 android:textSize="12sp"
                 android:layout_gravity="end"
                 android:textAlignment="textEnd"
-                android:text="* Not available yet"/>
+                android:text="* Only available for specific spots" />
 
 
         </LinearLayout>

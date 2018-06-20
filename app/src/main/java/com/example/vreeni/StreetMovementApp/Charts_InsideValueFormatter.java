@@ -6,6 +6,9 @@ import com.github.mikephil.charting.utils.ViewPortHandler;
 
 import java.text.DecimalFormat;
 
+/**
+ * class responsible for formatting the values displayed inside the chart to a particular format
+ */
 public class Charts_InsideValueFormatter implements IValueFormatter {
 
     private DecimalFormat mFormat;

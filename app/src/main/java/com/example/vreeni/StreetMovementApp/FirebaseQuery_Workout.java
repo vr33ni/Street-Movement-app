@@ -1,14 +1,12 @@
 package com.example.vreeni.StreetMovementApp;
 
 import android.content.Context;
-import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseException;
-import com.google.firebase.database.Query;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -16,13 +14,16 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * class handing all queries to the database querying a certain activity
+ * defined for queries of Workouts and Movement specific challenges
+ * a randum generator selects one random activity to be returned
+ */
 public class FirebaseQuery_Workout {
     private static final String LOG_TAG = "FbQuery_Workout";
-
 
     private String activity;
     private String setting;
@@ -43,7 +44,7 @@ public class FirebaseQuery_Workout {
         this.context = context;
     }
 
-    public void query(FirebaseCallback callback) {
+    public void query(FirebaseCallback_Workout callback) {
 
         if (activity.equals("Workout")) {
             //data comes back
@@ -104,7 +105,6 @@ public class FirebaseQuery_Workout {
                         }
                     }
                 });
-//            String x = "Returned data";
                 if (workout == null) {
                     throw new FirebaseException("Query could not be executed");
                 }
@@ -124,7 +124,7 @@ public class FirebaseQuery_Workout {
 //    void querySecond(){}
 
 
-    public void queryMovementSpecificChallenge(FirebaseCallback callback) {
+    public void queryMovementSpecificChallenge(FirebaseCallback_Workout callback) {
         try {
             final FirebaseFirestore db = FirebaseFirestore.getInstance();
             final CollectionReference wkquery = db.collection("MovementSpecificChallenge");
@@ -182,7 +182,6 @@ public class FirebaseQuery_Workout {
                     }
                 }
             });
-//            String x = "Returned data";
             if (workout == null) {
                 throw new FirebaseException("Query could not be executed");
             }

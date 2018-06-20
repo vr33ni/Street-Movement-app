@@ -160,7 +160,7 @@ public class MainActivity extends BaseActivity
         mDrawerToggle.syncState();
         showBackButton(false);
 
-        //show the start fragment after login
+        //show the home screen after login
         if (savedInstanceState == null) {
             Fragment newFragment = new HomeFragment();
             FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
@@ -723,9 +723,9 @@ public class MainActivity extends BaseActivity
             case R.id.showMap:
                 String setting = "Outdoors";
                 String activity = null;
-                Fragment_OutdoorActivity_MapView fragment_trainNowOrCreateTraining = Fragment_OutdoorActivity_MapView.newInstance(activity, setting);
+                Fragment_OutdoorActivity_MapView fragment = Fragment_OutdoorActivity_MapView.newInstance(activity, setting);
                 (getSupportFragmentManager()).beginTransaction()
-                        .replace(R.id.fragment_container, fragment_trainNowOrCreateTraining, "TrainOrCreateWk")
+                        .replace(R.id.fragment_container, fragment, "mapview")
                         .addToBackStack(null)
                         .commit();
                 break;

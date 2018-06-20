@@ -104,45 +104,58 @@ Good job!"
                 android:background="@color/colorPrimaryDark"
                 android:text="Continue with the next exercise" />
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_alignParentBottom="true"
+                android:id="@+id/linearLayout">
+
+                <TextView
+                    android:id="@+id/tv_timer_noticetext"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginLeft="8dp"
+                    android:gravity="center"
+                    android:text="Noticetext:"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/workoutTimer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_gravity="center"
+                    android:text="Timer"
+                    android:textSize="32sp"
+                    android:textStyle="bold" />
+
+
+                <Button
+                    android:id="@+id/btn_workout_startWk"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="Go" />
+
+                <Button
+                    android:id="@+id/btn_workout_stopWk"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="Cancel" />
+
+            </LinearLayout>
+
+
         </LinearLayout>
 
+
     </ScrollView>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_alignParentBottom="true"
-        android:id="@+id/linearLayout">
-
-
-        <TextView
-            android:id="@+id/workoutTimer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:layout_marginRight="8dp"
-            android:layout_marginLeft="8dp"
-            android:layout_gravity="center"
-            android:text="Timer"
-            android:textSize="32sp"
-            android:textStyle="bold"/>
-
-
-        <Button
-            android:id="@+id/btn_workout_startWk"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="8dp"
-            android:layout_marginLeft="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
-            android:layout_gravity="bottom"
-            android:background="@color/buttonGreen"
-            android:textColor="@color/white"
-            android:text="Start workout" />
-
-    </LinearLayout>
 
 
 </LinearLayout>

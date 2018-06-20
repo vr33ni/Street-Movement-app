@@ -8,41 +8,42 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="0.1"
+        android:layout_marginLeft="8dp"
         android:weightSum="1"
         android:orientation="horizontal">
 
-        <EditText
-            android:id="@+id/et_searchbar"
-        android:layout_width="0dp"
-        android:layout_weight="0.95"
-        android:layout_height="match_parent"
-            android:text="Search for a specific training location"
-            android:textSize="12sp"
-        android:gravity="center"/>
 
-        <!--<SearchView-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:text="Search for a specific training location"-->
-        <!--android:textSize="12sp">-->
-
-        <!--</SearchView>-->
+        <TextView
+            android:layout_width="0dp"
+            android:layout_weight="0.85"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:text="Learn more about a spot by clicking on a marker"
+            android:textStyle="italic" />
 
 
         <ImageButton
             android:id="@+id/btn_search"
             android:backgroundTint="@color/white"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight="0.125"
             android:layout_height="match_parent"
             android:layout_gravity="right"
             android:adjustViewBounds="true"
             android:padding="8dp"
             android:scaleType="fitCenter"
-            android:src="@drawable/ic_search"
-            android:text="REFRESH"/>
+            android:src="@drawable/ic_search" />
+
     </LinearLayout>
 
 
+    <!--<TextView-->
+    <!--android:layout_width="0dp"-->
+    <!--android:layout_weight="0.85"-->
+    <!--android:layout_height="match_parent"-->
+    <!--android:gravity="center_vertical"-->
+    <!--android:text="Long click to add a new marker"-->
+    <!--android:textStyle="bold"/>-->
 
 
     <com.google.android.gms.maps.MapView

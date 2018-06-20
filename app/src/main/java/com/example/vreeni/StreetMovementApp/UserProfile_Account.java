@@ -171,11 +171,32 @@ public class UserProfile_Account extends Fragment implements OnChartGestureListe
             @Override
             public void onEvent(DocumentSnapshot documentSnapshot, FirebaseFirestoreException e) {
                 if (documentSnapshot.exists()) {
-                    ArrayList listOfHomeWorkouts = (ArrayList) documentSnapshot.get(LISTOFHOMEWORKOUTS);
-                    ArrayList listofOutdoorWorkouts = (ArrayList) documentSnapshot.get(LISTOFOUTDOORWORKOUTS);
-                    ArrayList listOfMovSpecChallenges = (ArrayList) documentSnapshot.get(LISTOFMOVEMENTSPECIFICCHALLENGES);
-                    ArrayList listOfSMChallenges = (ArrayList) documentSnapshot.get(LISTOFSTREETMOVEMENTCHALLENGES);
+                    ArrayList listOfHomeWorkouts;
+                    ArrayList listofOutdoorWorkouts;
+                    ArrayList listOfMovSpecChallenges;
+                    ArrayList listOfSMChallenges;
 
+                    if (documentSnapshot.get(LISTOFHOMEWORKOUTS) != null) {
+                        listOfHomeWorkouts = (ArrayList) documentSnapshot.get(LISTOFHOMEWORKOUTS);
+                    } else {
+                        listOfHomeWorkouts = new ArrayList();
+                    }
+
+                    if (documentSnapshot.get(LISTOFOUTDOORWORKOUTS) != null) {
+                        listofOutdoorWorkouts = (ArrayList) documentSnapshot.get(LISTOFOUTDOORWORKOUTS);
+                    } else {
+                        listofOutdoorWorkouts = new ArrayList();
+                    }
+                    if (documentSnapshot.get(LISTOFMOVEMENTSPECIFICCHALLENGES) != null) {
+                        listOfMovSpecChallenges = (ArrayList) documentSnapshot.get(LISTOFMOVEMENTSPECIFICCHALLENGES);
+                    } else {
+                        listOfMovSpecChallenges = new ArrayList();
+                    }
+                    if (documentSnapshot.get(LISTOFSTREETMOVEMENTCHALLENGES) != null) {
+                        listOfSMChallenges = (ArrayList) documentSnapshot.get(LISTOFSTREETMOVEMENTCHALLENGES);
+                    } else {
+                        listOfSMChallenges = new ArrayList();
+                    }
                     nrOfHomeWorkouts = listOfHomeWorkouts.size();
                     nrOfOutdoorWorkouts = listofOutdoorWorkouts.size();
                     nrOfMovSpecChallenges = listOfMovSpecChallenges.size();

@@ -13,7 +13,6 @@ import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -28,33 +27,17 @@ import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.resource.drawable.GlideDrawable;
-import com.bumptech.glide.request.RequestListener;
-import com.bumptech.glide.request.target.Target;
 import com.facebook.AccessToken;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
-import com.facebook.HttpMethod;
 import com.facebook.login.widget.ProfilePictureView;
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.games.Games;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.PlayGamesAuthCredential;
 import com.google.firebase.auth.UserProfileChangeRequest;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -286,7 +269,7 @@ public class UserProfileFragment extends Fragment implements View.OnClickListene
     }
 
     public void changeProfilePicture() {
-        View layout = getLayoutInflater().inflate(R.layout.custom_popup_window_upload_profile_picture, null);
+        View layout = getLayoutInflater().inflate(R.layout.popup_window_upload_profile_picture, null);
         popupWindow = new PopupWindow(
                 layout,
                 LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -315,7 +298,7 @@ public class UserProfileFragment extends Fragment implements View.OnClickListene
      * once one button is clicked, the other one is set to disabled
      */
     public void openPopUpWindowSelectUploadSource() {
-        View layout = getLayoutInflater().inflate(R.layout.custom_popup_window_select_upload_source, null);
+        View layout = getLayoutInflater().inflate(R.layout.popup_window_select_upload_source, null);
         popupWindowSelectUploadSource = new PopupWindow(
                 layout,
                 LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -601,7 +584,7 @@ public class UserProfileFragment extends Fragment implements View.OnClickListene
 
 
     public void openEditProfilePopupWindow() {
-        View layout = getLayoutInflater().inflate(R.layout.custom_popup_window_edit_profile, null);
+        View layout = getLayoutInflater().inflate(R.layout.popup_window_edit_profile, null);
         popupWindow_editProfile = new PopupWindow(
                 layout,
                 LinearLayout.LayoutParams.WRAP_CONTENT,

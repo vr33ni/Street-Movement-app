@@ -12,7 +12,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,8 +22,8 @@ import java.util.ArrayList;
  */
 
 /**
- * Fragment displaying the randomly selected Home Workout from the database
- * gets arguments from bundle and displays a summary of the workout
+ * Fragment displaying a randomly selected training activity such as a workout from the database
+ * gets arguments from bundle and - after the query succeeds - displays a summary of the workout
  * passes on the bundle to the next fragment in the workout flow
  */
 public class Fragment_Training_Selection extends Fragment {
@@ -40,21 +39,12 @@ public class Fragment_Training_Selection extends Fragment {
 
     private Button btn_Continue;
 
-    private String exerciseI;
-    private String exerciseII;
-    private String imgEx1;
-    private Exercise exercise;
-
     private String activity;
     private String setting;
     private String level;
     private ParkourPark pk;
 
-    private int time;
-    private ImageView imageEx1;
-    // private WebView vidEx1;
-    private TextView timeView;
-
+    private TextView tv_duration;
 
     public static Fragment_Training_Selection newInstance(String act, String set, ParkourPark spot, String lvl) {
         final Bundle bundle = new Bundle();
@@ -100,7 +90,7 @@ public class Fragment_Training_Selection extends Fragment {
 
         btn_Continue = (Button) view.findViewById(R.id.btn_predef_homeworkout_SelectionContinue);
 
-        timeView = (TextView) view.findViewById(R.id.time);
+        tv_duration = (TextView) view.findViewById(R.id.time);
     }
 
 
@@ -112,7 +102,7 @@ public class Fragment_Training_Selection extends Fragment {
         context = this.getContext();
 
         FirebaseQuery_Workout query = new FirebaseQuery_Workout(activity, setting, level);
-        query.query(new FirebaseCallback() {
+        query.query(new FirebaseCallback_Workout() {
             @Override
             public void onQuerySuccess(Workout workout) {
                 if (workout.getListOfExercises() != null) {
@@ -122,7 +112,7 @@ public class Fragment_Training_Selection extends Fragment {
                     list = getExercises(context);
 
                     //setting the duration of the workout
-                    timeView.setText(workout.getDuration() + " minutes");
+                    tv_duration.setText(workout.getDuration() + " minutes");
 
                 } else Log.d(LOG_TAG, "workout has no list of exercises");
 
@@ -164,18 +154,15 @@ public class Fragment_Training_Selection extends Fragment {
         super.onDestroy();
     }
 
-
     public ArrayList<Exercise> getExercises(Context c) {
         Log.d(LOG_TAG, "getting the single exercises of a workout");
         FirebaseQuery_Exercises query = new FirebaseQuery_Exercises(listofexercisereferences);
         query.query(new FirebaseCallback_Exercises() {
             @Override
             public void onQuerySuccess(ArrayList<Exercise> exercises) {
-//                Log.d(LOG_TAG, "list of exercise references:" + listofexercisereferences);
                 list = exercises;
 
                 RecyclerViewClickListener listener = (view, position) -> {
-                    Toast.makeText(getContext(), "Position " + position, Toast.LENGTH_SHORT).show();
                 };
 
                 adapter = new ItemList_Exercises_Adapter(list, c, listener);

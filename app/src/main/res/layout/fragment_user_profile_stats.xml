@@ -38,6 +38,28 @@
 
             </FrameLayout>
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:weightSum="2"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btn_userprofile_stats_show_all"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="Show all (not available yet)"
+                    android:layout_weight="1" />
+
+                <Button
+                    android:id="@+id/btn_userprofile_stats_show_weekly"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="Show weekly (not available yet)" />
+
+            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
